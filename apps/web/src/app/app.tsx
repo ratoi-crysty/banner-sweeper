@@ -1,13 +1,5 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.scss';
+import './app.scss';
 
 export function App() {
-
-  return (
-    <div>
-      WEb
-    </div>
-  );
+  return <div>Web</div>;
 }
-
-export default App;
