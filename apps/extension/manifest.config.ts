@@ -15,10 +15,17 @@ export default defineManifest({
     },
     default_popup: 'src/popup/index.html',
   },
+  background: {
+    service_worker: 'src/background/main.ts',
+    type: 'module',
+  },
   permissions: [
     'sidePanel',
     'contentSettings',
+    'scripting',
   ],
+  // needed by `chrome.scripting.executeScript` to run autoconsent snippets in the page
+  host_permissions: ['https://*/*'],
   content_scripts: [{
     js: ['src/content/main.tsx'],
     matches: ['https://*/*'],
