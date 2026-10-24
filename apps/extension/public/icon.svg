@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Broom concept icon">
+    <rect width="128" height="128" rx="28" fill="#0E4F55"/>
+    <rect x="14" y="30" width="34" height="10" rx="5" fill="#F5EFE6" opacity="0.55"/>
+    <rect x="20" y="48" width="20" height="10" rx="5" fill="#F5EFE6" opacity="0.35"/>
+    <line x1="104" y1="16" x2="66" y2="66" stroke="#F5EFE6" stroke-width="10" stroke-linecap="round"/>
+    <path d="M51 55 L78 75 L62 108 L24 80 Z" fill="#F2A541"/>
+    <line x1="50" y1="56" x2="79" y2="76" stroke="#F5EFE6" stroke-width="7" stroke-linecap="round"/>
+</svg>

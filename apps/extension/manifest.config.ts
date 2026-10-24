@@ -7,11 +7,19 @@ export default defineManifest({
   description: pkg.description,
   version: pkg.version,
   icons: {
-    48: 'public/logo.png',
+    128: 'public/icon-128.png',
+    64: 'public/icon-64.png',
+    48: 'public/icon-48.png',
+    32: 'public/icon-32.png',
+    16: 'public/icon-16.png',
   },
   action: {
     default_icon: {
-      48: 'public/logo.png',
+      128: 'public/icon-128.png',
+      64: 'public/icon-64.png',
+      48: 'public/icon-48.png',
+      32: 'public/icon-32.png',
+      16: 'public/icon-16.png',
     },
     default_popup: 'src/popup/index.html',
   },
@@ -19,18 +27,16 @@ export default defineManifest({
     service_worker: 'src/background/main.ts',
     type: 'module',
   },
-  permissions: [
-    'sidePanel',
-    'contentSettings',
-    'scripting',
-  ],
+  permissions: ['sidePanel', 'contentSettings', 'scripting'],
   // needed by `chrome.scripting.executeScript` to run autoconsent snippets in the page
   host_permissions: ['https://*/*'],
-  content_scripts: [{
-    js: ['src/content/main.tsx'],
-    matches: ['https://*/*'],
-  }],
+  content_scripts: [
+    {
+      js: ['src/content/main.tsx'],
+      matches: ['https://*/*'],
+    },
+  ],
   side_panel: {
     default_path: 'src/sidepanel/index.html',
   },
-})
+});
