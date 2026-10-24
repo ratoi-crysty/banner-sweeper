@@ -6,7 +6,7 @@ import zip from 'vite-plugin-zip-pack'
 import manifest from './manifest.config.js'
 import { name, version } from './package.json'
 
-// `@bullshit-removal/extension` -> `bullshit-removal-extension`: the scope's `/` would otherwise be a path separator
+// `@banner-sweeper/extension` -> `banner-sweeper-extension`: the scope's `/` would otherwise be a path separator
 const zipName: string = name.replace(/^@/, '').replace(/\//g, '-')
 
 export default defineConfig({

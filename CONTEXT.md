@@ -1,4 +1,4 @@
-# Bullshit Removal
+# Banner Sweeper
 
 A browser extension, backed by a closed-membership service, that declines consent banners and removes overlays that hide content a page has already delivered.
 

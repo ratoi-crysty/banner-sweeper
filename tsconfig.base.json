@@ -17,6 +17,6 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "target": "es2022",
-    "customConditions": ["@bullshit-removal/source"]
+    "customConditions": ["@banner-sweeper/source"]
   }
 }
