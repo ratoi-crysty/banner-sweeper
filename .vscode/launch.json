@@ -4,9 +4,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug @bullshit-removal/api with Nx",
+      "name": "Debug @banner-sweeper/api with Nx",
       "runtimeExecutable": "yarn",
-      "runtimeArgs": ["nx", "serve", "@bullshit-removal/api"],
+      "runtimeArgs": ["nx", "serve", "@banner-sweeper/api"],
       "env": {
         "NODE_OPTIONS": "--inspect=9229"
       },

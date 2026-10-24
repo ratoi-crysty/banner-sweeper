@@ -1,4 +1,4 @@
-# Bullshit Removal
+# Banner Sweeper
 
 A browser extension, backed by a closed-membership service, that declines consent banners and removes overlays that hide content a page has already delivered.
 
@@ -9,10 +9,10 @@ A browser extension, backed by a closed-membership service, that declines consen
 
 | Project | Path | What it is |
 |---|---|---|
-| `@bullshit-removal/extension` | `apps/extension` | Chrome MV3 extension (React + Vite + CRXJS) |
-| `@bullshit-removal/api` | `apps/api` | NestJS API |
-| `@bullshit-removal/web` | `apps/web` | Admin panel (React + Vite) |
-| `@bullshit-removal/api-interfaces` | `libs/api-interfaces` | Shared types, including the Rule protocol |
+| `@banner-sweeper/extension` | `apps/extension` | Chrome MV3 extension (React + Vite + CRXJS) |
+| `@banner-sweeper/api` | `apps/api` | NestJS API |
+| `@banner-sweeper/web` | `apps/web` | Admin panel (React + Vite) |
+| `@banner-sweeper/api-interfaces` | `libs/api-interfaces` | Shared types, including the Rule protocol |
 
 ## Extension
 
@@ -41,7 +41,7 @@ yarn install
 1. Start the dev server from the repo root:
 
    ```sh
-   npx nx dev @bullshit-removal/extension
+   npx nx dev @banner-sweeper/extension
    ```
 
    CRXJS writes a development build to `apps/extension/dist` and prints `Load dist as unpacked extension`.
@@ -55,10 +55,10 @@ The development build loads its code from the dev server, so it stops working wh
 ### Production build
 
 ```sh
-npx nx build @bullshit-removal/extension
+npx nx build @banner-sweeper/extension
 ```
 
-This type-checks (`tsc -b`), then writes a self-contained build to `apps/extension/dist`, which you can load unpacked the same way, and packs it as `apps/extension/release/crx-bullshit-removal-extension-<version>.zip` for distribution.
+This type-checks (`tsc -b`), then writes a self-contained build to `apps/extension/dist`, which you can load unpacked the same way, and packs it as `apps/extension/release/crx-banner-sweeper-extension-<version>.zip` for distribution.
 
 ## Nx workspace
 

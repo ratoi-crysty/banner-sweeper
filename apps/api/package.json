@@ -1,5 +1,5 @@
 {
-  "name": "@bullshit-removal/api",
+  "name": "@banner-sweeper/api",
   "version": "0.0.1",
   "private": true,
   "nx": {
@@ -46,15 +46,15 @@
           "build"
         ],
         "options": {
-          "buildTarget": "@bullshit-removal/api:build",
+          "buildTarget": "@banner-sweeper/api:build",
           "runBuildTargetDependencies": false
         },
         "configurations": {
           "development": {
-            "buildTarget": "@bullshit-removal/api:build:development"
+            "buildTarget": "@banner-sweeper/api:build:development"
           },
           "production": {
-            "buildTarget": "@bullshit-removal/api:build:production"
+            "buildTarget": "@banner-sweeper/api:build:production"
           }
         }
       },
