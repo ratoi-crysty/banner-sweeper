@@ -66,7 +66,7 @@ A Revision that an Admin approved and that Members' extensions apply.
 _Avoid_: live, active, approved
 
 **Verification**:
-An automated run of a Revision against its Site in a headless browser, checking that the Obstruction is gone and the Scroll Lock released.
+An automated run of a candidate Rule or a Revision against its Site in a headless browser, checking that the Obstruction is gone and the Scroll Lock released. Detection may run it many times while a Rule is being written; only the final run's outcome becomes the Draft's flag.
 _Avoid_: test, validation (validation means schema-checking a Rule)
 
 **Verification Report**:
@@ -81,6 +81,10 @@ _Avoid_: bug report, failure
 **Detection**:
 AI-driven generation of a Draft for a Site, from either a headless visit or a Capture.
 _Avoid_: AI feature, auto-detect, AI tool
+
+**Covered**:
+A Site whose Consent Banner existing Rules (Bundled or Published) already Decline; Detection then produces no Draft. Rules that only hide the banner don't make a Site Covered.
+_Avoid_: already handled, supported
 
 **Capture**:
 A sanitised snapshot (DOM + screenshot) of a page as a Member sees it, sent for Detection when a headless visit cannot reproduce the Obstruction.
