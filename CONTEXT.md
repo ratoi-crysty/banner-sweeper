@@ -106,6 +106,10 @@ _Avoid_: AI feature, auto-detect, AI tool
 A Site whose Consent Banner existing Rules (Bundled or Published) already Decline; Detection then produces no Draft. Rules that only hide the banner don't make a Site Covered.
 _Avoid_: already handled, supported
 
+**Hint**:
+Free-text guidance, from the Member requesting a Detection, about where or how the Consent Banner appears on the Site. Read only by the LLM; never part of a Rule, and never overrides Decline.
+_Avoid_: prompt, instructions
+
 **Capture**:
 A sanitised snapshot (DOM + screenshot) of a page as a Member sees it, sent for Detection when a headless visit cannot reproduce the Obstruction.
 
