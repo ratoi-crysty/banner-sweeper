@@ -71,7 +71,11 @@ _Avoid_: live, active, approved
 
 **Verification**:
 An automated run of a candidate Rule or a Revision against its Site in a headless browser, checking that the Obstruction is gone and the Scroll Lock released. Detection may run it many times while a Rule is being written; only the final run's outcome becomes the Draft's flag.
-_Avoid_: test, validation (validation means schema-checking a Rule)
+_Avoid_: test, validation (that is Validation, the static check before any run)
+
+**Validation**:
+The static check that a Rule is well-formed and safe to run (its shape, Match scope, CSS, and size and time limits), done before any Verification or publishing. A Rule that fails Validation is never run or returned.
+_Avoid_: lint, schema check
 
 **Verification Report**:
 The evidence a Verification produces (before/after screenshots, pass/fail per check, the cookie and storage changes) that an Admin reviews alongside a Draft.
