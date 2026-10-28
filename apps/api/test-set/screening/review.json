@@ -1,0 +1,206 @@
+{
+  "emag.ro": {
+    "decision": "include",
+    "note": "Custom bottom banner, 'Refuză toate'; no Bundled Rule matched"
+  },
+  "oebb.at": {
+    "decision": "include",
+    "note": "Custom bottom banner, 'Nicht technische Cookies ablehnen'"
+  },
+  "shockmedia.nl": {
+    "decision": "include",
+    "note": "Cookiebot-style modal with 'Reject all', no known CMP host; nothing detected"
+  },
+  "shoprenter.hu": {
+    "decision": "include",
+    "note": "Only a cosmetic Bundled Rule (cc_banner) hides it; real 'Nem fogadom el' button"
+  },
+  "uni-goettingen.de": {
+    "decision": "include",
+    "note": "Custom bottom banner, 'Nur notwendige Funktionscookies akzeptieren'"
+  },
+  "amazon.se": {
+    "decision": "include",
+    "note": "English banner on .se with 'Decline'; no Bundled Rule matched"
+  },
+  "skat.dk": {
+    "decision": "include",
+    "note": "Cookie Information: Bundled Rule Declines but refusal not stored, banner returns on reload; manual 'Brug kun nødvendige' click persists"
+  },
+  "uef.fi": {
+    "decision": "include",
+    "note": "Cookie Information (Finnish): Bundled Rule Declines but banner returns on reload"
+  },
+  "aau.dk": {
+    "decision": "reserve",
+    "note": "Cookie Information (Danish): same shape as skat.dk; reserve to cap 2 per CMP shape"
+  },
+  "spiegel.de": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "lemonde.fr": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "lne.es": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "fotogramas.es": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "aftonbladet.se": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "transfermarkt.it": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "giornalone.it": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "elmundo.es": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "idnes.cz": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "uma.es": {
+    "decision": "excluded",
+    "reason": "noticeOnly"
+  },
+  "icecat.dk": {
+    "decision": "excluded",
+    "reason": "noticeOnly"
+  },
+  "tijd.be": {
+    "decision": "excluded",
+    "reason": "blocked"
+  },
+  "mediafax.ro": {
+    "decision": "excluded",
+    "reason": "falsePositive",
+    "note": "Stock Declines; after-scan matched the sticky nav"
+  },
+  "doxologia.ro": {
+    "decision": "include",
+    "note": "Drupal eu-cookie-compliance: Bundled Rule claims optOut but banner stays; 'Nu, mulțumesc'"
+  },
+  "pinterest.it": {
+    "decision": "include",
+    "note": "Modal with 'Reject all'; no Bundled Rule matched"
+  },
+  "hostgate.ro": {
+    "decision": "include",
+    "note": "Corner card with 'Doar esențialele'; no Bundled Rule matched"
+  },
+  "neostrada.nl": {
+    "decision": "include",
+    "note": "Refusal only via 'Instellingen aanpassen' (settings view); Complianz notice detected, no popup"
+  },
+  "internex.at": {
+    "decision": "include",
+    "note": "Refusal only via 'Individuell konfigurieren' (settings view)"
+  },
+  "gyakorikerdesek.hu": {
+    "decision": "include",
+    "note": "Refusal only via 'További lehetőségek' (settings view)"
+  },
+  "rheinpfalz.de": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "thesun.ie": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "ubbcluj.ro": {
+    "decision": "excluded",
+    "reason": "noticeOnly"
+  },
+  "quartier-rouge.be": {
+    "decision": "excluded",
+    "reason": "adult"
+  },
+  "uc.pt": {
+    "decision": "include",
+    "note": "Modal with 'Não autorizo'; no Bundled Rule matched"
+  },
+  "iq.pl": {
+    "decision": "include",
+    "note": "Modal with 'Nie akceptuję'; no Bundled Rule matched"
+  },
+  "antik.sk": {
+    "decision": "include",
+    "note": "cookieconsent3: Bundled Rule Declines but banner returns on reload ('Zamietnuť')"
+  },
+  "antee.cz": {
+    "decision": "include",
+    "note": "Refusal only via 'Nastavení' (settings view)"
+  },
+  "stuba.sk": {
+    "decision": "reserve",
+    "note": "Refusal only via 'Spravovať možnosti' (settings view); reserve, settings-only shape already 4x"
+  },
+  "krone.at": {
+    "decision": "excluded",
+    "reason": "payOrConsent"
+  },
+  "sreality.cz": {
+    "decision": "excluded",
+    "reason": "payOrConsent",
+    "note": "Seznam CMP in shadow DOM"
+  },
+  "elin.hu": {
+    "decision": "excluded",
+    "reason": "noticeOnly"
+  },
+  "newyorker.de": {
+    "decision": "excluded",
+    "reason": "falsePositive",
+    "note": "Country picker matched 'Datenschutz'"
+  },
+  "exonet.nl": {
+    "decision": "excluded",
+    "reason": "falsePositive",
+    "note": "No banner; the hero section matched"
+  },
+  "jyu.fi": {
+    "decision": "reserve",
+    "note": "Cookie Information (Finnish): same shape as uef.fi; reserve to cap 2 per CMP shape"
+  },
+  "eventbrite.ie": {
+    "decision": "include",
+    "note": "Transcend banner in shadow DOM; only a cosmetic Bundled Rule (transcend) hides it; real 'Reject all' button"
+  },
+  "mae.ro": {
+    "decision": "excluded",
+    "reason": "noticeOnly"
+  },
+  "rfef.es": {
+    "decision": "include",
+    "note": "Drupal eu-cookie-compliance: Bundled Rule claims optOut but banner stays; 'Rechazar todas las cookies'"
+  },
+  "dmi.dk": {
+    "decision": "reserve",
+    "note": "Cookie Information (Danish): same shape as skat.dk; reserve to cap 2 per CMP shape"
+  },
+  "myip.gr": {
+    "decision": "include",
+    "note": "Custom corner card, Greek 'Άρνηση'; no Bundled Rule matched"
+  },
+  "dfg.de": {
+    "decision": "include",
+    "note": "Custom bottom banner, 'Weiter ohne statistische Cookies'; no Bundled Rule matched"
+  },
+  "mapy.cz": {
+    "decision": "include",
+    "note": "Seznam CMP in shadow DOM, redirects to mapy.com; 'Refuse'; no Bundled Rule matched"
+  }
+}
