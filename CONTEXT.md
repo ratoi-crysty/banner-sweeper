@@ -31,6 +31,10 @@ Content the server withholds and never delivers to the browser. Out of scope: no
 To answer a Consent Banner with a refusal, so the Site records that consent was not given.
 _Avoid_: reject (fine in UI copy, but Decline is the domain term), close
 
+**Accept**:
+To answer a Consent Banner by giving consent, all of it or more than strictly necessary. A Rule must never Accept, even when the banner offers no refusal.
+_Avoid_: allow, agree, opt in
+
 **Dismiss**:
 To make an Obstruction go away without answering it. Acceptable for Content Overlays; never sufficient on its own for a Consent Banner.
 _Avoid_: close, hide, remove
