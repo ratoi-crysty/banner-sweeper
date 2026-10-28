@@ -4,3 +4,5 @@
 /.nx/cache
 /.nx/workspace-data
 yarn.lock
+pnpm-lock.yaml
+**/test-set

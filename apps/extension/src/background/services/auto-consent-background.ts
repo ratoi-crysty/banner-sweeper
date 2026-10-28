@@ -54,7 +54,12 @@ const DOCUMENT_GONE_ERRORS: string[] = [
 ];
 
 function isDocumentGoneError(error: unknown): boolean {
-  return error instanceof Error && DOCUMENT_GONE_ERRORS.some((text: string): boolean => error.message.includes(text));
+  return (
+    error instanceof Error &&
+    DOCUMENT_GONE_ERRORS.some((text: string): boolean =>
+      error.message.includes(text),
+    )
+  );
 }
 
 function ignoreDocumentGone(error: unknown): void {
@@ -92,32 +97,47 @@ export class AutoConsentBackground {
 
     this.initialized = true;
 
-    chrome.runtime.onMessage.addListener((message: ContentScriptMessage, sender: chrome.runtime.MessageSender): void => {
-      const tabId: number | undefined = sender.tab?.id;
-      const frameId: number | undefined = sender.frameId;
+    chrome.runtime.onMessage.addListener(
+      (
+        message: ContentScriptMessage,
+        sender: chrome.runtime.MessageSender,
+      ): void => {
+        const tabId: number | undefined = sender.tab?.id;
+        const frameId: number | undefined = sender.frameId;
 
-      if (tabId === undefined || frameId === undefined) {
-        return;
-      }
+        if (tabId === undefined || frameId === undefined) {
+          return;
+        }
 
-      const target: FrameTarget = { tabId, frameId, documentId: sender.documentId };
+        const target: FrameTarget = {
+          tabId,
+          frameId,
+          documentId: sender.documentId,
+        };
 
-      switch (message.type) {
-        case 'init':
-          void this.handleInit(message, target).catch(ignoreDocumentGone);
-          break;
-        case 'eval':
-          void this.handleEval(message, target).catch(ignoreDocumentGone);
-          break;
-      }
-    });
+        switch (message.type) {
+          case 'init':
+            void this.handleInit(message, target).catch(ignoreDocumentGone);
+            break;
+          case 'eval':
+            void this.handleEval(message, target).catch(ignoreDocumentGone);
+            break;
+        }
+      },
+    );
   }
 
-  protected async handleInit(message: InitMessage, target: FrameTarget): Promise<void> {
-    const compact: CompactCMPRuleset = filterCompactRules(compactRules as IndexedCMPRuleset, {
-      url: message.url,
-      mainFrame: target.frameId === 0,
-    });
+  protected async handleInit(
+    message: InitMessage,
+    target: FrameTarget,
+  ): Promise<void> {
+    const compact: CompactCMPRuleset = filterCompactRules(
+      compactRules as IndexedCMPRuleset,
+      {
+        url: message.url,
+        mainFrame: target.frameId === 0,
+      },
+    );
 
     await this.send(target, {
       type: 'initResp',
@@ -126,18 +146,22 @@ export class AutoConsentBackground {
     });
   }
 
-  protected async handleEval(message: EvalMessage, target: FrameTarget): Promise<void> {
+  protected async handleEval(
+    message: EvalMessage,
+    target: FrameTarget,
+  ): Promise<void> {
     let result = false;
 
     // Snippets are the only thing we run in the page; arbitrary `code` strings are blocked by MV3 anyway
     if (message.snippetId) {
-      const [injection]: chrome.scripting.InjectionResult<boolean | void>[] = await chrome.scripting.executeScript({
-        target: target.documentId
-          ? { tabId: target.tabId, documentIds: [target.documentId] }
-          : { tabId: target.tabId, frameIds: [target.frameId] },
-        world: 'MAIN',
-        func: evalSnippets[message.snippetId],
-      });
+      const [injection]: chrome.scripting.InjectionResult<boolean | void>[] =
+        await chrome.scripting.executeScript({
+          target: target.documentId
+            ? { tabId: target.tabId, documentIds: [target.documentId] }
+            : { tabId: target.tabId, frameIds: [target.frameId] },
+          world: 'MAIN',
+          func: evalSnippets[message.snippetId],
+        });
 
       result = injection?.result === true;
     }
@@ -145,7 +169,10 @@ export class AutoConsentBackground {
     await this.send(target, { type: 'evalResp', id: message.id, result });
   }
 
-  protected async send(target: FrameTarget, message: BackgroundMessage): Promise<void> {
+  protected async send(
+    target: FrameTarget,
+    message: BackgroundMessage,
+  ): Promise<void> {
     const options: chrome.tabs.MessageSendOptions = target.documentId
       ? { documentId: target.documentId }
       : { frameId: target.frameId };

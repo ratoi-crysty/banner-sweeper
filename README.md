@@ -7,12 +7,12 @@ A browser extension, backed by a closed-membership service, that declines consen
 
 ## Repository layout
 
-| Project | Path | What it is |
-|---|---|---|
-| `@banner-sweeper/extension` | `apps/extension` | Chrome MV3 extension (React + Vite + CRXJS) |
-| `@banner-sweeper/api` | `apps/api` | NestJS API |
-| `@banner-sweeper/web` | `apps/web` | Admin panel (React + Vite) |
-| `@banner-sweeper/api-interfaces` | `libs/api-interfaces` | Shared types, including the Rule protocol |
+| Project                          | Path                  | What it is                                  |
+| -------------------------------- | --------------------- | ------------------------------------------- |
+| `@banner-sweeper/extension`      | `apps/extension`      | Chrome MV3 extension (React + Vite + CRXJS) |
+| `@banner-sweeper/api`            | `apps/api`            | NestJS API                                  |
+| `@banner-sweeper/web`            | `apps/web`            | Admin panel (React + Vite)                  |
+| `@banner-sweeper/api-interfaces` | `libs/api-interfaces` | Shared types, including the Rule protocol   |
 
 ## Extension
 
