@@ -8,17 +8,17 @@ A Rule is JSON: a Match plus an ordered list of Steps. Each Step is a generic DO
 
 The `op` vocabulary is deliberately generic, with no pattern-specific macros:
 
-| op | Effect |
-|---|---|
-| `storage.set` / `storage.remove` | localStorage or sessionStorage key |
-| `cookie.set` / `cookie.remove` | one cookie (via `chrome.cookies`, so HttpOnly works) |
-| `waitFor` | wait until a selector matches, with a timeout |
-| `click` | click the matched element |
-| `remove` | remove the matched element |
-| `attr.set` / `attr.remove` | one attribute |
-| `class.add` / `class.remove` | one class |
-| `style.set` / `style.remove` | one property in the `style` attribute, optional `!important` |
-| `css.inject` | a stylesheet rule: selector + declarations |
+| op                               | Effect                                                       |
+| -------------------------------- | ------------------------------------------------------------ |
+| `storage.set` / `storage.remove` | localStorage or sessionStorage key                           |
+| `cookie.set` / `cookie.remove`   | one cookie (via `chrome.cookies`, so HttpOnly works)         |
+| `waitFor`                        | wait until a selector matches, with a timeout                |
+| `click`                          | click the matched element                                    |
+| `remove`                         | remove the matched element                                   |
+| `attr.set` / `attr.remove`       | one attribute                                                |
+| `class.add` / `class.remove`     | one class                                                    |
+| `style.set` / `style.remove`     | one property in the `style` attribute, optional `!important` |
+| `css.inject`                     | a stylesheet rule: selector + declarations                   |
 
 Common patterns are compositions, not ops. Releasing a Scroll Lock is `style.set` of `overflow: auto` on `html` and `body` (or `class.remove` of the site's lock class); hiding an Obstruction is `css.inject` with `display: none !important`.
 
@@ -38,9 +38,7 @@ Common patterns are compositions, not ops. Releasing a Scroll Lock is `style.set
 ## `css.inject`
 
 ```jsonc
-{ "op": "css.inject",
-  "selector": "#onetrust-banner-sdk, .meter-modal",
-  "declarations": [{ "property": "display", "value": "none", "important": true }] }
+{ "op": "css.inject", "selector": "#onetrust-banner-sdk, .meter-modal", "declarations": [{ "property": "display", "value": "none", "important": true }] }
 ```
 
 - **Delivered with `chrome.scripting.insertCSS({ origin: 'USER' })`** from the background worker, into the frames the Step targets. It is invisible to the page and the page cannot remove it, and user-origin `!important` declarations win the cascade over everything the page sets, including inline `!important`. Chosen over a content-script `<style>` element, which has guaranteed `document_start` timing but which the page can see, remove, or outrank. Accepted risk: the round-trip through the background worker may land after first paint and cause a brief flash. If a prototype shows this is common, we will revisit how the CSS is delivered, not the op.
