@@ -1,0 +1,120 @@
+{
+  "mode": "unthreaded",
+  "stream": false,
+  "model": "gemma4:e4b-it-qat",
+  "canary": "COBALT-3641",
+  "screenshotCalls": 1,
+  "finishInput": {
+    "codeWord": "COBALT-3641",
+    "buttonLabels": [
+      "Accept all",
+      "Reject all",
+      "Manage options"
+    ]
+  },
+  "imageReachedModel": true,
+  "endedBy": "finish",
+  "error": null,
+  "turns": [
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "screenshot({})"
+      ],
+      "text": "",
+      "inputTokens": 5,
+      "outputTokens": 84
+    },
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "finish({\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"COBALT-3641\"})"
+      ],
+      "text": "",
+      "inputTokens": 564,
+      "outputTokens": 98
+    },
+    {
+      "stopReason": "end_turn",
+      "blockTypes": [
+        "thinking",
+        "text"
+      ],
+      "toolCalls": [],
+      "text": "The consent banner says: \"We value your privacy. Code word: COBALT-3641\".\nThe button labels are \"Accept all\", \"Reject all\", and \"Manage options\".",
+      "inputTokens": 56,
+      "outputTokens": 63
+    }
+  ],
+  "wire": [
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_406d46be85603e599969a8dc\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user wants to know what a consent banner says. I need to examine the current page to find this banner.\\nFirst, I must call the `screenshot` tool to see the page content.\\nAfter receiving the screenshot, I will extract the required information: the code word and the button labels, and then call the `finish` tool with this information.\"},{\"type\":\"tool_use\",\"id\":\"call_wz4tb3dw\",\"name\":\"screenshot\",\"input\":{}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_t"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 3,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_191b1d1558a373eb082ab9cc\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The screenshot shows a consent banner.\\nThe code word is \\\"COBALT-3641\\\".\\nThe button labels from left to right are \\\"Accept all\\\", \\\"Reject all\\\", \\\"Manage options\\\".\\n\\nI will now use the `finish` tool to report this information.\"},{\"type\":\"tool_use\",\"id\":\"call_jh38utgb\",\"name\":\"finish\",\"input\":{\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"COBALT-3641\"}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":564,\"cache_read_input"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 5,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_43c2c311bc59a06441db5778\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The task is complete. I have called `finish` with the extracted code word and button labels.\"},{\"type\":\"text\",\"text\":\"The consent banner says: \\\"We value your privacy. Code word: COBALT-3641\\\".\\nThe button labels are \\\"Accept all\\\", \\\"Reject all\\\", and \\\"Manage options\\\".\"}],\"stop_reason\":\"end_turn\",\"usage\":{\"input_tokens\":56,\"cache_read_input_tokens\":840,\"output_tokens\":63}}\n"
+    }
+  ],
+  "durationMs": 4073
+}

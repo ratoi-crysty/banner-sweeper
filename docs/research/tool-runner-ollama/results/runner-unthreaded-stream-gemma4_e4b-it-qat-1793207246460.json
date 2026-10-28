@@ -1,0 +1,120 @@
+{
+  "mode": "unthreaded",
+  "stream": true,
+  "model": "gemma4:e4b-it-qat",
+  "canary": "LANTERN-6970",
+  "screenshotCalls": 1,
+  "finishInput": {
+    "codeWord": "LANTERN697",
+    "buttonLabels": [
+      "Accept all",
+      "Reject all",
+      "Manage options"
+    ]
+  },
+  "imageReachedModel": false,
+  "endedBy": "finish",
+  "error": null,
+  "turns": [
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "screenshot({})"
+      ],
+      "text": "",
+      "inputTokens": 5,
+      "outputTokens": 64
+    },
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "finish({\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"LANTERN697\"})"
+      ],
+      "text": "",
+      "inputTokens": 544,
+      "outputTokens": 112
+    },
+    {
+      "stopReason": "end_turn",
+      "blockTypes": [
+        "thinking",
+        "text"
+      ],
+      "toolCalls": [],
+      "text": "The code word on the consent banner is LANTERN697. The buttons are labeled Accept all, Reject all, and Manage options.",
+      "inputTokens": 92,
+      "outputTokens": 56
+    }
+  ],
+  "wire": [
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "<event-stream>"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 3,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "<event-stream>"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 5,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "<event-stream>"
+    }
+  ],
+  "durationMs": 3912
+}

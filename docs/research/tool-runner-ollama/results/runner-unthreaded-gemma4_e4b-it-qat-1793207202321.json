@@ -1,0 +1,120 @@
+{
+  "mode": "unthreaded",
+  "stream": false,
+  "model": "gemma4:e4b-it-qat",
+  "canary": "ORCHID-5999",
+  "screenshotCalls": 1,
+  "finishInput": {
+    "codeWord": "ORCHID-5999",
+    "buttonLabels": [
+      "Accept all",
+      "Reject all",
+      "Manage options"
+    ]
+  },
+  "imageReachedModel": true,
+  "endedBy": "finish",
+  "error": null,
+  "turns": [
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "screenshot({})"
+      ],
+      "text": "",
+      "inputTokens": 5,
+      "outputTokens": 89
+    },
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "finish({\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"ORCHID-5999\"})"
+      ],
+      "text": "",
+      "inputTokens": 569,
+      "outputTokens": 98
+    },
+    {
+      "stopReason": "end_turn",
+      "blockTypes": [
+        "thinking",
+        "text"
+      ],
+      "toolCalls": [],
+      "text": "The consent banner says: \"We value your privacy. Code word: ORCHID-5999\". The buttons are labeled \"Accept all\", \"Reject all\", and \"Manage options\".",
+      "inputTokens": 56,
+      "outputTokens": 103
+    }
+  ],
+  "wire": [
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_ac6818a1db3f5be54e254d40\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user wants to know what the consent banner says on the current page. To do this, I first need to capture the current state of the page using the `screenshot` tool, as I cannot see the page without it. After obtaining the screenshot, I will analyze it to find the code word and the button labels, then use the `finish` tool to provide the requested information.\"},{\"type\":\"tool_use\",\"id\":\"call_d7oxyqcy\",\"name\":\"screenshot\",\"input\":{}}],\"stop_reason\":\"to"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 3,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_07c008d5be7a1e38bf356f84\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The screenshot shows a consent banner.\\nThe code word is clearly visible: \\\"ORCHID-5999\\\".\\nThe button labels are: \\\"Accept all\\\", \\\"Reject all\\\", and \\\"Manage options\\\".\\n\\nNow I can use the `finish` tool with this information.\"},{\"type\":\"tool_use\",\"id\":\"call_437eiv7l\",\"name\":\"finish\",\"input\":{\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"ORCHID-5999\"}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":569,\"cache_read_input_to"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 5,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_0cfaf369ef52d5c434c3d0e0\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user asked what the consent banner says. I have captured the screenshot, identified the code word (\\\"ORCHID-5999\\\") and button labels (\\\"Accept all\\\", \\\"Reject all\\\", \\\"Manage options\\\"), and used the `finish` tool to report this. The task is complete.\"},{\"type\":\"text\",\"text\":\"The consent banner says: \\\"We value your privacy. Code word: ORCHID-5999\\\". The buttons are labeled \\\"Accept all\\\", \\\"Reject all\\\", and \\\"Manage options\\\".\"}],\"stop_reason\":\"e"
+    }
+  ],
+  "durationMs": 8581
+}
