@@ -29,12 +29,11 @@ Permissions requested so far: `sidePanel`, `contentSettings`.
 
 ### Prerequisites
 
-- Node.js and the repo's pinned Yarn 1 (`.yarn/releases/yarn-1.22.22.cjs`, picked up automatically via `.yarnrc`)
 - Chrome, or another Chromium-based browser
 - Dependencies installed from the repo root:
 
 ```sh
-yarn install
+pnpm install
 ```
 
 ### Develop
