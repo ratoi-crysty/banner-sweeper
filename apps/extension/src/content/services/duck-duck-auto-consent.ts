@@ -1,4 +1,7 @@
-import AutoConsent, { BackgroundMessage, ContentScriptMessage } from '@duckduckgo/autoconsent';
+import AutoConsent, {
+  BackgroundMessage,
+  ContentScriptMessage,
+} from '@duckduckgo/autoconsent';
 
 export class DuckDuckAutoConsent {
   protected static self: DuckDuckAutoConsent | undefined;
@@ -25,7 +28,8 @@ export class DuckDuckAutoConsent {
 
     // Without config and rules, AutoConsent sends `init` to the background and waits for its `initResp`
     const autoConsent: AutoConsent = new AutoConsent(
-      (message: ContentScriptMessage): Promise<void> => this.sendToBackground(message),
+      (message: ContentScriptMessage): Promise<void> =>
+        this.sendToBackground(message),
     );
 
     chrome.runtime.onMessage.addListener((message: BackgroundMessage): void => {
@@ -34,7 +38,10 @@ export class DuckDuckAutoConsent {
 
     // Messages in flight are dropped while the page sits in the back/forward cache, so `initResp` may never have arrived
     window.addEventListener('pageshow', (event: PageTransitionEvent): void => {
-      if (event.persisted && autoConsent.state.lifecycle === 'waitingForInitResponse') {
+      if (
+        event.persisted &&
+        autoConsent.state.lifecycle === 'waitingForInitResponse'
+      ) {
         void this.sendToBackground({ type: 'init', url: window.location.href });
       }
     });
@@ -42,12 +49,17 @@ export class DuckDuckAutoConsent {
     this.autoConsent = autoConsent;
   }
 
-  protected async sendToBackground(message: ContentScriptMessage): Promise<void> {
+  protected async sendToBackground(
+    message: ContentScriptMessage,
+  ): Promise<void> {
     try {
       await chrome.runtime.sendMessage(message);
     } catch (error: unknown) {
       // Chrome closes the channel when the page enters the back/forward cache; there is nobody left to answer
-      if (error instanceof Error && error.message.includes('back/forward cache')) {
+      if (
+        error instanceof Error &&
+        error.message.includes('back/forward cache')
+      ) {
         return;
       }
 
