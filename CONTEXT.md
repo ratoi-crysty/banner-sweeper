@@ -14,6 +14,14 @@ _Avoid_: popup, dialog, content blocker (collides with ad-blocker terminology)
 An Obstruction that asks the visitor to accept or refuse tracking (cookies, storage, data processing).
 _Avoid_: cookie popup, cookie dialog, GDPR popup
 
+**Consent Wall**:
+A Consent Banner whose only alternative to Accepting is paying or subscribing. It offers no free refusal, so no Rule can Decline it.
+_Avoid_: cookie wall, pay-or-OK, paywall (that is content the server never delivers)
+
+**Notice-only Banner**:
+A Consent Banner that informs the visitor about tracking and offers no refusal, only acknowledgement ("OK", "Got it") or Accept.
+_Avoid_: cookie notice, info banner
+
 **CMP**:
 A Consent Management Platform: third-party software (OneTrust, Cookiebot, Didomi, …) that renders Consent Banners on many Sites.
 
