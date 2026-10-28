@@ -1,42 +1,12 @@
 import {
   BackgroundMessage,
   CompactCMPRuleset,
-  Config,
   ContentScriptMessage,
   EvalMessage,
-  IndexedCMPRuleset,
   InitMessage,
   evalSnippets,
-  filterCompactRules,
 } from '@duckduckgo/autoconsent';
-import compactRules from '@duckduckgo/autoconsent/rules/compact-rules.json';
-
-const config: Config = {
-  enabled: true,
-  autoAction: 'optOut',
-  disabledCmps: [],
-  enablePrehide: true,
-  enableCosmeticRules: true,
-  enableGeneratedRules: true,
-  enableHeuristicDetection: false,
-  enablePopupMutationObserver: false,
-  detectRetries: 20,
-  isMainWorld: false,
-  prehideTimeout: 2000,
-  visualTest: false,
-  logs: {
-    lifecycle: false,
-    rulesteps: false,
-    evals: false,
-    errors: true,
-    messages: false,
-    detectionsteps: false,
-    waits: false,
-  },
-  performanceLoggingEnabled: false,
-  heuristicPopupSearchTimeout: 100,
-  heuristicMode: 'off',
-};
+import { autoconsentConfig, compactRulesForFrame } from '@banner-sweeper/autoconsent-config';
 
 interface FrameTarget {
   tabId: number;
@@ -114,7 +84,7 @@ export class AutoConsentBackground {
   }
 
   protected async handleInit(message: InitMessage, target: FrameTarget): Promise<void> {
-    const compact: CompactCMPRuleset = filterCompactRules(compactRules as IndexedCMPRuleset, {
+    const compact: CompactCMPRuleset = compactRulesForFrame({
       url: message.url,
       mainFrame: target.frameId === 0,
     });
@@ -122,7 +92,7 @@ export class AutoConsentBackground {
     await this.send(target, {
       type: 'initResp',
       rules: { autoconsent: [], compact },
-      config,
+      config: autoconsentConfig,
     });
   }
 

@@ -47,3 +47,5 @@ Thumbs.db
 vite.config.*.timestamp*
 
 .env.*
+
+vitest.config.*.timestamp*

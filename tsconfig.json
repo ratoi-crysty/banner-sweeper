@@ -14,6 +14,9 @@
     },
     {
       "path": "./apps/extension"
+    },
+    {
+      "path": "./libs/autoconsent-config"
     }
   ]
 }

@@ -8,5 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
+  },
+  "dependencies": {
+    "@banner-sweeper/autoconsent-config": "workspace:*"
   }
 }

@@ -68,10 +68,37 @@
         "buildDepsTargetName": "build-deps",
         "watchDepsTargetName": "watch-deps"
       }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testTargetName": "test",
+        "ciTargetName": "test-ci",
+        "testMode": "run"
+      }
     }
   ],
   "neverConnectToCloud": true,
   "generators": {
+    "@nx/js": {
+      "library": {
+        "bundler": "none",
+        "linter": "eslint",
+        "unitTestRunner": "vitest"
+      }
+    },
+    "@nx/nest": {
+      "library": {
+        "linter": "eslint",
+        "unitTestRunner": "vitest"
+      }
+    },
+    "@nx/node": {
+      "library": {
+        "linter": "eslint",
+        "unitTestRunner": "vitest"
+      }
+    },
     "@nx/react": {
       "application": {
         "babel": true,
@@ -84,11 +111,17 @@
       },
       "library": {
         "style": "scss",
-        "linter": "eslint"
+        "linter": "eslint",
+        "unitTestRunner": "vitest"
       }
     }
   },
   "tui": {
     "enabled": false
+  },
+  "targetDefaults": {
+    "test": {
+      "dependsOn": ["^build"]
+    }
   }
 }

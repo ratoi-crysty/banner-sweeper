@@ -13,6 +13,7 @@ A browser extension, backed by a closed-membership service, that declines consen
 | `@banner-sweeper/api` | `apps/api` | NestJS API |
 | `@banner-sweeper/web` | `apps/web` | Admin panel (React + Vite) |
 | `@banner-sweeper/api-interfaces` | `libs/api-interfaces` | Shared types, including the Rule protocol |
+| `@banner-sweeper/autoconsent-config` | `libs/autoconsent-config` | The extension's autoconsent config and per-frame Bundled Rules, shared with Detection's stock check |
 
 ## Extension
 
@@ -59,6 +60,30 @@ npx nx build @banner-sweeper/extension
 ```
 
 This type-checks (`tsc -b`), then writes a self-contained build to `apps/extension/dist`, which you can load unpacked the same way, and packs it as `apps/extension/release/crx-banner-sweeper-extension-<version>.zip` for distribution.
+
+## Tests
+
+Tests run on [Vitest](https://vitest.dev/) and are named `*.spec.ts` next to the code they cover. The `test` target runs once and exits:
+
+```sh
+npx nx test @banner-sweeper/api      # one project
+npx nx run-many -t test              # every project with tests
+```
+
+Libraries generated with `@nx/js`, `@nx/node`, `@nx/nest` or `@nx/react` get a `test` target by default (set in `nx.json`'s `generators`). To add one to a project that has none:
+
+```sh
+npx nx g @nx/vitest:configuration --project=<project> --testEnvironment=node
+```
+
+For a NestJS project, also set `experimentalDecorators` and `emitDecoratorMetadata` in its `tsconfig.spec.json`, as `apps/api` does. Without them Nest's dependency injection resolves constructor parameters as `undefined`.
+
+## Pinned dependencies
+
+| Package | Pin | Why |
+|---|---|---|
+| `playwright-core` | `~1.64.1` | Detection drives the `mcr.microsoft.com/playwright:v1.64.1-noble` browser through `chromium.connect()`, which refuses a server whose major.minor differs from the client's. Upgrade the package and the image together. |
+| `@duckduckgo/autoconsent` | `16.60.0` (exact) | Detection depends on its rule format, its Bundled Rules and its injected bundle. On every upgrade, recheck the 11 CMP names Detection puts in `disabledCmps` for candidate runs, and the generated rule schema. |
 
 ## Nx workspace
 
