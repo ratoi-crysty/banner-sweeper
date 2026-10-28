@@ -1,0 +1,120 @@
+{
+  "mode": "unthreaded",
+  "stream": false,
+  "model": "gemma4:e4b-it-qat",
+  "canary": "GRANITE-6341",
+  "screenshotCalls": 1,
+  "finishInput": {
+    "codeWord": "GRANITE-6341",
+    "buttonLabels": [
+      "Accept all",
+      "Reject all",
+      "Manage options"
+    ]
+  },
+  "imageReachedModel": true,
+  "endedBy": "finish",
+  "error": null,
+  "turns": [
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "screenshot({})"
+      ],
+      "text": "",
+      "inputTokens": 5,
+      "outputTokens": 68
+    },
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "finish({\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"GRANITE-6341\"})"
+      ],
+      "text": "",
+      "inputTokens": 548,
+      "outputTokens": 95
+    },
+    {
+      "stopReason": "end_turn",
+      "blockTypes": [
+        "thinking",
+        "text"
+      ],
+      "toolCalls": [],
+      "text": "The consent banner has the code word \"GRANITE-6341\" and the following buttons: \"Accept all\", \"Reject all\", and \"Manage options\".",
+      "inputTokens": 56,
+      "outputTokens": 84
+    }
+  ],
+  "wire": [
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_7200236ce61874012d3bd43a\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user wants to know the content of a consent banner on the current page.\\nI need to use the `screenshot` tool first to capture the page content.\\nAfter getting the screenshot, I will call `finish` with the detected `codeWord` and `buttonLabels`.\"},{\"type\":\"tool_use\",\"id\":\"call_x5uv6xsx\",\"name\":\"screenshot\",\"input\":{}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":5,\"cache_read_input_tokens\":218,\"output_tokens\":68}}\n"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 3,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_b11a20f4e26f4a6bb7a60bb3\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The screenshot shows a consent banner.\\nThe code word is \\\"GRANITE-6341\\\".\\nThe button labels are \\\"Accept all\\\", \\\"Reject all\\\", and \\\"Manage options\\\".\\nI will now use the `finish` tool to report this information.\"},{\"type\":\"tool_use\",\"id\":\"call_7b523ziu\",\"name\":\"finish\",\"input\":{\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"GRANITE-6341\"}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":548,\"cache_read_input_tokens\":218,\"o"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 5,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_79e2dbc07b0b1a71309a8938\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user asked what the consent banner says. I have captured the screenshot and extracted the required information (code word and button labels) and used the `finish` tool. Now I will present the final answer based on the previous observations.\"},{\"type\":\"text\",\"text\":\"The consent banner has the code word \\\"GRANITE-6341\\\" and the following buttons: \\\"Accept all\\\", \\\"Reject all\\\", and \\\"Manage options\\\".\"}],\"stop_reason\":\"end_turn\",\"usage\":{\"input_tokens"
+    }
+  ],
+  "durationMs": 4100
+}

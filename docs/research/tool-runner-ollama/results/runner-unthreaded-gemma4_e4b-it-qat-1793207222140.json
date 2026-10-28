@@ -1,0 +1,120 @@
+{
+  "mode": "unthreaded",
+  "stream": false,
+  "model": "gemma4:e4b-it-qat",
+  "canary": "GRANITE-9704",
+  "screenshotCalls": 1,
+  "finishInput": {
+    "codeWord": "GRANITE-9704",
+    "buttonLabels": [
+      "Accept all",
+      "Reject all",
+      "Manage options"
+    ]
+  },
+  "imageReachedModel": true,
+  "endedBy": "finish",
+  "error": null,
+  "turns": [
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "screenshot({})"
+      ],
+      "text": "",
+      "inputTokens": 5,
+      "outputTokens": 56
+    },
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "finish({\"buttonLabels\":[\"Accept all\",\"Reject all\",\"Manage options\"],\"codeWord\":\"GRANITE-9704\"})"
+      ],
+      "text": "",
+      "inputTokens": 536,
+      "outputTokens": 141
+    },
+    {
+      "stopReason": "end_turn",
+      "blockTypes": [
+        "thinking",
+        "text"
+      ],
+      "toolCalls": [],
+      "text": "The consent banner has been analyzed.\nThe code word is **GRANITE-9704**.\nThe button labels are: **Accept all**, **Reject all**, and **Manage options**.",
+      "inputTokens": 16,
+      "outputTokens": 86
+    }
+  ],
+  "wire": [
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_c817e1f79ae49a89fbc871d8\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user wants to know what the consent banner says. To do this, I need to examine the current page content, specifically the banner, to find the code word and button labels. I will start by taking a screenshot.\"},{\"type\":\"tool_use\",\"id\":\"call_onc7oacq\",\"name\":\"screenshot\",\"input\":{}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":5,\"cache_read_input_tokens\":218,\"output_tokens\":56}}\n"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 3,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_ef5ba166b386b8a412f199b1\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"I have the screenshot. I need to extract the code word and the button labels from the consent banner to use the `finish` tool.\\n\\n1.  **Code Word:** The text says \\\"Code word: GRANITE-9704\\\". The code word is \\\"GRANITE-9704\\\".\\n2.  **Button Labels:** The buttons are \\\"Accept all\\\", \\\"Reject all\\\", and \\\"Manage options\\\".\\n\\nI will now call the `finish` tool.\"},{\"type\":\"tool_use\",\"id\":\"call_we9cd9m6\",\"name\":\"finish\",\"input\":{\"buttonLabels\":[\"Accept all\","
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": null,
+      "stainlessHelper": "BetaToolRunner",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "tools"
+      ],
+      "messageCount": 5,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": null,
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_bcf0a743bbf9b89864ead6e6\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user's request was fulfilled by providing the code word and button labels from the consent banner using the `finish` tool. The response from `finish` is \\\"Recorded,\\\" indicating the information was successfully processed.\"},{\"type\":\"text\",\"text\":\"The consent banner has been analyzed.\\nThe code word is **GRANITE-9704**.\\nThe button labels are: **Accept all**, **Reject all**, and **Manage options**.\"}],\"stop_reason\":\"end_turn\",\"usage\":{\"input_tokens\":"
+    }
+  ],
+  "durationMs": 5705
+}

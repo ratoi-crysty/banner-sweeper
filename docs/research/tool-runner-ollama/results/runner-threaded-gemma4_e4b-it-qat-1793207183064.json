@@ -1,0 +1,74 @@
+{
+  "mode": "threaded",
+  "stream": false,
+  "model": "gemma4:e4b-it-qat",
+  "canary": "MAPLE-9452",
+  "screenshotCalls": 1,
+  "finishInput": null,
+  "imageReachedModel": false,
+  "endedBy": "error",
+  "error": "BadRequestError: 400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"{\\\"error\\\":{\\\"code\\\":400,\\\"message\\\":\\\"Failed to tokenize prompt\\\",\\\"type\\\":\\\"invalid_request_error\\\"}}\"},\"request_id\":\"req_e5184d596dbd256a3b322ee6\"}",
+  "turns": [
+    {
+      "stopReason": "tool_use",
+      "blockTypes": [
+        "thinking",
+        "tool_use"
+      ],
+      "toolCalls": [
+        "screenshot({})"
+      ],
+      "text": "",
+      "inputTokens": 223,
+      "outputTokens": 69
+    }
+  ],
+  "wire": [
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": "message-threads-2026-08-12",
+      "stainlessHelper": "BetaToolRunner, message-thread",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "system",
+        "thread",
+        "tools"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": true,
+      "toolCount": 2,
+      "thread": {
+        "type": "create"
+      },
+      "status": 200,
+      "responseSnippet": "{\"id\":\"msg_1c07221b7e0a570c1c02df92\",\"type\":\"message\",\"role\":\"assistant\",\"model\":\"gemma4:e4b-it-qat\",\"content\":[{\"type\":\"thinking\",\"thinking\":\"The user is asking about the content of a consent banner on the current page. I need to use the `screenshot` tool to capture the page content first. After I get the screenshot, I will analyze it to find the code word and the button labels for the `finish` tool.\"},{\"type\":\"tool_use\",\"id\":\"call_gd7mmli7\",\"name\":\"screenshot\",\"input\":{}}],\"stop_reason\":\"tool_use\",\"usage\":{\"input_tokens\":223,\"cache_read_input_tokens\":0,\"output_tokens\":69}}\n"
+    },
+    {
+      "path": "/v1/messages",
+      "anthropicBeta": "message-threads-2026-08-12",
+      "stainlessHelper": "BetaToolRunner, message-thread",
+      "bodyKeys": [
+        "max_tokens",
+        "messages",
+        "model",
+        "stream",
+        "thread"
+      ],
+      "messageCount": 1,
+      "firstMessageRole": "user",
+      "hasSystem": false,
+      "toolCount": 0,
+      "thread": {
+        "type": "continue",
+        "previous_message_id": "msg_1c07221b7e0a570c1c02df92"
+      },
+      "status": 400,
+      "responseSnippet": "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"{\\\"error\\\":{\\\"code\\\":400,\\\"message\\\":\\\"Failed to tokenize prompt\\\",\\\"type\\\":\\\"invalid_request_error\\\"}}\"},\"request_id\":\"req_e5184d596dbd256a3b322ee6\"}\n"
+    }
+  ],
+  "durationMs": 46289
+}
