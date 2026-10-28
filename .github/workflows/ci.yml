@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch or PR supersedes the running one.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  # nx-set-shas reads past workflow runs to find the last green commit on main.
+  actions: read
+  contents: read
+
+jobs:
+  checks:
+    name: Static analysis & tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Affected detection needs the history back to the base commit.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Sets NX_BASE / NX_HEAD: the PR base, or the last successful run on main.
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Restore Nx cache
+        uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            nx-${{ runner.os }}-
+
+      - name: Check formatting
+        run: pnpm exec nx format:check --base="$NX_BASE" --head="$NX_HEAD"
+
+      - name: Lint, type-check and test affected projects
+        run: pnpm exec nx affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD"
