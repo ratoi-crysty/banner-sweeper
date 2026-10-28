@@ -7,12 +7,12 @@ A browser extension, backed by a closed-membership service, that declines consen
 
 ## Repository layout
 
-| Project | Path | What it is |
-|---|---|---|
-| `@banner-sweeper/extension` | `apps/extension` | Chrome MV3 extension (React + Vite + CRXJS) |
-| `@banner-sweeper/api` | `apps/api` | NestJS API |
-| `@banner-sweeper/web` | `apps/web` | Admin panel (React + Vite) |
-| `@banner-sweeper/api-interfaces` | `libs/api-interfaces` | Shared types, including the Rule protocol |
+| Project                              | Path                      | What it is                                                                                          |
+| ------------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------- |
+| `@banner-sweeper/extension`          | `apps/extension`          | Chrome MV3 extension (React + Vite + CRXJS)                                                         |
+| `@banner-sweeper/api`                | `apps/api`                | NestJS API                                                                                          |
+| `@banner-sweeper/web`                | `apps/web`                | Admin panel (React + Vite)                                                                          |
+| `@banner-sweeper/api-interfaces`     | `libs/api-interfaces`     | Shared types, including the Rule protocol                                                           |
 | `@banner-sweeper/autoconsent-config` | `libs/autoconsent-config` | The extension's autoconsent config and per-frame Bundled Rules, shared with Detection's stock check |
 
 ## Extension
@@ -80,10 +80,10 @@ For a NestJS project, also set `experimentalDecorators` and `emitDecoratorMetada
 
 ## Pinned dependencies
 
-| Package | Pin | Why |
-|---|---|---|
-| `playwright-core` | `~1.64.1` | Detection drives the `mcr.microsoft.com/playwright:v1.64.1-noble` browser through `chromium.connect()`, which refuses a server whose major.minor differs from the client's. Upgrade the package and the image together. |
-| `@duckduckgo/autoconsent` | `16.60.0` (exact) | Detection depends on its rule format, its Bundled Rules and its injected bundle. On every upgrade, recheck the 11 CMP names Detection puts in `disabledCmps` for candidate runs, and the generated rule schema. |
+| Package                   | Pin               | Why                                                                                                                                                                                                                     |
+| ------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `playwright-core`         | `~1.64.1`         | Detection drives the `mcr.microsoft.com/playwright:v1.64.1-noble` browser through `chromium.connect()`, which refuses a server whose major.minor differs from the client's. Upgrade the package and the image together. |
+| `@duckduckgo/autoconsent` | `16.60.0` (exact) | Detection depends on its rule format, its Bundled Rules and its injected bundle. On every upgrade, recheck the 11 CMP names Detection puts in `disabledCmps` for candidate runs, and the generated rule schema.         |
 
 ## Nx workspace
 

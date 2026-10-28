@@ -1,4 +1,8 @@
-import { CompactCMPRuleset, IndexedCMPRuleset, filterCompactRules } from '@duckduckgo/autoconsent';
+import {
+  CompactCMPRuleset,
+  IndexedCMPRuleset,
+  filterCompactRules,
+} from '@duckduckgo/autoconsent';
 import compactRules from '@duckduckgo/autoconsent/rules/compact-rules.json' with { type: 'json' };
 
 export interface FrameContext {

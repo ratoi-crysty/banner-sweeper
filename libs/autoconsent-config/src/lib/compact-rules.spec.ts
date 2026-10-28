@@ -7,7 +7,9 @@ const MAIN_FRAME_RULE = 'ziptozipmoving';
 const IFRAME_RULE = 'auto_DE_modellbau-berlinski.de_8vm';
 
 function ruleNames(ruleset: CompactCMPRuleset): string[] {
-  return ruleset.r.map((rule: CompactCMPRuleset['r'][number]): string => rule[1]);
+  return ruleset.r.map(
+    (rule: CompactCMPRuleset['r'][number]): string => rule[1],
+  );
 }
 
 describe('compactRulesForFrame', () => {

@@ -6,7 +6,10 @@ import {
   InitMessage,
   evalSnippets,
 } from '@duckduckgo/autoconsent';
-import { autoconsentConfig, compactRulesForFrame } from '@banner-sweeper/autoconsent-config';
+import {
+  autoconsentConfig,
+  compactRulesForFrame,
+} from '@banner-sweeper/autoconsent-config';
 
 interface FrameTarget {
   tabId: number;
@@ -97,7 +100,10 @@ export class AutoConsentBackground {
     );
   }
 
-  protected async handleInit(message: InitMessage, target: FrameTarget): Promise<void> {
+  protected async handleInit(
+    message: InitMessage,
+    target: FrameTarget,
+  ): Promise<void> {
     const compact: CompactCMPRuleset = compactRulesForFrame({
       url: message.url,
       mainFrame: target.frameId === 0,
