@@ -1,3 +1,7 @@
+---
+status: superseded by ADR-0007 for Consent Banners; parked for Content Overlays
+---
+
 # Rules are declarative data built from generic primitives, never code
 
 A Rule is JSON: a Match plus an ordered list of Steps. Each Step is a generic DOM or storage primitive from a closed set; there are no expressions, loops, conditionals beyond `waitFor`, or string-to-code paths (`eval`, `new Function`, injected `<script>`). We chose this over shipping JS snippets because MV3 and Chrome Web Store policy forbid remotely hosted code, because Detection output must be machine-checkable before anyone runs it, and because a fixed vocabulary is what makes Verification and Admin review meaningful.

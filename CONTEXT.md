@@ -42,14 +42,18 @@ The hostname (and optionally path) of a top-level page a Rule targets.
 _Avoid_: domain, website, page
 
 **Rule**:
-A declarative, versioned description of how to Decline or Dismiss the Obstructions on a Site: a Match plus an ordered list of Steps.
+A declarative, versioned description, in autoconsent's rule format, of how to detect and Decline (or Dismiss) the Obstructions on a Site: a Match plus ordered Steps. Our Rules run alongside the Bundled Rules.
 _Avoid_: instruction, recipe, script
 
+**Bundled Rule**:
+A rule that ships inside the autoconsent library itself, maintained upstream for known CMPs. Never edited by us.
+_Avoid_: default rule, built-in rule
+
 **Match**:
-The part of a Rule that says which top-level pages it applies to. Frames inside a page are targeted per Step, not by the Match.
+The part of a Rule that says which pages and frames it runs in.
 
 **Step**:
-One generic DOM or storage primitive within a Rule (set a storage key, click, edit an attribute, class or style property, …). Patterns like releasing a Scroll Lock are compositions of Steps, not Steps themselves. Never contains executable code.
+One declarative action or check within a Rule (wait for an element, click it, hide it, check it is visible, …). Never contains executable code.
 _Avoid_: action, instruction, command
 
 **Revision**:
@@ -70,7 +74,7 @@ An automated run of a candidate Rule or a Revision against its Site in a headles
 _Avoid_: test, validation (validation means schema-checking a Rule)
 
 **Verification Report**:
-The evidence a Verification produces (before/after screenshots, pass/fail per check) that an Admin reviews alongside a Draft.
+The evidence a Verification produces (before/after screenshots, pass/fail per check, the cookie and storage changes) that an Admin reviews alongside a Draft.
 
 **Breakage Report**:
 A signal from a Member's extension that a Published Rule ran but the Obstruction is still present.
@@ -79,7 +83,7 @@ _Avoid_: bug report, failure
 ### Producing Drafts
 
 **Detection**:
-AI-driven generation of a Draft for a Site, from either a headless visit or a Capture.
+AI-driven generation of a Draft for a Site: an LLM drives a headless browser (or reads a Capture), writes a Rule, and runs Verification on it. Skipped when Bundled Rules already Decline the Site's banner.
 _Avoid_: AI feature, auto-detect, AI tool
 
 **Covered**:

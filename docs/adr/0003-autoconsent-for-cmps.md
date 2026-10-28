@@ -1,3 +1,7 @@
+---
+status: amended by ADR-0007 (our Rules are autoconsent rules too)
+---
+
 # Consent Banners from known CMPs are handled by DuckDuckGo autoconsent
 
 The extension embeds [`@duckduckgo/autoconsent`](https://github.com/duckduckgo/autoconsent) (MPL-2.0) with its bundled rules to Decline Consent Banners from known CMPs. Our own Rules and executor cover everything else: Content Overlays, Scroll Locks, and Sites whose banners autoconsent does not handle. A handful of CMPs cover most of the web and autoconsent already maintains declarative, Decline-oriented rules for them; rebuilding that is a large ongoing cost with no differentiation.
