@@ -13,8 +13,8 @@ export interface LlmBackendModuleOptions {
 }
 
 /**
- * Validates the backend config at boot and provides the backend that `DETECTION_BACKEND` names (default
- * `claude-opus`) under the `DETECTION_BACKEND` token. A request can't choose another.
+ * Validates the backend config at boot and provides the backend whose id is in the `DETECTION_BACKEND` env var
+ * (`claude-opus` without one), under the `DETECTION_BACKEND` injection token. A request can't choose another.
  */
 @Module({})
 export class LlmBackendModule {

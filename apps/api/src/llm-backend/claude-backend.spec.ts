@@ -1,5 +1,6 @@
 import {
   RunSession,
+  ToolCall,
   ToolDefinition,
   ToolResult,
   TurnEvent,
@@ -69,7 +70,7 @@ async function runAgainst(
 
 describe('ClaudeBackend', () => {
   it('ends the run as soon as a terminal tool succeeds, without asking the model again', async () => {
-    const { events, outcome, api } = await runAgainst([
+    const { events, outcome, api }: FakeRunResult = await runAgainst([
       {
         content: [toolUseBlock('t1', 'count', { by: 3 })],
         stopReason: 'tool_use',
@@ -101,7 +102,7 @@ describe('ClaudeBackend', () => {
   });
 
   it('sends a failed terminal call back as an error and keeps going', async () => {
-    const { events, outcome, api } = await runAgainst([
+    const { events, outcome, api }: FakeRunResult = await runAgainst([
       {
         content: [toolUseBlock('t1', 'finish', { total: 7 })],
         stopReason: 'tool_use',
@@ -128,7 +129,7 @@ describe('ClaudeBackend', () => {
   });
 
   it("ends with endTurn and the reply's text, keeping thinking out of the event", async () => {
-    const { events, outcome } = await runAgainst([
+    const { events, outcome }: FakeRunResult = await runAgainst([
       {
         content: [
           thinkingBlock('secret reasoning'),
@@ -145,7 +146,7 @@ describe('ClaudeBackend', () => {
   });
 
   it('ends with refused when the model refuses', async () => {
-    const { outcome } = await runAgainst([
+    const { outcome }: FakeRunResult = await runAgainst([
       { content: [], stopReason: 'refusal' },
     ]);
 
@@ -159,7 +160,7 @@ describe('ClaudeBackend', () => {
       return [];
     });
 
-    const { outcome, api } = await runAgainst(
+    const { outcome, api }: FakeRunResult = await runAgainst(
       [
         {
           content: [toolUseBlock('t1', 'count', { by: 1 })],
@@ -178,7 +179,7 @@ describe('ClaudeBackend', () => {
   });
 
   it('continues a paused turn', async () => {
-    const { outcome, api } = await runAgainst([
+    const { outcome, api }: FakeRunResult = await runAgainst([
       { content: [textBlock('Still looking…')], stopReason: 'pause_turn' },
       { content: [textBlock('Done.')], stopReason: 'end_turn' },
     ]);
@@ -195,7 +196,7 @@ describe('ClaudeBackend', () => {
   });
 
   it('stops at maxTurns', async () => {
-    const { events, outcome, api } = await runAgainst(
+    const { events, outcome, api }: FakeRunResult = await runAgainst(
       [
         {
           content: [toolUseBlock('t1', 'count', { by: 1 })],
@@ -223,7 +224,7 @@ describe('ClaudeBackend', () => {
       },
     );
 
-    const { outcome, api } = await runAgainst(
+    const { outcome, api }: FakeRunResult = await runAgainst(
       [
         {
           content: [toolUseBlock('t1', 'count', { by: 1 })],
@@ -244,7 +245,7 @@ describe('ClaudeBackend', () => {
     const controller: AbortController = new AbortController();
     controller.abort();
 
-    const { outcome } = await runAgainst(
+    const { outcome }: FakeRunResult = await runAgainst(
       [{ content: [textBlock('never sent')], stopReason: 'end_turn' }],
       session({ signal: controller.signal }),
     );
@@ -253,7 +254,7 @@ describe('ClaudeBackend', () => {
   });
 
   it('fails with the error when the API rejects a request', async () => {
-    const { outcome } = await runAgainst([
+    const { outcome }: FakeRunResult = await runAgainst([
       { status: 400, message: 'tools.0.name: invalid' },
     ]);
 
@@ -273,15 +274,15 @@ describe('ClaudeBackend', () => {
       terminal: false,
       run: async (): Promise<ToolResult> => {
         log.push(`start ${name}`);
-        await new Promise((resolve: (value: unknown) => void) =>
-          setTimeout(resolve, ms),
-        );
+        await new Promise((resolve: (value: unknown) => void): void => {
+          setTimeout(resolve, ms);
+        });
         log.push(`end ${name}`);
         return [{ type: 'text', text: name }];
       },
     });
 
-    const { events } = await runAgainst(
+    const { events }: FakeRunResult = await runAgainst(
       [
         {
           content: [
@@ -296,14 +297,13 @@ describe('ClaudeBackend', () => {
     );
 
     expect(log).toEqual(['start slow', 'end slow', 'start fast', 'end fast']);
-    expect(events[0]?.toolCalls.map((call) => call.name)).toEqual([
-      'slow',
-      'fast',
-    ]);
+    expect(
+      events[0]?.toolCalls.map((call: ToolCall): string => call.name),
+    ).toEqual(['slow', 'fast']);
   });
 
   it("doesn't run the calls after a terminal call that succeeded", async () => {
-    const { events, outcome, api } = await runAgainst([
+    const { events, outcome, api }: FakeRunResult = await runAgainst([
       {
         content: [
           toolUseBlock('t1', 'finish', { total: 0 }),
@@ -335,7 +335,7 @@ describe('ClaudeBackend', () => {
       ],
     };
 
-    const { events, api } = await runAgainst(
+    const { events, api }: FakeRunResult = await runAgainst(
       [
         {
           content: [toolUseBlock('t1', 'screenshot', {})],
@@ -391,7 +391,7 @@ describe('ClaudeBackend', () => {
   });
 
   it("reports each turn's token usage", async () => {
-    const { events } = await runAgainst([
+    const { events }: FakeRunResult = await runAgainst([
       {
         content: [textBlock('ok')],
         stopReason: 'end_turn',
@@ -441,7 +441,7 @@ describe('ClaudeBackend', () => {
 
   describe('requests', () => {
     it('asks for effort, adaptive thinking and server-side fallbacks, non-streaming', async () => {
-      const { api } = await runAgainst([
+      const { api }: FakeRunResult = await runAgainst([
         { content: [textBlock('ok')], stopReason: 'end_turn' },
       ]);
 
@@ -459,7 +459,7 @@ describe('ClaudeBackend', () => {
     });
 
     it('caches the growing history with automatic caching', async () => {
-      const { api } = await runAgainst([
+      const { api }: FakeRunResult = await runAgainst([
         { content: [textBlock('ok')], stopReason: 'end_turn' },
       ]);
 
@@ -469,7 +469,7 @@ describe('ClaudeBackend', () => {
     });
 
     it('puts cache breakpoints on the system prompt and the last tool', async () => {
-      const { api } = await runAgainst([
+      const { api }: FakeRunResult = await runAgainst([
         { content: [textBlock('ok')], stopReason: 'end_turn' },
       ]);
 
@@ -490,7 +490,7 @@ describe('ClaudeBackend', () => {
     });
 
     it('sends the whole history, unchanged, every turn', async () => {
-      const { api } = await runAgainst([
+      const { api }: FakeRunResult = await runAgainst([
         {
           content: [
             thinkingBlock('hmm'),

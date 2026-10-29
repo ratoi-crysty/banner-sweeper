@@ -19,12 +19,16 @@ type BetaToolResultContentBlockParam =
  * it, so the calls run one at a time, in order. Once a terminal tool succeeds, the turn's later calls don't run.
  */
 export class SequentialTools {
-  /** The terminal tool whose call succeeded, once one has. */
-  terminalTool: string | null = null;
+  private succeededTerminal: string | null = null;
 
   private tail: Promise<unknown> = Promise.resolve();
 
   constructor(private readonly signal: AbortSignal) {}
+
+  /** The terminal tool whose call succeeded, once one has. */
+  get terminalTool(): string | null {
+    return this.succeededTerminal;
+  }
 
   wrap(tool: ToolDefinition): BetaRunnableTool<unknown> {
     return betaZodTool({
@@ -67,7 +71,7 @@ export class SequentialTools {
       throw new ToolError(result.content.map(toBetaContent));
     }
     if (tool.terminal) {
-      this.terminalTool = tool.name;
+      this.succeededTerminal = tool.name;
     }
     return result.map(toBetaContent);
   }

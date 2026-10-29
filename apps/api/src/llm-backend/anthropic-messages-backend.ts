@@ -6,11 +6,13 @@ import type {
 } from '@anthropic-ai/sdk/lib/tools/BetaToolRunner';
 import {
   BackendDescription,
+  ContentBlock,
   DetectionBackend,
   RunOutcome,
   RunSession,
   ToolCall,
   toolFailure,
+  ToolResult,
   TokenUsage,
   TurnEvent,
 } from '@banner-sweeper/llm-backend';
@@ -188,15 +190,19 @@ function turnEvent(
         return {
           name: toolUse.name,
           input: toolUse.input,
-          result: !result
-            ? toolFailure('Not run.')
-            : result.is_error
-              ? toolFailure(fromToolResultContent(result.content))
-              : fromToolResultContent(result.content),
+          result: toolResult(result),
         };
       }),
     usage: tokenUsage(message),
   };
+}
+
+function toolResult(block: BetaToolResultBlockParam | undefined): ToolResult {
+  if (!block) {
+    return toolFailure('Not run.');
+  }
+  const content: ContentBlock[] = fromToolResultContent(block.content);
+  return block.is_error ? toolFailure(content) : content;
 }
 
 function tokenUsage(message: BetaMessage): TokenUsage {

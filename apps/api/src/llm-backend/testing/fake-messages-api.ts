@@ -50,6 +50,7 @@ export function fakeMessagesApi(
     requests.push({
       url: String(input),
       headers: new Headers(init?.headers),
+      // The SDK always sends a JSON object body.
       body: JSON.parse(String(init?.body)) as Record<string, unknown>,
     });
 
