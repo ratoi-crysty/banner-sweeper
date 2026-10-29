@@ -1,36 +1,7 @@
 import type { CreateDetectionRequest } from '@banner-sweeper/api-interfaces';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsOptional,
-  IsString,
-  MaxLength,
-  ValidateBy,
-  ValidationOptions,
-} from 'class-validator';
-
-const HTTP_PROTOCOLS: string[] = ['http:', 'https:'];
-
-function isAbsoluteHttpUrl(value: unknown): boolean {
-  if (typeof value !== 'string' || !URL.canParse(value)) {
-    return false;
-  }
-
-  return HTTP_PROTOCOLS.includes(new URL(value).protocol);
-}
-
-function IsAbsoluteHttpUrl(options?: ValidationOptions): PropertyDecorator {
-  return ValidateBy(
-    {
-      name: 'isAbsoluteHttpUrl',
-      validator: {
-        validate: isAbsoluteHttpUrl,
-        defaultMessage: (): string =>
-          '$property must be an absolute http(s) URL',
-      },
-    },
-    options,
-  );
-}
+import { IsOptional, IsString, MaxLength, Validate } from 'class-validator';
+import { IsAbsoluteHttpUrlConstraint } from './is-absolute-http-url.constraint';
 
 export class CreateDetectionDto implements CreateDetectionRequest {
   @ApiProperty({
@@ -41,7 +12,7 @@ export class CreateDetectionDto implements CreateDetectionRequest {
   })
   @IsString()
   @MaxLength(2048)
-  @IsAbsoluteHttpUrl()
+  @Validate(IsAbsoluteHttpUrlConstraint)
   url!: string;
 
   @ApiPropertyOptional({

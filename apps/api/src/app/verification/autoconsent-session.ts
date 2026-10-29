@@ -61,12 +61,12 @@ interface Waiter {
  * page (answering `init` and `eval`) and keeps every message, so checks can wait for them.
  */
 export class AutoconsentSession {
-  private readonly startedAt: number = Date.now();
-  private readonly received: ReceivedMessage[] = [];
-  private waiters: Waiter[] = [];
-  private readonly frameUrls: Map<string, string> = new Map<string, string>();
+  protected readonly startedAt: number = Date.now();
+  protected readonly received: ReceivedMessage[] = [];
+  protected waiters: Waiter[] = [];
+  protected readonly frameUrls: Map<string, string> = new Map<string, string>();
 
-  constructor(private readonly options: AutoconsentSessionOptions) {}
+  constructor(protected readonly options: AutoconsentSessionOptions) {}
 
   async receive(
     message: ContentScriptMessage,
@@ -181,13 +181,13 @@ export class AutoconsentSession {
         logs.set(frame.id, log);
       }
 
-      log.messages.push(toLogEntry(message, atMs));
+      log.messages.push(this.toLogEntry(message, atMs));
     }
 
     return [...logs.values()];
   }
 
-  private rememberFrameUrl(
+  protected rememberFrameUrl(
     message: ContentScriptMessage,
     frame: ContentScriptFrame,
   ): void {
@@ -196,7 +196,7 @@ export class AutoconsentSession {
     }
   }
 
-  private async answerInit(
+  protected async answerInit(
     message: InitMessage,
     frame: ContentScriptFrame,
   ): Promise<void> {
@@ -211,7 +211,7 @@ export class AutoconsentSession {
   }
 
   // Like the extension: only autoconsent's own snippets run, never the `code` a page could have sent
-  private async answerEval(
+  protected async answerEval(
     message: EvalMessage,
     frame: ContentScriptFrame,
   ): Promise<void> {
@@ -219,7 +219,7 @@ export class AutoconsentSession {
       ? evalSnippets[message.snippetId]
       : undefined;
     const result: boolean = snippet
-      ? await withTimeout(
+      ? await this.withTimeout(
           frame
             .evalInMainWorld(`(${snippet.toString()})()`)
             .then((value: unknown): boolean => value === true)
@@ -231,42 +231,42 @@ export class AutoconsentSession {
 
     await frame.send({ type: 'evalResp', id: message.id, result });
   }
-}
 
-function toLogEntry(
-  message: ContentScriptMessage,
-  atMs: number,
-): AutoconsentLogEntry {
-  const entry: AutoconsentLogEntry = { atMs, type: message.type };
+  protected toLogEntry(
+    message: ContentScriptMessage,
+    atMs: number,
+  ): AutoconsentLogEntry {
+    const entry: AutoconsentLogEntry = { atMs, type: message.type };
 
-  if ('cmp' in message) {
-    entry.cmp = message.cmp;
+    if ('cmp' in message) {
+      entry.cmp = message.cmp;
+    }
+
+    if ('result' in message) {
+      entry.result = message.result;
+    }
+
+    if ('isCosmetic' in message) {
+      entry.isCosmetic = message.isCosmetic;
+    }
+
+    return entry;
   }
 
-  if ('result' in message) {
-    entry.result = message.result;
-  }
-
-  if ('isCosmetic' in message) {
-    entry.isCosmetic = message.isCosmetic;
-  }
-
-  return entry;
-}
-
-function withTimeout<T>(
-  promise: Promise<T>,
-  timeoutMs: number,
-  fallback: T,
-): Promise<T> {
-  return new Promise<T>((resolve: (value: T) => void): void => {
-    const timer: NodeJS.Timeout = setTimeout(
-      (): void => resolve(fallback),
-      timeoutMs,
-    );
-    void promise.then((value: T): void => {
-      clearTimeout(timer);
-      resolve(value);
+  protected withTimeout<T>(
+    promise: Promise<T>,
+    timeoutMs: number,
+    fallback: T,
+  ): Promise<T> {
+    return new Promise<T>((resolve: (value: T) => void): void => {
+      const timer: NodeJS.Timeout = setTimeout(
+        (): void => resolve(fallback),
+        timeoutMs,
+      );
+      void promise.then((value: T): void => {
+        clearTimeout(timer);
+        resolve(value);
+      });
     });
-  });
+  }
 }

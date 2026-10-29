@@ -14,12 +14,12 @@ import { usageColumns } from './detection-job.mapper';
 /** Runs one Detection job through its phases and stores the outcome. */
 @Injectable()
 export class DetectionRunner {
-  private readonly logger: Logger = new Logger(DetectionRunner.name);
+  protected readonly logger: Logger = new Logger(DetectionRunner.name);
 
   constructor(
     @InjectRepository(DetectionJobEntity)
-    private readonly jobs: Repository<DetectionJobEntity>,
-    private readonly stockCheck: StockCheck,
+    protected readonly jobs: Repository<DetectionJobEntity>,
+    protected readonly stockCheck: StockCheck,
   ) {}
 
   async run(jobId: string): Promise<void> {
@@ -48,12 +48,12 @@ export class DetectionRunner {
       errorKind: result.outcome === 'error' ? result.kind : null,
       result: JSON.stringify(result),
       ...usageColumns(
-        stockCheckUsage(finishedAt.getTime() - startedAt.getTime()),
+        this.stockCheckUsage(finishedAt.getTime() - startedAt.getTime()),
       ),
     });
   }
 
-  private async detect(job: DetectionJobEntity): Promise<DetectionResult> {
+  protected async detect(job: DetectionJobEntity): Promise<DetectionResult> {
     try {
       const stock: StockCheckResult = await this.stockCheck.run(job.url);
 
@@ -83,21 +83,21 @@ export class DetectionRunner {
       return { outcome: 'error', ...failure };
     }
   }
-}
 
-// The stock check runs no LLM, so a job that ends there used no tokens
-function stockCheckUsage(durationMs: number): DetectionUsage {
-  return {
-    backend: null,
-    model: null,
-    effort: null,
-    promptVersion: null,
-    turns: 0,
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheReadTokens: 0,
-    cacheWriteTokens: 0,
-    costUsd: null,
-    durationMs,
-  };
+  // The stock check runs no LLM, so a job that ends there used no tokens
+  protected stockCheckUsage(durationMs: number): DetectionUsage {
+    return {
+      backend: null,
+      model: null,
+      effort: null,
+      promptVersion: null,
+      turns: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+      cacheReadTokens: 0,
+      cacheWriteTokens: 0,
+      costUsd: null,
+      durationMs,
+    };
+  }
 }

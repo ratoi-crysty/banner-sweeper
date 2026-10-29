@@ -10,8 +10,8 @@ import { DetectionQueue } from './detection-queue';
 export class DetectionService {
   constructor(
     @InjectRepository(DetectionJobEntity)
-    private readonly jobs: Repository<DetectionJobEntity>,
-    private readonly queue: DetectionQueue,
+    protected readonly jobs: Repository<DetectionJobEntity>,
+    protected readonly queue: DetectionQueue,
   ) {}
 
   async create(request: CreateDetectionRequest): Promise<DetectionJobEntity> {

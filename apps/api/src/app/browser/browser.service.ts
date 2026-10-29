@@ -13,9 +13,9 @@ const CONNECT_TIMEOUT_MS = 30_000;
  */
 @Injectable()
 export class BrowserService implements OnApplicationShutdown {
-  private browser: Promise<Browser> | null = null;
+  protected browser: Promise<Browser> | null = null;
 
-  constructor(@Inject(apiConfig.KEY) private readonly config: ApiConfig) {}
+  constructor(@Inject(apiConfig.KEY) protected readonly config: ApiConfig) {}
 
   async newContext(): Promise<BrowserContext> {
     const browser: Browser = await this.connect();
@@ -34,7 +34,7 @@ export class BrowserService implements OnApplicationShutdown {
     await browser?.close();
   }
 
-  private connect(): Promise<Browser> {
+  protected connect(): Promise<Browser> {
     if (this.browser) {
       return this.browser;
     }
@@ -57,7 +57,7 @@ export class BrowserService implements OnApplicationShutdown {
     return connecting;
   }
 
-  private forget(connection: Promise<Browser>): void {
+  protected forget(connection: Promise<Browser>): void {
     if (this.browser === connection) {
       this.browser = null;
     }

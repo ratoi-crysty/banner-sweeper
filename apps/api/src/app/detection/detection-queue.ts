@@ -12,13 +12,13 @@ import { DetectionRunner } from './detection-runner';
 /** An in-memory FIFO of job ids, run `detectionConcurrency` at a time. */
 @Injectable()
 export class DetectionQueue implements OnApplicationShutdown {
-  private readonly logger: Logger = new Logger(DetectionQueue.name);
-  private readonly waiting: string[] = [];
-  private readonly running: Set<Promise<void>> = new Set<Promise<void>>();
+  protected readonly logger: Logger = new Logger(DetectionQueue.name);
+  protected readonly waiting: string[] = [];
+  protected readonly running: Set<Promise<void>> = new Set<Promise<void>>();
 
   constructor(
-    @Inject(apiConfig.KEY) private readonly config: ApiConfig,
-    private readonly runner: DetectionRunner,
+    @Inject(apiConfig.KEY) protected readonly config: ApiConfig,
+    protected readonly runner: DetectionRunner,
   ) {}
 
   enqueue(jobId: string): void {
@@ -32,7 +32,7 @@ export class DetectionQueue implements OnApplicationShutdown {
     await Promise.all(this.running);
   }
 
-  private drain(): void {
+  protected drain(): void {
     while (this.running.size < this.config.detectionConcurrency) {
       const jobId: string | undefined = this.waiting.shift();
 

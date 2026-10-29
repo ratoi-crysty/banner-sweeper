@@ -37,7 +37,7 @@ import {
 @ApiExtraModels(...DETECTION_JOB_MODELS)
 @Controller('detections')
 export class DetectionController {
-  constructor(private readonly detections: DetectionService) {}
+  constructor(protected readonly detections: DetectionService) {}
 
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)

@@ -19,7 +19,7 @@ import { StockCheck, StockCheckResult } from '../verification/stock-check';
 /** A stock check whose runs the test finishes by hand, in the order they started. */
 class FakeStockCheck extends StockCheck {
   readonly runs: PendingRun[] = [];
-  private stopped = false;
+  protected stopped = false;
 
   run(url: string): Promise<StockCheckResult> {
     if (this.stopped) {

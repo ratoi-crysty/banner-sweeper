@@ -34,8 +34,8 @@ const NAVIGATION_TIMEOUT_MS = 30_000;
 @Injectable()
 export class PlaywrightStockCheck extends StockCheck {
   constructor(
-    private readonly browser: BrowserService,
-    private readonly publishedRules: PublishedRuleSource,
+    protected readonly browser: BrowserService,
+    protected readonly publishedRules: PublishedRuleSource,
   ) {
     super();
   }
@@ -131,5 +131,4 @@ export class PlaywrightStockCheck extends StockCheck {
       throw new SiteUnreachableError(url, error);
     }
   }
-
 }
