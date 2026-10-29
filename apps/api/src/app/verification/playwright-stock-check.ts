@@ -62,13 +62,13 @@ export class PlaywrightStockCheck extends StockCheck {
             void session
               .receive(
                 message as ContentScriptMessage,
-                contentScriptFrame(transport, frameRef),
+                this.contentScriptFrame(transport, frameRef),
               )
               .catch((): void => undefined);
           },
         autoconsentBundle(),
       );
-      await openSite(page, url);
+      await this.openSite(page, url);
 
       const verdict: ExistingRulesVerdict = await checkExistingRules(session);
 
@@ -101,34 +101,35 @@ export class PlaywrightStockCheck extends StockCheck {
       await context.close().catch((): void => undefined);
     }
   }
-}
 
-function contentScriptFrame(
-  transport: MessageTransport,
-  frameRef: string,
-): ContentScriptFrame {
-  return {
-    id: frameRef,
-    isMainFrame: transport.isMainFrame(frameRef),
-    send: (message: object): Promise<void> =>
-      transport.sendToContentScript(frameRef, message),
-    evalInMainWorld: (code: string): Promise<unknown> =>
-      transport.evalInMainWorld(frameRef, code),
-  };
-}
-
-async function openSite(page: Page, url: string): Promise<void> {
-  try {
-    // autoconsent starts with the document, so there's no need to wait for more than the commit
-    await page.goto(url, {
-      waitUntil: 'commit',
-      timeout: NAVIGATION_TIMEOUT_MS,
-    });
-  } catch (error: unknown) {
-    if (!page.context().browser()?.isConnected()) {
-      throw new BrowserUnavailableError(error);
-    }
-
-    throw new SiteUnreachableError(url, error);
+  protected contentScriptFrame(
+    transport: MessageTransport,
+    frameRef: string,
+  ): ContentScriptFrame {
+    return {
+      id: frameRef,
+      isMainFrame: transport.isMainFrame(frameRef),
+      send: (message: object): Promise<void> =>
+        transport.sendToContentScript(frameRef, message),
+      evalInMainWorld: (code: string): Promise<unknown> =>
+        transport.evalInMainWorld(frameRef, code),
+    };
   }
+
+  protected async openSite(page: Page, url: string): Promise<void> {
+    try {
+      // autoconsent starts with the document, so there's no need to wait for more than the commit
+      await page.goto(url, {
+        waitUntil: 'commit',
+        timeout: NAVIGATION_TIMEOUT_MS,
+      });
+    } catch (error: unknown) {
+      if (!page.context().browser()?.isConnected()) {
+        throw new BrowserUnavailableError(error);
+      }
+
+      throw new SiteUnreachableError(url, error);
+    }
+  }
+
 }
