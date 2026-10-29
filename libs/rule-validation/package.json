@@ -1,0 +1,45 @@
+{
+  "name": "@banner-sweeper/rule-validation",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {},
+  "nx": {
+    "targets": {
+      "generate-schemas": {
+        "command": "node scripts/generate-schemas.mts",
+        "options": {
+          "cwd": "{projectRoot}"
+        }
+      },
+      "schema-check": {
+        "command": "node scripts/generate-schemas.mts --check",
+        "options": {
+          "cwd": "{projectRoot}"
+        },
+        "cache": true,
+        "inputs": [
+          "{projectRoot}/scripts/**/*",
+          "{projectRoot}/src/lib/schema/*.json",
+          {
+            "externalDependencies": [
+              "@duckduckgo/autoconsent",
+              "ts-json-schema-generator",
+              "prettier"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

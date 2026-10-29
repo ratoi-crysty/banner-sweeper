@@ -1,0 +1,106 @@
+{
+  "type": "object",
+  "properties": {
+    "prehideSelectors": { "type": "array", "items": { "type": "string" } },
+    "runContext": { "$ref": "#/definitions/RunContext" },
+    "detectCmp": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+    },
+    "detectPopup": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+    },
+    "optOut": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+    },
+    "optIn": {
+      "type": "array",
+      "maxItems": 0,
+      "description": "Always `[]`: a Rule never Accepts."
+    },
+    "test": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+    },
+    "comment": { "type": "string" }
+  },
+  "required": ["detectCmp", "detectPopup", "optOut", "optIn"],
+  "additionalProperties": false,
+  "definitions": {
+    "RunContext": {
+      "type": "object",
+      "properties": {
+        "main": { "type": "boolean" },
+        "urlPattern": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "AutoConsentRuleStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stylesheet": { "type": "string" },
+        "stylesheetId": { "type": "string" },
+        "addStyle": { "type": "string" },
+        "selector": { "$ref": "#/definitions/ElementSelector" },
+        "setStyle": { "type": "string" },
+        "removeClass": { "type": "string" },
+        "cookieContains": { "type": "string" },
+        "negated": { "type": "boolean" },
+        "any": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+        },
+        "if": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "visible": { "$ref": "#/definitions/ElementSelector" },
+            "check": { "$ref": "#/definitions/VisibilityCheck" },
+            "exists": { "$ref": "#/definitions/ElementSelector" }
+          }
+        },
+        "then": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+        },
+        "else": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AutoConsentRuleStep" }
+        },
+        "hide": { "type": "string" },
+        "method": { "$ref": "#/definitions/HideMethod" },
+        "wait": { "type": "number" },
+        "waitForThenClick": { "$ref": "#/definitions/ElementSelector" },
+        "timeout": { "type": "number" },
+        "all": { "type": "boolean" },
+        "retry": {
+          "type": "number",
+          "description": "Number of additional click attempts if the element is still visible after the first click. Defaults to 0 (no retries). Only use this on elements that are expected to disappear once the click is handled, otherwise the extra clicks are wasted (or harmful)."
+        },
+        "retryInterval": {
+          "type": "number",
+          "description": "How long to wait (in ms) for the element to disappear before clicking it again."
+        },
+        "click": { "$ref": "#/definitions/ElementSelector" },
+        "waitForVisible": { "$ref": "#/definitions/ElementSelector" },
+        "check": { "$ref": "#/definitions/VisibilityCheck" },
+        "waitFor": { "$ref": "#/definitions/ElementSelector" },
+        "visible": { "$ref": "#/definitions/ElementSelector" },
+        "exists": { "$ref": "#/definitions/ElementSelector" },
+        "optional": { "type": "boolean" },
+        "comment": { "type": "string" }
+      }
+    },
+    "ElementSelector": {
+      "anyOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" } }
+      ]
+    },
+    "VisibilityCheck": { "type": "string", "enum": ["any", "all", "none"] },
+    "HideMethod": { "type": "string", "enum": ["display", "opacity"] }
+  }
+}
