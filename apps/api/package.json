@@ -2,6 +2,10 @@
   "name": "@banner-sweeper/api",
   "version": "0.0.1",
   "private": true,
+  "dependencies": {
+    "@banner-sweeper/api-interfaces": "workspace:*",
+    "@banner-sweeper/autoconsent-config": "workspace:*"
+  },
   "nx": {
     "targets": {
       "prune-lockfile": {

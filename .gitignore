@@ -46,6 +46,9 @@ Thumbs.db
 
 vite.config.*.timestamp*
 
+.env
 .env.*
 
 vitest.config.*.timestamp*
+# apps/api: the SQLite database and job storage
+/apps/api/data
