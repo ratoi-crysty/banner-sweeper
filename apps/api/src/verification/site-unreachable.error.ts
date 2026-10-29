@@ -1,4 +1,4 @@
-import { firstLine } from '../app/first-line';
+import { firstLine } from '../app/error-text';
 
 /** The browser couldn't load the requested URL. */
 export class SiteUnreachableError extends Error {

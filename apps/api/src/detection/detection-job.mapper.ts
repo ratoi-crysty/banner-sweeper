@@ -1,8 +1,10 @@
 import {
+  DetectionEnvelope,
   DetectionJob,
   DetectionResult,
   DetectionSummary,
   DetectionUsage,
+  PendingResult,
 } from '@banner-sweeper/api-interfaces';
 import { DetectionJobEntity } from './detection-job.entity';
 
@@ -21,7 +23,7 @@ export function toDetectionSummary(
 }
 
 export function toDetectionJob(entity: DetectionJobEntity): DetectionJob {
-  return {
+  const envelope: DetectionEnvelope = {
     id: entity.id,
     url: entity.url,
     site: entity.site,
@@ -32,10 +34,13 @@ export function toDetectionJob(entity: DetectionJobEntity): DetectionJob {
     startedAt: entity.startedAt?.toISOString() ?? null,
     finishedAt: entity.finishedAt?.toISOString() ?? null,
     usage: toUsage(entity),
-    result: entity.result
-      ? (JSON.parse(entity.result) as DetectionResult)
-      : null,
   };
+  const result: DetectionResult | PendingResult = entity.result
+    ? // Only the runner writes this column, always from a `DetectionResult`
+      (JSON.parse(entity.result) as DetectionResult)
+    : { outcome: null };
+
+  return { ...envelope, ...result };
 }
 
 function toUsage(entity: DetectionJobEntity): DetectionUsage | null {
@@ -58,10 +63,8 @@ function toUsage(entity: DetectionJobEntity): DetectionUsage | null {
   };
 }
 
-/** The `usage*` columns for a job's usage. */
-export function usageColumns(
-  usage: DetectionUsage,
-): Pick<
+/** The columns that store a job's `usage`. */
+export type UsageColumns = Pick<
   DetectionJobEntity,
   | 'usageBackend'
   | 'usageModel'
@@ -74,7 +77,9 @@ export function usageColumns(
   | 'usageCacheWriteTokens'
   | 'usageCostUsd'
   | 'usageDurationMs'
-> {
+>;
+
+export function usageColumns(usage: DetectionUsage): UsageColumns {
   return {
     usageBackend: usage.backend,
     usageModel: usage.model,

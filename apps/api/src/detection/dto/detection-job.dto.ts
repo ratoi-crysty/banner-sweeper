@@ -2,16 +2,17 @@ import type {
   CoveredResult,
   CoveredVia,
   DetectionErrorKind,
-  DetectionJob,
+  DetectionEnvelope,
   DetectionOutcome,
   DetectionPhase,
-  DetectionResult,
   DetectionStatus,
   DetectionSummary,
   DetectionUsage,
   ErrorResult,
+  PendingResult,
 } from '@banner-sweeper/api-interfaces';
-import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import type { ApiResponseSchemaHost } from '@nestjs/swagger';
 import { VerificationReportDto } from './verification-report.dto';
 
 const STATUSES: DetectionStatus[] = ['queued', 'running', 'finished'];
@@ -87,6 +88,16 @@ export class CoveredResultDto implements CoveredResult {
   via!: CoveredVia;
 }
 
+export class PendingResultDto implements PendingResult {
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    enum: [null],
+    description: "A job that isn't finished has no outcome yet",
+  })
+  outcome!: null;
+}
+
 export class ErrorResultDto implements ErrorResult {
   @ApiProperty({ enum: ['error'] })
   outcome!: 'error';
@@ -121,8 +132,7 @@ export class DetectionSummaryDto implements DetectionSummary {
   finishedAt!: string | null;
 }
 
-@ApiExtraModels(CoveredResultDto, ErrorResultDto)
-export class DetectionJobDto implements DetectionJob {
+export class DetectionEnvelopeDto implements DetectionEnvelope {
   @ApiProperty({ format: 'uuid' })
   id!: string;
 
@@ -160,15 +170,26 @@ export class DetectionJobDto implements DetectionJob {
     description: 'Set once the job is finished',
   })
   usage!: DetectionUsageDto | null;
-
-  @ApiProperty({
-    nullable: true,
-    description: 'Set once the job is finished, discriminated by `outcome`',
-    oneOf: [
-      { $ref: getSchemaPath(CoveredResultDto) },
-      { $ref: getSchemaPath(ErrorResultDto) },
-    ],
-    discriminator: { propertyName: 'outcome' },
-  })
-  result!: DetectionResult | null;
 }
+
+// The models `DETECTION_JOB_SCHEMA` refers to, for `@ApiExtraModels`
+export const DETECTION_JOB_MODELS: (new () => object)[] = [
+  DetectionEnvelopeDto,
+  PendingResultDto,
+  CoveredResultDto,
+  ErrorResultDto,
+];
+
+/** A Detection job: the envelope plus the result union, discriminated on `outcome`. */
+export const DETECTION_JOB_SCHEMA: ApiResponseSchemaHost['schema'] = {
+  allOf: [
+    { $ref: getSchemaPath(DetectionEnvelopeDto) },
+    {
+      oneOf: [
+        { $ref: getSchemaPath(PendingResultDto) },
+        { $ref: getSchemaPath(CoveredResultDto) },
+        { $ref: getSchemaPath(ErrorResultDto) },
+      ],
+    },
+  ],
+};

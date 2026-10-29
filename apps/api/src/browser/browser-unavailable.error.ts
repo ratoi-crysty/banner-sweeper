@@ -1,4 +1,4 @@
-import { firstLine } from '../app/first-line';
+import { firstLine } from '../app/error-text';
 
 /** The Playwright browser server can't be reached, or dropped the connection. */
 export class BrowserUnavailableError extends Error {

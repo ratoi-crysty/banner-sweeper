@@ -59,8 +59,8 @@ export interface DetectionSummary {
   finishedAt: string | null;
 }
 
-/** A Detection job: its envelope, plus the result once it is finished. */
-export interface DetectionJob {
+/** A Detection job's own fields, whatever its outcome. */
+export interface DetectionEnvelope {
   id: string;
   url: string;
   site: string;
@@ -73,5 +73,13 @@ export interface DetectionJob {
   finishedAt: string | null;
   // Set once the job is finished
   usage: DetectionUsage | null;
-  result: DetectionResult | null;
 }
+
+/** A job that isn't finished has no outcome yet. */
+export interface PendingResult {
+  outcome: null;
+}
+
+/** A Detection job: its envelope plus the result union, discriminated on `outcome`. */
+export type DetectionJob = DetectionEnvelope &
+  (PendingResult | DetectionResult);

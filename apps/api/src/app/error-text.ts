@@ -5,3 +5,10 @@ export function firstLine(error: unknown): string {
 
   return message.split('\n')[0] ?? '';
 }
+
+/** The stack trace of an error, for logs only. */
+export function stackOf(error: unknown): string {
+  return error instanceof Error
+    ? (error.stack ?? error.message)
+    : String(error);
+}

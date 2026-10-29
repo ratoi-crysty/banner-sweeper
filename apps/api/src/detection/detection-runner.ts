@@ -5,6 +5,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { stackOf } from '../app/error-text';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
 import { DetectionFailure, describeFailure } from './detection-failure';
 import { DetectionJobEntity } from './detection-job.entity';
@@ -56,7 +57,7 @@ export class DetectionRunner {
     try {
       const stock: StockCheckResult = await this.stockCheck.run(job.url);
 
-      if (stock.coveredBy) {
+      if (stock.covered) {
         return {
           outcome: 'covered',
           coveredBy: stock.coveredBy,
@@ -65,7 +66,8 @@ export class DetectionRunner {
         };
       }
 
-      // Until the agent exists, a Site that isn't Covered has nowhere else to go
+      // Until the agent exists, a Site that isn't Covered has nowhere else to go. There's no fitting
+      // error kind for that, so it reports `internal` until the agent ticket replaces this branch.
       return {
         outcome: 'error',
         kind: 'internal',
@@ -75,7 +77,7 @@ export class DetectionRunner {
       const failure: DetectionFailure = describeFailure(error);
       this.logger.error(
         `Detection job ${job.id} failed (${failure.kind})`,
-        error instanceof Error ? error.stack : String(error),
+        stackOf(error),
       );
 
       return { outcome: 'error', ...failure };

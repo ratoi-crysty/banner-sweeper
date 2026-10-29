@@ -14,6 +14,7 @@ import {
 import {
   ApiAcceptedResponse,
   ApiBadRequestResponse,
+  ApiExtraModels,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
@@ -25,10 +26,15 @@ import { DetectionJobEntity } from './detection-job.entity';
 import { toDetectionJob, toDetectionSummary } from './detection-job.mapper';
 import { DetectionService } from './detection.service';
 import { CreateDetectionDto } from './dto/create-detection.dto';
-import { DetectionJobDto, DetectionSummaryDto } from './dto/detection-job.dto';
+import {
+  DETECTION_JOB_MODELS,
+  DETECTION_JOB_SCHEMA,
+  DetectionSummaryDto,
+} from './dto/detection-job.dto';
 
 // Detection jobs don't fit a CRUD controller: creating one queues work, and the job is read-only after
 @ApiTags('detections')
+@ApiExtraModels(...DETECTION_JOB_MODELS)
 @Controller('detections')
 export class DetectionController {
   constructor(private readonly detections: DetectionService) {}
@@ -56,9 +62,9 @@ export class DetectionController {
   @ApiOperation({
     summary: 'Get a Detection job',
     description:
-      'The job envelope, with `usage` and the result once it is finished.',
+      'The job envelope, plus `usage` and the result fields (discriminated on `outcome`) once it is finished.',
   })
-  @ApiOkResponse({ type: DetectionJobDto })
+  @ApiOkResponse({ schema: DETECTION_JOB_SCHEMA })
   @ApiNotFoundResponse({ description: 'No job with this id' })
   async findOne(
     @Param('id', new ParseUUIDPipe()) id: string,

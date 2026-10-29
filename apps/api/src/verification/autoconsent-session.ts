@@ -107,8 +107,11 @@ export class AutoconsentSession {
     match: MessageMatcher<T>,
     timeoutMs: number,
   ): Promise<ReceivedMessage<T> | null> {
-    const matches = (received: ReceivedMessage): boolean =>
-      match(received.message, received.frame);
+    // `match` is a type guard, so a message it accepted is a `T`; `find` and the waiter list can't
+    // carry that narrowing, hence the casts below
+    const matches: (received: ReceivedMessage) => boolean = (
+      received: ReceivedMessage,
+    ): boolean => match(received.message, received.frame);
     const found: ReceivedMessage | undefined = this.received.find(matches);
 
     if (found) {
@@ -142,6 +145,7 @@ export class AutoconsentSession {
   messagesOfType<T extends ContentScriptMessage['type']>(
     type: T,
   ): ReceivedMessage<Extract<ContentScriptMessage, { type: T }>>[] {
+    // Filtering on `type` narrows each message, which `filter` can't express without a guard
     return this.received.filter(
       (received: ReceivedMessage): boolean => received.message.type === type,
     ) as ReceivedMessage<Extract<ContentScriptMessage, { type: T }>>[];

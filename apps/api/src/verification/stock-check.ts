@@ -1,12 +1,19 @@
 import { VerificationReport } from '@banner-sweeper/api-interfaces';
 
-export interface StockCheckResult {
-  // The Rule that Declined the banner, `null` when the Site isn't Covered
-  coveredBy: string | null;
-  // Why the Site isn't Covered, `null` when it is
-  notCoveredReason: string | null;
+export interface CoveredStockCheck {
+  covered: true;
+  // The Rule that Declined the banner
+  coveredBy: string;
   report: VerificationReport;
 }
+
+export interface NotCoveredStockCheck {
+  covered: false;
+  notCoveredReason: string;
+  report: VerificationReport;
+}
+
+export type StockCheckResult = CoveredStockCheck | NotCoveredStockCheck;
 
 /**
  * Runs stock autoconsent (Bundled Rules plus Published Rules, the extension's exact config) on

@@ -9,6 +9,8 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 /**
  * A Detection job as stored: the envelope in columns, `usage` flattened into `usage*` columns,
  * and the result and trace as JSON text. `toDetectionJob` turns it into the API's `DetectionJob`.
+ * Unlike the usual entity, it doesn't implement the shared model or carry Swagger decorators: its
+ * storage shape differs from the API's, which `DetectionEnvelopeDto` documents.
  */
 @Entity('detection_jobs')
 export class DetectionJobEntity {

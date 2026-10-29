@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { VerificationReport } from '@banner-sweeper/api-interfaces';
 import {
   autoconsentConfig,
   compactRulesForFrame,
@@ -67,7 +68,7 @@ export class PlaywrightStockCheck extends StockCheck {
           },
         autoconsentBundle(),
       );
-      await open(page, url);
+      await openSite(page, url);
 
       const verdict: ExistingRulesVerdict = await checkExistingRules(session);
 
@@ -78,20 +79,24 @@ export class PlaywrightStockCheck extends StockCheck {
         );
       }
 
-      return {
-        coveredBy: verdict.coveredBy,
-        notCoveredReason: verdict.notCoveredReason,
-        report: {
-          checks: verdict.checks,
-          timings: {
-            totalMs: session.elapsedMs(),
-            detectedMs: verdict.detectedMs,
-            declinedMs: verdict.declinedMs,
-          },
-          messageLog: session.messageLog(),
-          popupFrameUrl: verdict.popupFrameUrl,
+      const report: VerificationReport = {
+        checks: verdict.checks,
+        timings: {
+          totalMs: session.elapsedMs(),
+          detectedMs: verdict.detectedMs,
+          declinedMs: verdict.declinedMs,
         },
+        messageLog: session.messageLog(),
+        popupFrameUrl: verdict.popupFrameUrl,
       };
+
+      return verdict.covered
+        ? { covered: true, coveredBy: verdict.coveredBy, report }
+        : {
+            covered: false,
+            notCoveredReason: verdict.notCoveredReason,
+            report,
+          };
     } finally {
       await context.close().catch((): void => undefined);
     }
@@ -112,7 +117,7 @@ function contentScriptFrame(
   };
 }
 
-async function open(page: Page, url: string): Promise<void> {
+async function openSite(page: Page, url: string): Promise<void> {
   try {
     // autoconsent starts with the document, so there's no need to wait for more than the commit
     await page.goto(url, {

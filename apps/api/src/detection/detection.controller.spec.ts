@@ -61,8 +61,8 @@ const REPORT: VerificationReport = {
 };
 
 const COVERED: StockCheckResult = {
+  covered: true,
   coveredBy: 'Onetrust',
-  notCoveredReason: null,
   report: REPORT,
 };
 
@@ -166,7 +166,7 @@ describe('Detection jobs over HTTP', () => {
       startedAt: expect.any(String),
       finishedAt: null,
       usage: null,
-      result: null,
+      outcome: null,
     });
     expect(stockCheck.runs.map((run: PendingRun): string => run.url)).toEqual([
       'https://www.example.org/news',
@@ -182,12 +182,10 @@ describe('Detection jobs over HTTP', () => {
       status: 'finished',
       phase: null,
       finishedAt: expect.any(String),
-      result: {
-        outcome: 'covered',
-        coveredBy: 'Onetrust',
-        report: REPORT,
-        via: 'stockCheck',
-      },
+      outcome: 'covered',
+      coveredBy: 'Onetrust',
+      report: REPORT,
+      via: 'stockCheck',
       usage: {
         turns: 0,
         inputTokens: 0,
@@ -204,8 +202,8 @@ describe('Detection jobs over HTTP', () => {
     await vi.waitFor((): void => expect(stockCheck.runs).toHaveLength(1));
 
     stockCheck.runs[0]?.resolve({
-      coveredBy: null,
-      notCoveredReason: 'cc_banner only hid the banner (cosmetic)',
+      covered: false,
+      notCoveredReason: 'cc_banner only hid the banner (a cosmetic Rule)',
       report: REPORT,
     });
     const finished: DetectionJob = await waitForJob(
@@ -213,11 +211,11 @@ describe('Detection jobs over HTTP', () => {
       (job: DetectionJob): boolean => job.status === 'finished',
     );
 
-    expect(finished.result).toEqual({
+    expect(finished).toMatchObject({
       outcome: 'error',
       kind: 'internal',
       message: expect.stringContaining(
-        'Not Covered: cc_banner only hid the banner (cosmetic)',
+        'Not Covered: cc_banner only hid the banner (a cosmetic Rule)',
       ),
     });
     expect(finished.usage).toMatchObject({ inputTokens: 0, outputTokens: 0 });
@@ -238,7 +236,7 @@ describe('Detection jobs over HTTP', () => {
       (job: DetectionJob): boolean => job.status === 'finished',
     );
 
-    expect(finished.result).toEqual({
+    expect(finished).toMatchObject({
       outcome: 'error',
       kind: 'siteUnreachable',
       message:

@@ -39,10 +39,12 @@ npx nx serve @banner-sweeper/api
 npx nx test @banner-sweeper/api
 ```
 
-The live tests in `src/detection/detections.live.spec.ts` drive real Sites from the test set (`test-set/`) through the browser server. They need the internet, and they are skipped unless `PLAYWRIGHT_HOST` is set:
+The live tests in `src/detection/detection.controller.live.spec.ts` drive real Sites from the test set (`test-set/`) through the browser server. They need the internet, and they are skipped unless `PLAYWRIGHT_HOST` is set:
 
 ```bash
 PLAYWRIGHT_HOST=ws://localhost:8080/ npx nx test @banner-sweeper/api
 ```
+
+The Covered Site comes from `test-set/screening/results.jsonl`, because `sites.json` only holds Sites that the Bundled Rules miss. The not-Covered Site is the cosmetic-only `shoprenter.hu` from `sites.json`.
 
 Sites change, so a live test that fails may mean the Site drifted rather than the code. Rescreen it with `test-set/screening/`.

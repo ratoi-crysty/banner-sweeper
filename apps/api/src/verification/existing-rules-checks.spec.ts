@@ -1,4 +1,8 @@
-import type { Config, ContentScriptMessage } from '@duckduckgo/autoconsent';
+import type {
+  Config,
+  ContentScriptMessage,
+  RuleBundle,
+} from '@duckduckgo/autoconsent';
 import { AutoconsentSession, ContentScriptFrame } from './autoconsent-session';
 import {
   ExistingRulesVerdict,
@@ -26,7 +30,7 @@ describe('checkExistingRules', () => {
     vi.useFakeTimers({ now: 0 });
     session = new AutoconsentSession({
       config: {} as Config,
-      rulesForFrame: () => ({ autoconsent: [] }),
+      rulesForFrame: (): RuleBundle => ({ autoconsent: [] }),
     });
   });
 
@@ -43,7 +47,7 @@ describe('checkExistingRules', () => {
     await session.receive(message, frame);
   }
 
-  it('is Covered when a Rule finds the popup and Declines it', async () => {
+  it('is Covered when a Rule finds the banner and Declines it', async () => {
     const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
 
     await receiveAt(0, { type: 'init', url: URL_CMP }, CMP_FRAME);
@@ -82,15 +86,15 @@ describe('checkExistingRules', () => {
     );
 
     expect(await verdict).toEqual({
+      covered: true,
       coveredBy: 'Sourcepoint-frame',
-      notCoveredReason: null,
       popupFrameUrl: URL_CMP,
       detectedMs: 1500,
       declinedMs: 3900,
       checks: {
         detected: {
           status: 'passed',
-          reason: 'Sourcepoint-frame found the popup',
+          reason: 'Sourcepoint-frame found the banner',
         },
         declined: {
           status: 'passed',
@@ -126,7 +130,7 @@ describe('checkExistingRules', () => {
     });
 
     expect(await verdict).toMatchObject({
-      coveredBy: null,
+      covered: false,
       notCoveredReason: 'cc_banner only hid the banner (a cosmetic Rule)',
       checks: {
         detected: { status: 'passed' },
@@ -155,7 +159,7 @@ describe('checkExistingRules', () => {
     });
 
     expect(await verdict).toMatchObject({
-      coveredBy: null,
+      covered: false,
       notCoveredReason: "Onetrust's opt-out failed",
       checks: {
         declined: { status: 'failed', reason: "Onetrust's opt-out failed" },
@@ -163,7 +167,7 @@ describe('checkExistingRules', () => {
     });
   });
 
-  it('gives up when no popup is found within 25 s', async () => {
+  it('gives up when no banner is found within 25 s', async () => {
     const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
     let settled = false;
     void verdict.then((): void => {
@@ -176,18 +180,17 @@ describe('checkExistingRules', () => {
     await vi.advanceTimersByTimeAsync(1);
 
     expect(await verdict).toEqual({
-      coveredBy: null,
-      notCoveredReason:
-        'didomi was detected, but no popup was found within 25 s',
+      covered: false,
+      notCoveredReason: 'didomi was detected, but found no banner within 25 s',
       popupFrameUrl: null,
       detectedMs: null,
       declinedMs: null,
       checks: {
         detected: {
           status: 'failed',
-          reason: 'didomi was detected, but no popup was found within 25 s',
+          reason: 'didomi was detected, but found no banner within 25 s',
         },
-        declined: { status: 'skipped', reason: 'No popup to Decline' },
+        declined: { status: 'skipped', reason: 'No banner to Decline' },
       },
     });
   });
@@ -197,12 +200,13 @@ describe('checkExistingRules', () => {
 
     await vi.advanceTimersByTimeAsync(25_000);
 
-    expect((await verdict).notCoveredReason).toBe(
-      'No Rule detected a popup within 25 s',
-    );
+    expect(await verdict).toMatchObject({
+      covered: false,
+      notCoveredReason: 'No Rule found a banner within 25 s',
+    });
   });
 
-  it('gives up when the Rule does not finish within 45 s of finding the popup', async () => {
+  it('gives up when the Rule does not finish within 45 s of finding the banner', async () => {
     const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
 
     await receiveAt(2000, {
@@ -220,14 +224,14 @@ describe('checkExistingRules', () => {
     await vi.advanceTimersByTimeAsync(45_000);
 
     expect(await verdict).toMatchObject({
-      coveredBy: null,
+      covered: false,
       notCoveredReason: "Onetrust didn't finish within 45 s",
       detectedMs: 2000,
       declinedMs: null,
     });
   });
 
-  it('only counts the frame the popup was found in', async () => {
+  it('only counts the frame the banner was found in', async () => {
     const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
 
     await receiveAt(1000, {
@@ -260,6 +264,6 @@ describe('checkExistingRules', () => {
     );
     await vi.advanceTimersByTimeAsync(45_000);
 
-    expect((await verdict).coveredBy).toBeNull();
+    expect((await verdict).covered).toBe(false);
   });
 });

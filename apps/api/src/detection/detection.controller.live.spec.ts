@@ -73,7 +73,7 @@ describe.skipIf(!PLAYWRIGHT_HOST)('Stock check on live Sites', () => {
     async () => {
       const job: DetectionJob = await detect(COVERED_SITE);
 
-      expect(job.result).toMatchObject({
+      expect(job).toMatchObject({
         outcome: 'covered',
         coveredBy: 'Cybotcookiebot',
         via: 'stockCheck',
@@ -94,7 +94,7 @@ describe.skipIf(!PLAYWRIGHT_HOST)('Stock check on live Sites', () => {
     async () => {
       const job: DetectionJob = await detect(COSMETIC_ONLY_SITE);
 
-      expect(job.result).toMatchObject({
+      expect(job).toMatchObject({
         outcome: 'error',
         kind: 'internal',
         message: expect.stringContaining('cc_banner only hid the banner'),
