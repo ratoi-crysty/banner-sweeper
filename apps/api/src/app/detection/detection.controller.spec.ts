@@ -9,8 +9,8 @@ import {
   DetectionSummary,
   VerificationReport,
 } from '@banner-sweeper/api-interfaces';
-import { apiConfig } from '../api-config';
-import type { ApiConfig } from '../api-config';
+import { apiConfig } from '../../config/api.config';
+import type { ApiConfig } from '../../config/api.config';
 import { AppModule } from '../app.module';
 import { configureApp } from '../configure-app';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';

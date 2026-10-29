@@ -4,9 +4,9 @@ import {
   Logger,
   OnApplicationShutdown,
 } from '@nestjs/common';
-import { apiConfig } from '../api-config';
+import { apiConfig } from '../../config/api.config';
 import { stackOf } from '../error-text';
-import type { ApiConfig } from '../api-config';
+import type { ApiConfig } from '../../config/api.config';
 import { DetectionRunner } from './detection-runner';
 
 /** An in-memory FIFO of job ids, run `detectionConcurrency` at a time. */

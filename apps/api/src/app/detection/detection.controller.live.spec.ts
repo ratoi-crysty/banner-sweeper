@@ -5,8 +5,8 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { DetectionJob, DetectionSummary } from '@banner-sweeper/api-interfaces';
-import { apiConfig } from '../api-config';
-import type { ApiConfig } from '../api-config';
+import { apiConfig } from '../../config/api.config';
+import type { ApiConfig } from '../../config/api.config';
 import { AppModule } from '../app.module';
 import { configureApp } from '../configure-app';
 

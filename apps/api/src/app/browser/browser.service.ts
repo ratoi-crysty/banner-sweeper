@@ -1,7 +1,7 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { Browser, BrowserContext, chromium } from 'playwright-core';
-import { apiConfig } from '../api-config';
-import type { ApiConfig } from '../api-config';
+import { apiConfig } from '../../config/api.config';
+import type { ApiConfig } from '../../config/api.config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
 import { contextOptions } from './context-options';
 

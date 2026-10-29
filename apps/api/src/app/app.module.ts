@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { apiConfig } from './api-config';
+import { apiConfig } from '../config/api.config';
 import { DatabaseModule } from './database/database.module';
 import { DetectionModule } from './detection/detection.module';
 
