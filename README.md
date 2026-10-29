@@ -7,13 +7,14 @@ A browser extension, backed by a closed-membership service, that declines consen
 
 ## Repository layout
 
-| Project                              | Path                      | What it is                                                                                          |
-| ------------------------------------ | ------------------------- | --------------------------------------------------------------------------------------------------- |
-| `@banner-sweeper/extension`          | `apps/extension`          | Chrome MV3 extension (React + Vite + CRXJS)                                                         |
-| `@banner-sweeper/api`                | `apps/api`                | NestJS API                                                                                          |
-| `@banner-sweeper/web`                | `apps/web`                | Admin panel (React + Vite)                                                                          |
-| `@banner-sweeper/api-interfaces`     | `libs/api-interfaces`     | Shared types, including the Rule protocol                                                           |
-| `@banner-sweeper/autoconsent-config` | `libs/autoconsent-config` | The extension's autoconsent config and per-frame Bundled Rules, shared with Detection's stock check |
+| Project                              | Path                      | What it is                                                                                                    |
+| ------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `@banner-sweeper/extension`          | `apps/extension`          | Chrome MV3 extension (React + Vite + CRXJS)                                                                   |
+| `@banner-sweeper/api`                | `apps/api`                | NestJS API                                                                                                    |
+| `@banner-sweeper/web`                | `apps/web`                | Admin panel (React + Vite)                                                                                    |
+| `@banner-sweeper/api-interfaces`     | `libs/api-interfaces`     | Shared types, including the Rule protocol                                                                     |
+| `@banner-sweeper/autoconsent-config` | `libs/autoconsent-config` | The extension's autoconsent config and per-frame Bundled Rules, shared with Detection's stock check           |
+| `@banner-sweeper/llm-backend`        | `libs/llm-backend`        | The neutral types on the seam between Detection and an LLM (`DetectionBackend`, tools, turn events, outcomes) |
 
 ## Extension
 
@@ -77,12 +78,25 @@ npx nx g @nx/vitest:configuration --project=<project> --testEnvironment=node
 
 For a NestJS project, also set `experimentalDecorators` and `emitDecoratorMetadata` in its `tsconfig.spec.json`, as `apps/api` does. Without them Nest's dependency injection resolves constructor parameters as `undefined`.
 
+## LLM backends
+
+Detection talks to an LLM through a `DetectionBackend` (ADR-0009). The backends are named in the checked-in [`apps/api/config/llm-backends.json`](./apps/api/config/llm-backends.json), which holds no secrets and is validated when the API boots. `DETECTION_BACKEND=<id>` picks one; the default is `claude-opus` (`claude-opus-5-5` at effort `medium`).
+
+A Claude backend finds its credentials the way the Anthropic SDK does (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, or an `ant auth login` profile), unless its entry names another env var in `apiKeyEnv`.
+
+One test runs a toy tool loop against the real API. It is skipped unless you opt in, because it costs money:
+
+```sh
+LIVE_LLM_TEST=1 npx nx test @banner-sweeper/api -- claude-backend.live
+```
+
 ## Pinned dependencies
 
-| Package                   | Pin               | Why                                                                                                                                                                                                                     |
-| ------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `playwright-core`         | `~1.64.1`         | Detection drives the `mcr.microsoft.com/playwright:v1.64.1-noble` browser through `chromium.connect()`, which refuses a server whose major.minor differs from the client's. Upgrade the package and the image together. |
-| `@duckduckgo/autoconsent` | `16.60.0` (exact) | Detection depends on its rule format, its Bundled Rules and its injected bundle. On every upgrade, recheck the 11 CMP names Detection puts in `disabledCmps` for candidate runs, and the generated rule schema.         |
+| Package                   | Pin               | Why                                                                                                                                                                                                                                         |
+| ------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `playwright-core`         | `~1.64.1`         | Detection drives the `mcr.microsoft.com/playwright:v1.64.1-noble` browser through `chromium.connect()`, which refuses a server whose major.minor differs from the client's. Upgrade the package and the image together.                     |
+| `@duckduckgo/autoconsent` | `16.60.0` (exact) | Detection depends on its rule format, its Bundled Rules and its injected bundle. On every upgrade, recheck the 11 CMP names Detection puts in `disabledCmps` for candidate runs, and the generated rule schema.                             |
+| `@anthropic-ai/sdk`       | `1.3.0` (exact)   | The LLM backends run on its beta Tool Runner and rely on how it runs a turn's tool calls (all at once, in the model's order: `SequentialTools` turns that into one at a time). On every upgrade, rerun the backend tests and the live test. |
 
 ## Nx workspace
 

@@ -2,6 +2,9 @@
   "name": "@banner-sweeper/api",
   "version": "0.0.1",
   "private": true,
+  "dependencies": {
+    "@banner-sweeper/llm-backend": "workspace:*"
+  },
   "nx": {
     "targets": {
       "prune-lockfile": {
