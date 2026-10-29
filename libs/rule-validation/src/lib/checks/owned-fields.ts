@@ -41,17 +41,13 @@ export function ownedFieldProblems(
       message: `must be ${version}, the rule step version the Steps used need`,
     });
   }
-  if (rule._metadata !== undefined) {
-    problems.push({
-      path: '$._metadata',
-      message: 'is not allowed: our code owns Rule metadata',
-    });
-  }
-  if (rule.vendorUrl !== undefined) {
-    problems.push({
-      path: '$.vendorUrl',
-      message: 'is not allowed: our code owns Rule metadata',
-    });
+  for (const field of ['_metadata', 'vendorUrl'] as const) {
+    if (rule[field] !== undefined) {
+      problems.push({
+        path: `$.${field}`,
+        message: 'is not allowed: our code owns Rule metadata',
+      });
+    }
   }
   return problems;
 }

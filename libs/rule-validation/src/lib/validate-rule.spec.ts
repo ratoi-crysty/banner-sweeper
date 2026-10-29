@@ -260,6 +260,25 @@ describe('validateRule', () => {
       ).toEqual(['$.optOut[0]']);
     });
 
+    // autoconsent skips these actions when their value is falsy, leaving an "Unrecognized rule"
+    it.each<[string, AutoConsentRuleStep]>([
+      ['wait', { wait: 0 }],
+      ['click', { click: '' }],
+      ['hide', { hide: '' }],
+      ['cookieContains', { cookieContains: '' }],
+    ])('rejects an empty %s', (action, step) => {
+      expect(problemPaths(withOptOut(step))).toEqual([`$.optOut[0].${action}`]);
+    });
+
+    it('allows an empty setStyle, which clears the inline style', () => {
+      expect(
+        problemPaths({
+          ...withOptOut({ setStyle: '', selector: 'body' }),
+          minimumRuleStepVersion: 2,
+        }),
+      ).toEqual([]);
+    });
+
     it('allows optional, comment and negated on any Step', () => {
       expect(
         problemPaths(

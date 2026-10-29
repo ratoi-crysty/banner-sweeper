@@ -1,4 +1,5 @@
 import { RuleContext } from './rule-context.js';
+import { ACTION_STEP_VERSIONS } from './step-actions.js';
 import { stepsOf, VisitedStep } from './steps.js';
 
 /** The Rule fields our code sets, never the LLM. */
@@ -6,14 +7,6 @@ export interface OwnedRuleFields {
   name: string;
   minimumRuleStepVersion: number;
 }
-
-// The autoconsent rule step version each newer action needs; every other action is version 1
-const ACTION_STEP_VERSIONS: Readonly<Record<string, number>> = {
-  removeClass: 2,
-  setStyle: 2,
-  addStyle: 2,
-  stylesheet: 3,
-};
 
 export function ruleName(context: RuleContext): string {
   return `bs_${new URL(context.url).hostname.toLowerCase()}`;

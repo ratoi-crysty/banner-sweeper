@@ -42,7 +42,7 @@ function rulesTypesPath(): string {
   return path.join(path.dirname(bundle), 'types/rules.d.ts');
 }
 
-function ruleSchema(): Schema {
+function generateRuleSchema(): Schema {
   return createGenerator({
     path: rulesTypesPath(),
     type: RULE_TYPE,
@@ -71,7 +71,7 @@ function dropProperties(schema: Schema, names: string[]): void {
  * The schema offered to the LLM as a non-strict tool `input_schema`: an object at the root,
  * without the fields our code owns or Validation rejects, and with `optIn` fixed to `[]`.
  */
-function llmRuleSchema(schema: Schema): Schema {
+function toLlmRuleSchema(schema: Schema): Schema {
   const definitions: Definitions = structuredClone(schema.definitions ?? {});
   const rule: Schema = objectDefinition(definitions, RULE_TYPE);
 
@@ -109,12 +109,12 @@ async function isUpToDate(file: SchemaFile): Promise<boolean> {
 }
 
 async function main(): Promise<void> {
-  const schema: Schema = ruleSchema();
+  const schema: Schema = generateRuleSchema();
   const files: SchemaFile[] = [
     { path: path.join(SCHEMA_DIR, 'rule.schema.json'), schema },
     {
       path: path.join(SCHEMA_DIR, 'llm-rule.schema.json'),
-      schema: llmRuleSchema(schema),
+      schema: toLlmRuleSchema(schema),
     },
   ];
 
@@ -136,7 +136,7 @@ async function main(): Promise<void> {
       console.error(`Schema drift: ${path.relative(process.cwd(), file.path)}`);
     }
     console.error(
-      "The installed autoconsent's rule types changed. Run `nx run @banner-sweeper/rule-validation:generate-schemas`, review the diff, and recheck Validation and the hard-coded CMP names.",
+      "The installed autoconsent's rule types changed. Run `nx run @banner-sweeper/rule-validation:generate-schemas`, review the diff, and recheck src/lib/step-actions.ts and the hard-coded CMP names.",
     );
     process.exitCode = 1;
   }

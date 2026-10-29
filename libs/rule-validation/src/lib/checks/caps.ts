@@ -1,5 +1,6 @@
 import { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { RuleProblem } from '../rule-problem.js';
+import { SELECTOR_FIELDS } from '../step-actions.js';
 import { isJsonObject, JsonObject, stepsOf, VisitedStep } from '../steps.js';
 
 // Starting values, to be tuned against the test set
@@ -21,18 +22,6 @@ const NUMBER_CAPS: readonly NumberCap[] = [
   { field: 'wait', max: MAX_WAIT_MS, unit: ' ms' },
   { field: 'timeout', max: MAX_TIMEOUT_MS, unit: ' ms' },
   { field: 'retry', max: MAX_RETRY, unit: '' },
-];
-
-// Step fields holding an element selector, a string or an array that pierces shadow roots and iframes
-const SELECTOR_FIELDS: readonly string[] = [
-  'exists',
-  'visible',
-  'waitFor',
-  'waitForVisible',
-  'click',
-  'waitForThenClick',
-  'selector',
-  'hide',
 ];
 
 function selectorProblems(selector: unknown, path: string): RuleProblem[] {

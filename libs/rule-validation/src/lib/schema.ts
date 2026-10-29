@@ -2,6 +2,7 @@ import { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { Ajv, ErrorObject, ValidateFunction } from 'ajv';
 import generatedLlmRuleSchema from './schema/llm-rule.schema.json' with { type: 'json' };
 import generatedRuleSchema from './schema/rule.schema.json' with { type: 'json' };
+import { EVAL_NOT_ALLOWED } from './checks/rejected-features.js';
 import { RuleProblem } from './rule-problem.js';
 
 export interface JsonSchema {
@@ -48,7 +49,7 @@ function schemaProblem(error: ErrorObject): RuleProblem {
   }
   // Every `eval` is rejected, so don't send the LLM looking for a bundled snippet
   if (error.instancePath.endsWith('/eval')) {
-    return { path, message: 'is not allowed: a Rule never runs code' };
+    return { path, message: EVAL_NOT_ALLOWED };
   }
   if (error.schemaPath.endsWith('/ElementSelector/anyOf')) {
     return {

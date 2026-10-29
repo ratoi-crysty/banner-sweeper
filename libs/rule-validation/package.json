@@ -22,7 +22,7 @@
           "cwd": "{projectRoot}"
         }
       },
-      "schema-check": {
+      "schema-drift": {
         "command": "node scripts/generate-schemas.mts --check",
         "options": {
           "cwd": "{projectRoot}"

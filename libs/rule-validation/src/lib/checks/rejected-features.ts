@@ -2,6 +2,8 @@ import { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { RuleProblem } from '../rule-problem.js';
 import { stepsOf } from '../steps.js';
 
+export const EVAL_NOT_ALLOWED = 'is not allowed: a Rule never runs code';
+
 /** Features autoconsent supports that our Rules may never use. */
 export function rejectedFeatureProblems(
   rule: AutoConsentCMPRule,
@@ -44,7 +46,7 @@ export function rejectedFeatureProblems(
     if (step['eval'] !== undefined) {
       problems.push({
         path: `${path}.eval`,
-        message: 'is not allowed: a Rule never runs code',
+        message: EVAL_NOT_ALLOWED,
       });
     }
   }

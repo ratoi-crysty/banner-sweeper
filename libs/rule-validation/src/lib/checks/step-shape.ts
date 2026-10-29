@@ -1,44 +1,15 @@
 import { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { RuleProblem } from '../rule-problem.js';
+import {
+  ACTIONS,
+  MODIFIER_ACTIONS,
+  PRESENCE_TESTED_ACTIONS,
+} from '../step-actions.js';
 import { isJsonObject, JsonObject, stepsOf, VisitedStep } from '../steps.js';
-
-// `eval` counts as an action here; it is rejected on its own as a rejected feature
-const ACTIONS: readonly string[] = [
-  'exists',
-  'visible',
-  'eval',
-  'waitFor',
-  'waitForVisible',
-  'click',
-  'waitForThenClick',
-  'wait',
-  'hide',
-  'cookieContains',
-  'if',
-  'any',
-  'removeClass',
-  'setStyle',
-  'addStyle',
-  'stylesheet',
-];
 
 const OFFERED_ACTIONS: readonly string[] = ACTIONS.filter(
   (action: string): boolean => action !== 'eval',
 );
-
-// Each modifier and the actions it belongs to; `optional`, `comment` and `negated` go on any Step
-const MODIFIER_ACTIONS: Readonly<Record<string, readonly string[]>> = {
-  timeout: ['waitFor', 'waitForVisible', 'waitForThenClick'],
-  all: ['click', 'waitForThenClick'],
-  check: ['visible', 'waitForVisible'],
-  method: ['hide'],
-  retry: ['waitForThenClick'],
-  retryInterval: ['waitForThenClick'],
-  then: ['if'],
-  else: ['if'],
-  selector: ['removeClass', 'setStyle', 'addStyle'],
-  stylesheetId: ['stylesheet'],
-};
 
 const SELECTOR_ACTIONS: readonly string[] = MODIFIER_ACTIONS['selector'] ?? [];
 
@@ -80,6 +51,12 @@ function actionProblems(
   action: string,
 ): RuleProblem[] {
   const problems: RuleProblem[] = [];
+  if (!PRESENCE_TESTED_ACTIONS.includes(action) && !step[action]) {
+    problems.push({
+      path: `${path}.${action}`,
+      message: 'is empty, so autoconsent ignores the Step',
+    });
+  }
   for (const [modifier, actions] of Object.entries(MODIFIER_ACTIONS)) {
     if (step[modifier] !== undefined && !actions.includes(action)) {
       problems.push({
