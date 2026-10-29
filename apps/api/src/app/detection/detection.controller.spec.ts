@@ -9,9 +9,9 @@ import {
   DetectionSummary,
   VerificationReport,
 } from '@banner-sweeper/api-interfaces';
-import { API_CONFIG, ApiConfig } from '../app/api-config';
-import { AppModule } from '../app/app.module';
-import { configureApp } from '../app/configure-app';
+import { API_CONFIG, ApiConfig } from '../api-config';
+import { AppModule } from '../app.module';
+import { configureApp } from '../configure-app';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
 

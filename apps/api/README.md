@@ -39,7 +39,7 @@ npx nx serve @banner-sweeper/api
 npx nx test @banner-sweeper/api
 ```
 
-The live tests in `src/detection/detection.controller.live.spec.ts` drive real Sites from the test set (`test-set/`) through the browser server. They need the internet, and they are skipped unless `PLAYWRIGHT_HOST` is set:
+The live tests in `src/app/detection/detection.controller.live.spec.ts` drive real Sites from the test set (`test-set/`) through the browser server. They need the internet, and they are skipped unless `PLAYWRIGHT_HOST` is set:
 
 ```bash
 PLAYWRIGHT_HOST=ws://localhost:8080/ npx nx test @banner-sweeper/api

@@ -21,7 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { GLOBAL_PREFIX } from '../app/configure-app';
+import { GLOBAL_PREFIX } from '../configure-app';
 import { DetectionJobEntity } from './detection-job.entity';
 import { toDetectionJob, toDetectionSummary } from './detection-job.mapper';
 import { DetectionService } from './detection.service';

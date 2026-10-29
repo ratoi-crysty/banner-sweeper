@@ -1,5 +1,5 @@
 import { ErrorResult } from '@banner-sweeper/api-interfaces';
-import { firstLine } from '../app/error-text';
+import { firstLine } from '../error-text';
 import { BrowserUnavailableError } from '../browser/browser-unavailable.error';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';
 

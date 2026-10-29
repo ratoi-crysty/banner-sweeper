@@ -5,7 +5,7 @@ import {
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { stackOf } from '../app/error-text';
+import { stackOf } from '../error-text';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
 import { DetectionFailure, describeFailure } from './detection-failure';
 import { DetectionJobEntity } from './detection-job.entity';

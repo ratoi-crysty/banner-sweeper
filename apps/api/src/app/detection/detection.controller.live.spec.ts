@@ -5,10 +5,10 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { DetectionJob, DetectionSummary } from '@banner-sweeper/api-interfaces';
-import { API_CONFIG } from '../app/api-config';
-import type { ApiConfig } from '../app/api-config';
-import { AppModule } from '../app/app.module';
-import { configureApp } from '../app/configure-app';
+import { API_CONFIG } from '../api-config';
+import type { ApiConfig } from '../api-config';
+import { AppModule } from '../app.module';
+import { configureApp } from '../configure-app';
 
 // Needs a Playwright 1.64 browser server and the internet; see apps/api/README.md
 const PLAYWRIGHT_HOST: string | undefined = process.env['PLAYWRIGHT_HOST'];
