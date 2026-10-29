@@ -25,7 +25,7 @@ When you upgrade `playwright-core`, upgrade this image to the same version.
 | `DETECTION_CONCURRENCY` | `1`                        | How many Detection jobs run at once                                                |
 | `PORT`                  | `3000`                     | The HTTP port                                                                      |
 
-`apps/api/data/` is gitignored.
+`apps/api/data/` is gitignored. The variables can also go in a `.env` file in the directory you start the API from (the repository root for `nx serve`); `.env` is gitignored, and real environment variables win over it.
 
 ## Running
 

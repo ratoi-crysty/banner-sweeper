@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import request, { Response } from 'supertest';
 import { DetectionJob, DetectionSummary } from '@banner-sweeper/api-interfaces';
-import { API_CONFIG } from '../api-config';
+import { apiConfig } from '../api-config';
 import type { ApiConfig } from '../api-config';
 import { AppModule } from '../app.module';
 import { configureApp } from '../configure-app';
@@ -34,7 +34,7 @@ describe.skipIf(!PLAYWRIGHT_HOST)('Stock check on live Sites', () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(API_CONFIG)
+      .overrideProvider(apiConfig.KEY)
       .useValue(config)
       .compile();
     app = moduleRef.createNestApplication({ logger: ['error', 'warn'] });

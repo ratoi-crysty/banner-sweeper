@@ -4,7 +4,7 @@ import {
   Logger,
   OnApplicationShutdown,
 } from '@nestjs/common';
-import { API_CONFIG } from '../api-config';
+import { apiConfig } from '../api-config';
 import { stackOf } from '../error-text';
 import type { ApiConfig } from '../api-config';
 import { DetectionRunner } from './detection-runner';
@@ -17,7 +17,7 @@ export class DetectionQueue implements OnApplicationShutdown {
   private readonly running: Set<Promise<void>> = new Set<Promise<void>>();
 
   constructor(
-    @Inject(API_CONFIG) private readonly config: ApiConfig,
+    @Inject(apiConfig.KEY) private readonly config: ApiConfig,
     private readonly runner: DetectionRunner,
   ) {}
 

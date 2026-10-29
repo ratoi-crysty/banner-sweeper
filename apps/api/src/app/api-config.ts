@@ -1,6 +1,9 @@
 import { join } from 'node:path';
-
-export const API_CONFIG: unique symbol = Symbol('API_CONFIG');
+import {
+  ConfigFactory,
+  ConfigFactoryKeyHost,
+  registerAs,
+} from '@nestjs/config';
 
 export interface ApiConfig {
   // WebSocket endpoint of the Playwright browser server
@@ -13,6 +16,13 @@ export interface ApiConfig {
 const DEFAULT_PLAYWRIGHT_HOST = 'ws://localhost:8080/';
 const DEFAULT_DATABASE_PATH: string = join('apps', 'api', 'data', 'api.sqlite');
 const DEFAULT_DETECTION_CONCURRENCY = 1;
+
+// Inject with `@Inject(apiConfig.KEY)`; ConfigModule.forRoot loads `.env` into process.env first
+export const apiConfig: ConfigFactory<ApiConfig> &
+  ConfigFactoryKeyHost<ApiConfig> = registerAs(
+  'api',
+  (): ApiConfig => apiConfigFromEnv(process.env),
+);
 
 export function apiConfigFromEnv(env: NodeJS.ProcessEnv): ApiConfig {
   return {

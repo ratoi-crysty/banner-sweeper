@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { Browser, BrowserContext, chromium } from 'playwright-core';
-import { API_CONFIG } from '../api-config';
+import { apiConfig } from '../api-config';
 import type { ApiConfig } from '../api-config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
 import { contextOptions } from './context-options';
@@ -15,7 +15,7 @@ const CONNECT_TIMEOUT_MS = 30_000;
 export class BrowserService implements OnApplicationShutdown {
   private browser: Promise<Browser> | null = null;
 
-  constructor(@Inject(API_CONFIG) private readonly config: ApiConfig) {}
+  constructor(@Inject(apiConfig.KEY) private readonly config: ApiConfig) {}
 
   async newContext(): Promise<BrowserContext> {
     const browser: Browser = await this.connect();

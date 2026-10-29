@@ -9,7 +9,8 @@ import {
   DetectionSummary,
   VerificationReport,
 } from '@banner-sweeper/api-interfaces';
-import { API_CONFIG, ApiConfig } from '../api-config';
+import { apiConfig } from '../api-config';
+import type { ApiConfig } from '../api-config';
 import { AppModule } from '../app.module';
 import { configureApp } from '../configure-app';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';
@@ -82,7 +83,7 @@ describe('Detection jobs over HTTP', () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(API_CONFIG)
+      .overrideProvider(apiConfig.KEY)
       .useValue(config)
       .overrideProvider(StockCheck)
       .useValue(stockCheck)
