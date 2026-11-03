@@ -4,8 +4,8 @@
  *
  * A TypeScript port of `playwright/isolated-world.mjs` from @duckduckgo/autoconsent 16.60.0
  * (https://github.com/duckduckgo/autoconsent), Copyright DuckDuckGo, Inc., MPL-2.0. Changes from
- * upstream: typed against playwright-core, and the message handler receives the parsed message as
- * `unknown`.
+ * upstream: typed against playwright-core, the message handler receives the parsed message as
+ * `unknown`, and the unused `extraScript` parameter is gone.
  */
 import type { CDPSession, Frame, Page } from 'playwright-core';
 
@@ -68,18 +68,28 @@ const WORLD_SEPARATOR = '_frame_';
 const BINDING_PREFIX = 'autoconsentSendMessage_';
 
 /**
- * Isolated-world injection via CDP (Chromium only). For each frame we create a dedicated isolated
- * world via `Page.createIsolatedWorld`, then inject the content script there and bridge messages
- * over a per-context CDP binding.
+ * Runs `contentScript` in an isolated world of every document the page loads, the way Chrome runs
+ * an extension's content script (Chromium only, over CDP), and bridges its messages to a handler.
+ * Each document of each frame, cross-origin iframes included, gets its own world and its own copy
+ * of the script, so a frame that navigates starts again.
  *
- * @param contentScript The autoconsent content script bundle.
- * @param extraScript Runs in each isolated world after the content script.
+ * Call it before navigating, so the first document is covered. It keeps watching until the page
+ * closes; there is nothing to detach.
+ *
+ * @param page The page to watch.
+ * @param createMessageHandler Called once, before anything is injected, with the transport for
+ *   replying to a frame. The handler it returns gets every message as parsed JSON (`unknown`) with
+ *   the sending world's `frameRef`, and must be ready at once: messages can arrive before this
+ *   function resolves.
+ * @param contentScript The autoconsent content script bundle, evaluated in each isolated world once
+ *   `window.autoconsentSendMessage` is defined.
+ * @returns Resolves once the page and its current frames are being watched, not when any script
+ *   has run.
  */
 export async function injectIntoIsolatedWorld(
   page: Page,
   createMessageHandler: MessageHandlerFactory,
   contentScript: string,
-  extraScript = '',
 ): Promise<void> {
   // isolated-world uniqueId -> page (main) world uniqueId
   const isolated2pageWorld: Map<string, string> = new Map<string, string>();
@@ -187,7 +197,7 @@ export async function injectIntoIsolatedWorld(
             });
             // CDP bindings take a single string arg, so wrap it in the shape the content script expects.
             await client.send('Runtime.evaluate', {
-              expression: `window.autoconsentSendMessage = (m) => { window.${bindingName}(JSON.stringify(m)); return Promise.resolve(); };\n${contentScript}\n${extraScript}`,
+              expression: `window.autoconsentSendMessage = (m) => { window.${bindingName}(JSON.stringify(m)); return Promise.resolve(); };\n${contentScript}`,
               uniqueContextId: context.uniqueId,
               allowUnsafeEvalBlockedByCSP: true,
             });
