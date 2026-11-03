@@ -1,4 +1,7 @@
-import type { VerificationChecks } from '@banner-sweeper/api-interfaces';
+import type {
+  VerificationChecks,
+  VerificationReport,
+} from '@banner-sweeper/api-interfaces';
 import type {
   ContentScriptMessage,
   DetectedMessage,
@@ -12,32 +15,21 @@ import {
   MessageMatcher,
   ReceivedMessage,
 } from './autoconsent-session';
+import type { StockCheckResult } from './stock-check';
 
 // How long a Rule gets to find the banner, from the start of the run
 export const DETECT_TIMEOUT_MS = 25_000;
 // How long the Rule gets to opt out and finish, from finding the banner
 export const DECLINE_TIMEOUT_MS = 45_000;
 
-interface VerdictEvidence {
+// What the checks found, before it's put into a Verification Report
+interface Evidence {
   checks: VerificationChecks;
   // autoconsent's word for the frame the banner was found in
   popupFrameUrl: string | null;
   detectedMs: number | null;
   declinedMs: number | null;
 }
-
-export interface CoveredVerdict extends VerdictEvidence {
-  covered: true;
-  // The Rule that Declined the banner
-  coveredBy: string;
-}
-
-export interface NotCoveredVerdict extends VerdictEvidence {
-  covered: false;
-  notCoveredReason: string;
-}
-
-export type ExistingRulesVerdict = CoveredVerdict | NotCoveredVerdict;
 
 /**
  * Judges a run of the existing Rules (Bundled plus Published): Covered when one of them finds the
@@ -46,7 +38,7 @@ export type ExistingRulesVerdict = CoveredVerdict | NotCoveredVerdict;
  */
 export async function checkExistingRules(
   session: AutoconsentSession,
-): Promise<ExistingRulesVerdict> {
+): Promise<StockCheckResult> {
   const found: ReceivedMessage<FoundMessage> | null = await session.waitFor(
     (message: ContentScriptMessage): message is FoundMessage =>
       message.type === 'popupFound',
@@ -59,19 +51,21 @@ export async function checkExistingRules(
     return {
       covered: false,
       notCoveredReason: reason,
-      checks: {
-        detected: { status: 'failed', reason },
-        declined: { status: 'skipped', reason: 'No banner to Decline' },
-      },
-      popupFrameUrl: null,
-      detectedMs: null,
-      declinedMs: null,
+      report: verificationReport(session, {
+        checks: {
+          detected: { status: 'failed', reason },
+          declined: { status: 'skipped', reason: 'No banner to Decline' },
+        },
+        popupFrameUrl: null,
+        detectedMs: null,
+        declinedMs: null,
+      }),
     };
   }
 
   const rule: string = found.message.cmp;
   const declined: DeclineOutcome = await waitForDecline(session, found);
-  const evidence: VerdictEvidence = {
+  const report: VerificationReport = verificationReport(session, {
     checks: {
       detected: { status: 'passed', reason: `${rule} found the banner` },
       declined: {
@@ -82,11 +76,27 @@ export async function checkExistingRules(
     popupFrameUrl: session.frameUrl(found.frame),
     detectedMs: found.atMs,
     declinedMs: declined.passed ? declined.atMs : null,
-  };
+  });
 
   return declined.passed
-    ? { covered: true, coveredBy: rule, ...evidence }
-    : { covered: false, notCoveredReason: declined.reason, ...evidence };
+    ? { covered: true, coveredBy: rule, report }
+    : { covered: false, notCoveredReason: declined.reason, report };
+}
+
+function verificationReport(
+  session: AutoconsentSession,
+  evidence: Evidence,
+): VerificationReport {
+  return {
+    checks: evidence.checks,
+    timings: {
+      totalMs: session.elapsedMs(),
+      detectedMs: evidence.detectedMs,
+      declinedMs: evidence.declinedMs,
+    },
+    messageLog: session.messageLog(),
+    popupFrameUrl: evidence.popupFrameUrl,
+  };
 }
 
 interface Declined {

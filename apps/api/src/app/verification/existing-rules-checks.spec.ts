@@ -4,10 +4,8 @@ import type {
   RuleBundle,
 } from '@duckduckgo/autoconsent';
 import { AutoconsentSession, ContentScriptFrame } from './autoconsent-session';
-import {
-  ExistingRulesVerdict,
-  checkExistingRules,
-} from './existing-rules-checks';
+import { checkExistingRules } from './existing-rules-checks';
+import type { StockCheckResult } from './stock-check';
 
 const TOP: ContentScriptFrame = {
   id: 'iw-top',
@@ -48,7 +46,7 @@ describe('checkExistingRules', () => {
   }
 
   it('is Covered when a Rule finds the banner and Declines it', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await receiveAt(0, { type: 'init', url: URL_CMP }, CMP_FRAME);
     await receiveAt(
@@ -88,25 +86,49 @@ describe('checkExistingRules', () => {
     expect(await verdict).toEqual({
       covered: true,
       coveredBy: 'Sourcepoint-frame',
-      popupFrameUrl: URL_CMP,
-      detectedMs: 1500,
-      declinedMs: 3900,
-      checks: {
-        detected: {
-          status: 'passed',
-          reason: 'Sourcepoint-frame found the banner',
+      report: {
+        checks: {
+          detected: {
+            status: 'passed',
+            reason: 'Sourcepoint-frame found the banner',
+          },
+          declined: {
+            status: 'passed',
+            reason:
+              'Sourcepoint-frame opted out and finished without hiding the banner',
+          },
         },
-        declined: {
-          status: 'passed',
-          reason:
-            'Sourcepoint-frame opted out and finished without hiding the banner',
-        },
+        timings: { totalMs: 3900, detectedMs: 1500, declinedMs: 3900 },
+        messageLog: [
+          {
+            frameUrl: URL_CMP,
+            mainFrame: false,
+            messages: [
+              { atMs: 0, type: 'init' },
+              { atMs: 800, type: 'cmpDetected', cmp: 'Sourcepoint-frame' },
+              { atMs: 1500, type: 'popupFound', cmp: 'Sourcepoint-frame' },
+              {
+                atMs: 2600,
+                type: 'optOutResult',
+                cmp: 'Sourcepoint-frame',
+                result: true,
+              },
+              {
+                atMs: 3900,
+                type: 'autoconsentDone',
+                cmp: 'Sourcepoint-frame',
+                isCosmetic: false,
+              },
+            ],
+          },
+        ],
+        popupFrameUrl: URL_CMP,
       },
     });
   });
 
   it('is not Covered when a Rule only hides the banner', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await receiveAt(1000, {
       type: 'popupFound',
@@ -132,18 +154,20 @@ describe('checkExistingRules', () => {
     expect(await verdict).toMatchObject({
       covered: false,
       notCoveredReason: 'cc_banner only hid the banner (a cosmetic Rule)',
-      checks: {
-        detected: { status: 'passed' },
-        declined: {
-          status: 'failed',
-          reason: 'cc_banner only hid the banner (a cosmetic Rule)',
+      report: {
+        checks: {
+          detected: { status: 'passed' },
+          declined: {
+            status: 'failed',
+            reason: 'cc_banner only hid the banner (a cosmetic Rule)',
+          },
         },
       },
     });
   });
 
   it('is not Covered when the opt-out fails', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await receiveAt(1000, {
       type: 'popupFound',
@@ -161,14 +185,16 @@ describe('checkExistingRules', () => {
     expect(await verdict).toMatchObject({
       covered: false,
       notCoveredReason: "Onetrust's opt-out failed",
-      checks: {
-        declined: { status: 'failed', reason: "Onetrust's opt-out failed" },
+      report: {
+        checks: {
+          declined: { status: 'failed', reason: "Onetrust's opt-out failed" },
+        },
       },
     });
   });
 
   it('gives up when no banner is found within 25 s', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
     let settled = false;
     void verdict.then((): void => {
       settled = true;
@@ -182,21 +208,29 @@ describe('checkExistingRules', () => {
     expect(await verdict).toEqual({
       covered: false,
       notCoveredReason: 'didomi was detected, but found no banner within 25 s',
-      popupFrameUrl: null,
-      detectedMs: null,
-      declinedMs: null,
-      checks: {
-        detected: {
-          status: 'failed',
-          reason: 'didomi was detected, but found no banner within 25 s',
+      report: {
+        checks: {
+          detected: {
+            status: 'failed',
+            reason: 'didomi was detected, but found no banner within 25 s',
+          },
+          declined: { status: 'skipped', reason: 'No banner to Decline' },
         },
-        declined: { status: 'skipped', reason: 'No banner to Decline' },
+        timings: { totalMs: 25_000, detectedMs: null, declinedMs: null },
+        messageLog: [
+          {
+            frameUrl: URL_TOP,
+            mainFrame: true,
+            messages: [{ atMs: 3000, type: 'cmpDetected', cmp: 'didomi' }],
+          },
+        ],
+        popupFrameUrl: null,
       },
     });
   });
 
   it('says when no Rule detected anything', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await vi.advanceTimersByTimeAsync(25_000);
 
@@ -207,7 +241,7 @@ describe('checkExistingRules', () => {
   });
 
   it('gives up when the Rule does not finish within 45 s of finding the banner', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await receiveAt(2000, {
       type: 'popupFound',
@@ -226,13 +260,14 @@ describe('checkExistingRules', () => {
     expect(await verdict).toMatchObject({
       covered: false,
       notCoveredReason: "Onetrust didn't finish within 45 s",
-      detectedMs: 2000,
-      declinedMs: null,
+      report: {
+        timings: { totalMs: 47_000, detectedMs: 2000, declinedMs: null },
+      },
     });
   });
 
   it('only counts the frame the banner was found in', async () => {
-    const verdict: Promise<ExistingRulesVerdict> = checkExistingRules(session);
+    const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await receiveAt(1000, {
       type: 'popupFound',

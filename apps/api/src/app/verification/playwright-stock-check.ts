@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import type { VerificationReport } from '@banner-sweeper/api-interfaces';
 import {
   autoconsentConfig,
   compactRulesForFrame,
@@ -20,10 +19,7 @@ import {
 } from '../browser/isolated-world';
 import { autoconsentBundle } from './autoconsent-bundle';
 import { AutoconsentSession, ContentScriptFrame } from './autoconsent-session';
-import {
-  ExistingRulesVerdict,
-  checkExistingRules,
-} from './existing-rules-checks';
+import { checkExistingRules } from './existing-rules-checks';
 import { PublishedRuleSource } from './published-rule-source';
 import { SiteUnreachableError } from './site-unreachable.error';
 import { StockCheck, StockCheckResult } from './stock-check';
@@ -70,7 +66,7 @@ export class PlaywrightStockCheck extends StockCheck {
       );
       await this.openSite(page, url);
 
-      const verdict: ExistingRulesVerdict = await checkExistingRules(session);
+      const result: StockCheckResult = await checkExistingRules(session);
 
       // A browser that went away mid-run makes the waits time out, which says nothing about the Site
       if (!context.browser()?.isConnected()) {
@@ -79,24 +75,7 @@ export class PlaywrightStockCheck extends StockCheck {
         );
       }
 
-      const report: VerificationReport = {
-        checks: verdict.checks,
-        timings: {
-          totalMs: session.elapsedMs(),
-          detectedMs: verdict.detectedMs,
-          declinedMs: verdict.declinedMs,
-        },
-        messageLog: session.messageLog(),
-        popupFrameUrl: verdict.popupFrameUrl,
-      };
-
-      return verdict.covered
-        ? { covered: true, coveredBy: verdict.coveredBy, report }
-        : {
-            covered: false,
-            notCoveredReason: verdict.notCoveredReason,
-            report,
-          };
+      return result;
     } finally {
       await context.close().catch((): void => undefined);
     }
