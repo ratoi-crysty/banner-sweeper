@@ -1,11 +1,17 @@
 import { randomUUID } from 'node:crypto';
-import { CreateDetectionRequest } from '@banner-sweeper/api-interfaces';
+import {
+  CreateDetectionRequest,
+  DetectionJob,
+  DetectionSummary,
+} from '@banner-sweeper/api-interfaces';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DetectionJobEntity } from './detection-job.entity';
+import { toDetectionJob, toDetectionSummary } from './detection-job.mapper';
 import { DetectionQueue } from './detection-queue';
 
+/** Detection jobs as the API sees them; how a job is stored stays in here. */
 @Injectable()
 export class DetectionService {
   constructor(
@@ -14,7 +20,7 @@ export class DetectionService {
     protected readonly queue: DetectionQueue,
   ) {}
 
-  async create(request: CreateDetectionRequest): Promise<DetectionJobEntity> {
+  async create(request: CreateDetectionRequest): Promise<DetectionSummary> {
     const job: DetectionJobEntity = this.jobs.create({
       id: randomUUID(),
       url: request.url,
@@ -33,10 +39,12 @@ export class DetectionService {
     await this.jobs.insert(job);
     this.queue.enqueue(job.id);
 
-    return job;
+    return toDetectionSummary(job);
   }
 
-  findOne(id: string): Promise<DetectionJobEntity | null> {
-    return this.jobs.findOneBy({ id });
+  async get(id: string): Promise<DetectionJob | null> {
+    const job: DetectionJobEntity | null = await this.jobs.findOneBy({ id });
+
+    return job ? toDetectionJob(job) : null;
   }
 }

@@ -22,8 +22,6 @@ import {
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { GLOBAL_PREFIX } from '../configure-app';
-import { DetectionJobEntity } from './detection-job.entity';
-import { toDetectionJob, toDetectionSummary } from './detection-job.mapper';
 import { DetectionService } from './detection.service';
 import { CreateDetectionDto } from './dto/create-detection.dto';
 import {
@@ -52,10 +50,10 @@ export class DetectionController {
     @Body() body: CreateDetectionDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<DetectionSummary> {
-    const job: DetectionJobEntity = await this.detections.create(body);
-    response.location(`/${GLOBAL_PREFIX}/detections/${job.id}`);
+    const summary: DetectionSummary = await this.detections.create(body);
+    response.location(`/${GLOBAL_PREFIX}/detections/${summary.id}`);
 
-    return toDetectionSummary(job);
+    return summary;
   }
 
   @Get(':id')
@@ -66,15 +64,15 @@ export class DetectionController {
   })
   @ApiOkResponse({ schema: DETECTION_JOB_SCHEMA })
   @ApiNotFoundResponse({ description: 'No job with this id' })
-  async findOne(
+  async get(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<DetectionJob> {
-    const job: DetectionJobEntity | null = await this.detections.findOne(id);
+    const job: DetectionJob | null = await this.detections.get(id);
 
     if (!job) {
       throw new NotFoundException(`No Detection job ${id}`);
     }
 
-    return toDetectionJob(job);
+    return job;
   }
 }
