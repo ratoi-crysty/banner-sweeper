@@ -28,9 +28,12 @@ export class BrowserService implements OnApplicationShutdown {
   }
 
   async onApplicationShutdown(): Promise<void> {
-    const browser: Browser | null = await (this.browser?.catch(
-      (): null => null,
-    ) ?? null);
+    if (!this.browser) {
+      return;
+    }
+
+    // A connection that fails during shutdown leaves nothing to close
+    const browser: Browser | null = await this.browser.catch((): null => null);
     await browser?.close();
   }
 
@@ -41,17 +44,15 @@ export class BrowserService implements OnApplicationShutdown {
 
     const connecting: Promise<Browser> = chromium
       .connect(this.config.playwrightHost, { timeout: CONNECT_TIMEOUT_MS })
-      .then(
-        (browser: Browser): Browser => {
-          browser.on('disconnected', (): void => this.forget(connecting));
+      .then((browser: Browser): Browser => {
+        browser.on('disconnected', (): void => this.forget(connecting));
 
-          return browser;
-        },
-        (error: unknown): never => {
-          this.forget(connecting);
-          throw new BrowserUnavailableError(error);
-        },
-      );
+        return browser;
+      })
+      .catch((error: unknown): never => {
+        this.forget(connecting);
+        throw new BrowserUnavailableError(error);
+      });
     this.browser = connecting;
 
     return connecting;
