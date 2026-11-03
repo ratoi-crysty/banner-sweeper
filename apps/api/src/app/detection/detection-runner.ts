@@ -15,9 +15,8 @@ export class DetectionRunner {
   ) {}
 
   async run(jobId: string): Promise<void> {
-    const job: DetectionJobEntity | null = await this.jobs.findOneBy({
-      id: jobId,
-    });
+    const job: DetectionJobEntity | undefined =
+      (await this.jobs.findOneBy({ id: jobId })) ?? undefined;
 
     if (!job) {
       return;

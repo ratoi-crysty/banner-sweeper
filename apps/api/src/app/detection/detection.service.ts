@@ -42,9 +42,10 @@ export class DetectionService {
     return toDetectionSummary(job);
   }
 
-  async get(id: string): Promise<DetectionJob | null> {
-    const job: DetectionJobEntity | null = await this.jobs.findOneBy({ id });
+  async get(id: string): Promise<DetectionJob | undefined> {
+    const job: DetectionJobEntity | undefined =
+      (await this.jobs.findOneBy({ id })) ?? undefined;
 
-    return job ? toDetectionJob(job) : null;
+    return job ? toDetectionJob(job) : undefined;
   }
 }

@@ -67,7 +67,7 @@ export class DetectionController {
   async get(
     @Param('id', new ParseUUIDPipe()) id: string,
   ): Promise<DetectionJob> {
-    const job: DetectionJob | null = await this.detections.get(id);
+    const job: DetectionJob | undefined = await this.detections.get(id);
 
     if (!job) {
       throw new NotFoundException(`No Detection job ${id}`);

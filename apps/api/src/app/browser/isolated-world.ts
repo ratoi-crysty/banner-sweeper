@@ -106,8 +106,9 @@ export async function injectIntoIsolatedWorld(
   const frameByContext: Map<string, string> = new Map<string, string>();
   // CDP frame id -> uniqueId of the frame's current page (main) world
   const pageWorldByFrame: Map<string, string> = new Map<string, string>();
-  let pageSession: CDPSession | null = null;
-  let mainFrameId: string | null = null;
+  // Set once the page is attached; read earlier by `isMainFrame`, hence `let`
+  let pageSession: CDPSession | undefined = undefined;
+  let mainFrameId: string | undefined;
 
   const handle: MessageHandler = createMessageHandler({
     sendToContentScript: async (
@@ -151,9 +152,17 @@ export async function injectIntoIsolatedWorld(
       );
       return exceptionDetails ? false : (result.value ?? false);
     },
-    isMainFrame: (isolatedUniqueId: string): boolean =>
-      sessionByContext.get(isolatedUniqueId) === pageSession &&
-      frameByContext.get(isolatedUniqueId) === mainFrameId,
+    isMainFrame: (isolatedUniqueId: string): boolean => {
+      const session: CDPSession | undefined =
+        sessionByContext.get(isolatedUniqueId);
+
+      // An unknown frame has no session; don't let it match a page session not set up yet
+      return (
+        session !== undefined &&
+        session === pageSession &&
+        frameByContext.get(isolatedUniqueId) === mainFrameId
+      );
+    },
   });
 
   async function attachToSession(client: CDPSession): Promise<void> {

@@ -23,7 +23,7 @@ const LAUNCH_OPTIONS: LaunchOptions = { channel: 'chromium' };
  */
 @Injectable()
 export class BrowserService implements OnApplicationShutdown {
-  protected browser: Promise<Browser> | null = null;
+  protected browser: Promise<Browser> | undefined;
 
   constructor(@Inject(apiConfig.KEY) protected readonly config: ApiConfig) {}
 
@@ -48,7 +48,9 @@ export class BrowserService implements OnApplicationShutdown {
     }
 
     // A connection that fails during shutdown leaves nothing to close
-    const browser: Browser | null = await this.browser.catch((): null => null);
+    const browser: Browser | undefined = await this.browser.catch(
+      (): undefined => undefined,
+    );
     await browser?.close();
   }
 
@@ -81,7 +83,7 @@ export class BrowserService implements OnApplicationShutdown {
 
   protected forget(connection: Promise<Browser>): void {
     if (this.browser === connection) {
-      this.browser = null;
+      this.browser = undefined;
     }
   }
 }

@@ -101,12 +101,12 @@ export class AutoconsentSession {
 
   /**
    * The first message `match` accepts, already received or arriving within `timeoutMs`.
-   * Resolves `null` when none arrives in time: autoconsent sends nothing on a negative outcome.
+   * Resolves `undefined` when none arrives in time: autoconsent sends nothing on a negative outcome.
    */
   waitFor<T extends ContentScriptMessage>(
     match: MessageMatcher<T>,
     timeoutMs: number,
-  ): Promise<ReceivedMessage<T> | null> {
+  ): Promise<ReceivedMessage<T> | undefined> {
     // `match` is a type guard, so a message it accepted is a `T`; `find` and the waiter list can't
     // carry that narrowing, hence the casts below
     const matches: (received: ReceivedMessage) => boolean = (
@@ -118,8 +118,8 @@ export class AutoconsentSession {
       return Promise.resolve(found as ReceivedMessage<T>);
     }
 
-    return new Promise<ReceivedMessage<T> | null>(
-      (resolve: (received: ReceivedMessage<T> | null) => void): void => {
+    return new Promise<ReceivedMessage<T> | undefined>(
+      (resolve: (received: ReceivedMessage<T> | undefined) => void): void => {
         const waiter: Waiter = {
           match: matches,
           resolve: (received: ReceivedMessage): void => {
@@ -132,7 +132,7 @@ export class AutoconsentSession {
             this.waiters = this.waiters.filter(
               (other: Waiter): boolean => other !== waiter,
             );
-            resolve(null);
+            resolve(undefined);
           },
           Math.max(0, timeoutMs),
         );

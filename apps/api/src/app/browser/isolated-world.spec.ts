@@ -160,7 +160,7 @@ describe.skipIf(!PLAYWRIGHT_HOST)('injectIntoIsolatedWorld', () => {
     }
 
     function frameAt(url: string): Frame {
-      const frame: Frame | null = page.frame({ url });
+      const frame: Frame | undefined = page.frame({ url }) ?? undefined;
 
       if (!frame) {
         throw new Error(`No frame at ${url}`);

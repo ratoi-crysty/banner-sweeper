@@ -26,9 +26,9 @@ export const DECLINE_TIMEOUT_MS = 45_000;
 interface Evidence {
   checks: VerificationChecks;
   // autoconsent's word for the frame the banner was found in
-  popupFrameUrl: string | null;
-  detectedMs: number | null;
-  declinedMs: number | null;
+  popupFrameUrl?: string;
+  detectedMs?: number;
+  declinedMs?: number;
 }
 
 /**
@@ -39,11 +39,12 @@ interface Evidence {
 export async function checkExistingRules(
   session: AutoconsentSession,
 ): Promise<StockCheckResult> {
-  const found: ReceivedMessage<FoundMessage> | null = await session.waitFor(
-    (message: ContentScriptMessage): message is FoundMessage =>
-      message.type === 'popupFound',
-    DETECT_TIMEOUT_MS - session.elapsedMs(),
-  );
+  const found: ReceivedMessage<FoundMessage> | undefined =
+    await session.waitFor(
+      (message: ContentScriptMessage): message is FoundMessage =>
+        message.type === 'popupFound',
+      DETECT_TIMEOUT_MS - session.elapsedMs(),
+    );
 
   if (!found) {
     const reason: string = nothingFoundReason(session);
@@ -56,9 +57,6 @@ export async function checkExistingRules(
           detected: { status: 'failed', reason },
           declined: { status: 'skipped', reason: 'No banner to Decline' },
         },
-        popupFrameUrl: null,
-        detectedMs: null,
-        declinedMs: null,
       }),
     };
   }
@@ -75,7 +73,7 @@ export async function checkExistingRules(
     },
     popupFrameUrl: session.frameUrl(found.frame),
     detectedMs: found.atMs,
-    declinedMs: declined.passed ? declined.atMs : null,
+    declinedMs: declined.passed ? declined.atMs : undefined,
   });
 
   return declined.passed
@@ -83,6 +81,7 @@ export async function checkExistingRules(
     : { covered: false, notCoveredReason: declined.reason, report };
 }
 
+// The report is the JSON contract, where a missing value is `null` so the key stays present
 function verificationReport(
   session: AutoconsentSession,
   evidence: Evidence,
@@ -91,11 +90,11 @@ function verificationReport(
     checks: evidence.checks,
     timings: {
       totalMs: session.elapsedMs(),
-      detectedMs: evidence.detectedMs,
-      declinedMs: evidence.declinedMs,
+      detectedMs: evidence.detectedMs ?? null,
+      declinedMs: evidence.declinedMs ?? null,
     },
     messageLog: session.messageLog(),
-    popupFrameUrl: evidence.popupFrameUrl,
+    popupFrameUrl: evidence.popupFrameUrl ?? null,
   };
 }
 
@@ -136,7 +135,7 @@ async function waitForDecline(
   ): message is DoneMessage =>
     message.type === 'autoconsentDone' && fromSameRule(message, frame);
 
-  const optOut: ReceivedMessage<OptOutResultMessage> | null =
+  const optOut: ReceivedMessage<OptOutResultMessage> | undefined =
     await session.waitFor(isOptOutResult, deadlineMs - session.elapsedMs());
 
   if (!optOut) {
@@ -150,7 +149,7 @@ async function waitForDecline(
     return { passed: false, reason: `${rule}'s opt-out failed` };
   }
 
-  const done: ReceivedMessage<DoneMessage> | null = await session.waitFor(
+  const done: ReceivedMessage<DoneMessage> | undefined = await session.waitFor(
     isDone,
     deadlineMs - session.elapsedMs(),
   );
