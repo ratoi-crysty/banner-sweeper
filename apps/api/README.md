@@ -23,7 +23,11 @@ When you upgrade `playwright-core`, upgrade this image to the same version.
 | `PLAYWRIGHT_HOST`       | `ws://localhost:8080/`     | The browser server's WebSocket endpoint                                            |
 | `DATABASE_PATH`         | `apps/api/data/api.sqlite` | The SQLite database. Migrations run on boot, and the schema is never synchronised. |
 | `DETECTION_CONCURRENCY` | `1`                        | How many Detection jobs run at once                                                |
+| `BROWSER_LOCALE`        | `en-GB`                    | The browser's locale, a language tag                                               |
+| `BROWSER_TIMEZONE`      | `Europe/Bucharest`         | The browser's timezone, an IANA name                                               |
 | `PORT`                  | `3000`                     | The HTTP port                                                                      |
+
+Sites mostly pick the banner by the visitor's IP, so set `BROWSER_LOCALE` and `BROWSER_TIMEZONE` to match where the browser server's traffic exits: a mismatch can look like a bot or change the banner. The test set was captured with the defaults.
 
 `apps/api/data/` is gitignored. The variables can also go in a `.env` file in the directory you start the API from (the repository root for `nx serve`); `.env` is gitignored, and real environment variables win over it.
 

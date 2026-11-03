@@ -1,21 +1,27 @@
 import type { BrowserContextOptions } from 'playwright-core';
 
-// The test set was captured with this locale and timezone, from an EU exit
-export const CONTEXT_LOCALE = 'en-GB';
-export const CONTEXT_TIMEZONE = 'Europe/Bucharest';
+/** What the browser tells Sites about where the visitor is. */
+export interface BrowserRegion {
+  locale: string;
+  timezoneId: string;
+}
+
 export const CONTEXT_VIEWPORT: BrowserContextOptions['viewport'] = {
   width: 1280,
   height: 800,
 };
 
 /**
- * Options for every context Detection opens: an EU locale and timezone, a 1280×800 viewport, and
- * a normal Chrome user agent, since some Sites treat the headless one as a bot.
+ * Options for every context Detection opens: the configured locale and timezone, a 1280×800
+ * viewport, and a normal Chrome user agent, since some Sites treat the headless one as a bot.
  */
-export function contextOptions(browserVersion: string): BrowserContextOptions {
+export function contextOptions(
+  browserVersion: string,
+  region: BrowserRegion,
+): BrowserContextOptions {
   return {
-    locale: CONTEXT_LOCALE,
-    timezoneId: CONTEXT_TIMEZONE,
+    locale: region.locale,
+    timezoneId: region.timezoneId,
     viewport: CONTEXT_VIEWPORT,
     userAgent: chromeUserAgent(browserVersion),
   };

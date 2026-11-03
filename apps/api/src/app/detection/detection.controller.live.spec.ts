@@ -30,6 +30,8 @@ describe.skipIf(!PLAYWRIGHT_HOST)('Stock check on live Sites', () => {
       playwrightHost: PLAYWRIGHT_HOST as string,
       databasePath: join(dataDir, 'api.sqlite'),
       detectionConcurrency: 2,
+      browserLocale: 'en-GB',
+      browserTimezone: 'Europe/Bucharest',
     };
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],

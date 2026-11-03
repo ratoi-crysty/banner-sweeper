@@ -79,6 +79,8 @@ describe('Detection jobs over HTTP', () => {
       playwrightHost: 'ws://playwright.invalid:1/',
       databasePath: join(dataDir, 'api.sqlite'),
       detectionConcurrency: 1,
+      browserLocale: 'en-GB',
+      browserTimezone: 'Europe/Bucharest',
     };
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [AppModule],

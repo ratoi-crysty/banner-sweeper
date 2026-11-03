@@ -21,7 +21,12 @@ export class BrowserService implements OnApplicationShutdown {
     const browser: Browser = await this.connect();
 
     try {
-      return await browser.newContext(contextOptions(browser.version()));
+      return await browser.newContext(
+        contextOptions(browser.version(), {
+          locale: this.config.browserLocale,
+          timezoneId: this.config.browserTimezone,
+        }),
+      );
     } catch (error: unknown) {
       throw new BrowserUnavailableError(error);
     }
