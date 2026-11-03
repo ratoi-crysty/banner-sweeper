@@ -236,7 +236,7 @@ describe('checkExistingRules', () => {
 
     expect(await verdict).toMatchObject({
       covered: false,
-      notCoveredReason: 'No Rule found a banner within 25 s',
+      notCoveredReason: 'No existing Rule recognised a banner within 25 s',
     });
   });
 

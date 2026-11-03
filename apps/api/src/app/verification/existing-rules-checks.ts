@@ -179,7 +179,7 @@ function nothingFoundReason(session: AutoconsentSession): string {
     session.messagesOfType('cmpDetected');
 
   if (detected.length === 0) {
-    return `No Rule found a banner within ${timeout}`;
+    return `No existing Rule recognised a banner within ${timeout}`;
   }
 
   const rules: string = [
