@@ -24,8 +24,6 @@ const DEFAULT_DETECTION_CONCURRENCY = 1;
 const DEFAULT_BROWSER_LOCALE = 'en-GB';
 const DEFAULT_BROWSER_TIMEZONE = 'Europe/Bucharest';
 
-console.log('DEFAULT_DATABASE_PATH', DEFAULT_DATABASE_PATH);
-
 // Inject with `@Inject(apiConfig.KEY)`; ConfigModule.forRoot loads `.env` into process.env first
 export const apiConfig: ConfigFactory<ApiConfig> &
   ConfigFactoryKeyHost<ApiConfig> = registerAs(
