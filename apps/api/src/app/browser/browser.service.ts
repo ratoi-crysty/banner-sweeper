@@ -53,6 +53,7 @@ export class BrowserService implements OnApplicationShutdown {
         this.forget(connecting);
         throw new BrowserUnavailableError(error);
       });
+
     this.browser = connecting;
 
     return connecting;

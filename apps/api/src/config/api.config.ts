@@ -17,6 +17,8 @@ const DEFAULT_PLAYWRIGHT_HOST = 'ws://localhost:8080/';
 const DEFAULT_DATABASE_PATH: string = join('apps', 'api', 'data', 'api.sqlite');
 const DEFAULT_DETECTION_CONCURRENCY = 1;
 
+console.log('DEFAULT_DATABASE_PATH', DEFAULT_DATABASE_PATH);
+
 // Inject with `@Inject(apiConfig.KEY)`; ConfigModule.forRoot loads `.env` into process.env first
 export const apiConfig: ConfigFactory<ApiConfig> &
   ConfigFactoryKeyHost<ApiConfig> = registerAs(
