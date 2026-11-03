@@ -3,14 +3,21 @@ import type { ApiConfig } from '../../config/api.config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
 import { BrowserService } from './browser.service';
 
-/** Stands in for a browser server that's down: it accepts each connection, then drops it. */
+/**
+ * Stands in for a browser server that's down: it accepts each connection, records the WebSocket
+ * upgrade request the client opens with, then drops it.
+ */
 class DroppingServer {
   attempts = 0;
+  readonly requests: string[] = [];
   protected readonly server: Server;
 
   constructor(dropAfterMs: number) {
     this.server = createServer((socket: Socket): void => {
       this.attempts++;
+      socket.once('data', (chunk: Buffer): void => {
+        this.requests.push(chunk.toString());
+      });
       setTimeout((): void => {
         socket.destroy();
       }, dropAfterMs);
@@ -60,6 +67,15 @@ describe('BrowserService, with the browser server down', () => {
   it('reports it as BrowserUnavailableError', async () => {
     await expect(browser.newContext()).rejects.toBeInstanceOf(
       BrowserUnavailableError,
+    );
+  });
+
+  it('asks the browser server for full Chromium, not the headless shell', async () => {
+    await expect(browser.newContext()).rejects.toThrow();
+
+    expect(server.requests).toHaveLength(1);
+    expect(server.requests[0]).toMatch(
+      /^x-playwright-launch-options: {"channel":"chromium"}\r$/im,
     );
   });
 

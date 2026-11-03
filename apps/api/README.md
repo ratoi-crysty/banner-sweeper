@@ -16,6 +16,8 @@ docker run -d --rm --name playwright -p 8080:8080 --init --ipc=host \
 
 When you upgrade `playwright-core`, upgrade this image to the same version.
 
+The server launches a browser per connection. By default that's Chromium's stripped-down headless shell, so the API asks for full Chromium in its new headless mode instead (`channel: 'chromium'`, sent as launch options when it connects). That's the browser users run, with the same site isolation, and harder for bot checks to tell apart. The image already includes it.
+
 ## Configuration
 
 | Variable                | Default                    | What it sets                                                                       |
@@ -45,7 +47,7 @@ npx nx test @banner-sweeper/api
 
 Two suites need the browser server and are skipped unless `PLAYWRIGHT_HOST` is set:
 
-- `src/app/browser/isolated-world.spec.ts` checks the isolated-world bridge on local pages served by routing, so it doesn't need the internet. It runs on both the server's default headless shell, which keeps cross-site iframes in the page's process, and full Chromium, which gives them their own process.
+- `src/app/browser/isolated-world.spec.ts` checks the isolated-world bridge on local pages served by routing, so it doesn't need the internet. It runs on both full Chromium, which the API uses and which gives cross-site iframes their own process, and the server's default headless shell, which keeps them in the page's process.
 - The live tests in `src/app/detection/detection.controller.live.spec.ts` drive real Sites from the test set (`test-set/`). They need the internet.
 
 ```bash

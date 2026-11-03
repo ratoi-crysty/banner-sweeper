@@ -1,11 +1,21 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { Browser, BrowserContext, chromium } from 'playwright-core';
+import {
+  Browser,
+  BrowserContext,
+  LaunchOptions,
+  chromium,
+} from 'playwright-core';
 import { apiConfig } from '../../config/api.config';
 import type { ApiConfig } from '../../config/api.config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
 import { contextOptions } from './context-options';
 
 const CONNECT_TIMEOUT_MS = 30_000;
+
+// The server launches a browser per connection, by default the stripped-down headless shell. Ask
+// for full Chromium in its new headless mode instead: the browser users run, with the same site
+// isolation, and harder for bot checks to tell apart.
+const LAUNCH_OPTIONS: LaunchOptions = { channel: 'chromium' };
 
 /**
  * The connection to the Playwright browser server at `PLAYWRIGHT_HOST`, opened on first use and
@@ -48,7 +58,12 @@ export class BrowserService implements OnApplicationShutdown {
     }
 
     const connecting: Promise<Browser> = chromium
-      .connect(this.config.playwrightHost, { timeout: CONNECT_TIMEOUT_MS })
+      .connect(this.config.playwrightHost, {
+        timeout: CONNECT_TIMEOUT_MS,
+        headers: {
+          'x-playwright-launch-options': JSON.stringify(LAUNCH_OPTIONS),
+        },
+      })
       .then((browser: Browser): Browser => {
         browser.on('disconnected', (): void => this.forget(connecting));
 
