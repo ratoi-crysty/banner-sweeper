@@ -1,7 +1,7 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
-import { GLOBAL_PREFIX, configureApp } from './app/configure-app';
+import { DOCS_PATH, GLOBAL_PREFIX, configureApp } from './app/configure-app';
 
 async function bootstrap(): Promise<void> {
   const app: INestApplication = await NestFactory.create(AppModule);
@@ -11,6 +11,7 @@ async function bootstrap(): Promise<void> {
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`,
   );
+  Logger.log(`📖 API docs: http://localhost:${port}/${DOCS_PATH}`);
 }
 
 bootstrap();

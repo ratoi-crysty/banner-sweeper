@@ -2,6 +2,8 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 
 export const GLOBAL_PREFIX = 'api';
+// SwaggerModule ignores the global prefix, so the path includes it
+export const DOCS_PATH = `${GLOBAL_PREFIX}/docs`;
 
 /** The app-wide setup, shared by `main.ts` and the HTTP tests. */
 export function configureApp(app: INestApplication): void {
@@ -15,7 +17,7 @@ export function configureApp(app: INestApplication): void {
     .setTitle('Banner Sweeper API')
     .setVersion('1.0')
     .build();
-  SwaggerModule.setup(`${GLOBAL_PREFIX}/docs`, app, () =>
+  SwaggerModule.setup(DOCS_PATH, app, () =>
     SwaggerModule.createDocument(app, config),
   );
 }
