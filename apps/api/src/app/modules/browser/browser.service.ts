@@ -5,8 +5,8 @@ import {
   LaunchOptions,
   chromium,
 } from 'playwright-core';
-import { apiConfig } from '../../config/api.config';
-import type { ApiConfig } from '../../config/api.config';
+import { apiConfig } from '../../../config/api.config';
+import type { ApiConfig } from '../../../config/api.config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
 import { contextOptions } from './context-options';
 

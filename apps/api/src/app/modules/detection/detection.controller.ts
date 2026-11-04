@@ -21,7 +21,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { GLOBAL_PREFIX } from '../configure-app';
+import { GLOBAL_PREFIX } from '../../configure-app';
 import { DetectionService } from './detection.service';
 import { CreateDetectionDto } from './dto/create-detection.dto';
 import {

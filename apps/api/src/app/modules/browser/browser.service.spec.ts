@@ -1,5 +1,5 @@
 import { AddressInfo, Server, Socket, createServer } from 'node:net';
-import type { ApiConfig } from '../../config/api.config';
+import type { ApiConfig } from '../../../config/api.config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
 import { BrowserService } from './browser.service';
 

@@ -47,8 +47,8 @@ npx nx test @banner-sweeper/api
 
 Two suites need the browser server and are skipped unless `PLAYWRIGHT_HOST` is set:
 
-- `src/app/browser/isolated-world.spec.ts` checks the isolated-world bridge on local pages served by routing, so it doesn't need the internet. It runs on both full Chromium, which the API uses and which gives cross-site iframes their own process, and the server's default headless shell, which keeps them in the page's process.
-- The live tests in `src/app/detection/detection.controller.live.spec.ts` drive real Sites from the test set (`test-set/`). They need the internet.
+- `src/app/modules/browser` checks the isolated-world bridge on local pages served by routing, so it doesn't need the internet. It runs on both full Chromium, which the API uses and which gives cross-site iframes their own process, and the server's default headless shell, which keeps them in the page's process.
+- The live tests in `src/app/modules/detection` drive real Sites from the test set (`test-set/`). They need the internet.
 
 ```bash
 PLAYWRIGHT_HOST=ws://localhost:8080/ npx nx test @banner-sweeper/api
