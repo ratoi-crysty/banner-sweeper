@@ -20,6 +20,9 @@
     },
     {
       "path": "./libs/llm-backend"
+    },
+    {
+      "path": "./libs/rule-validation"
     }
   ]
 }

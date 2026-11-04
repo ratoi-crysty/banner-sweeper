@@ -52,5 +52,5 @@ jobs:
       - name: Check formatting
         run: pnpm exec nx format:check --base="$NX_BASE" --head="$NX_HEAD"
 
-      - name: Lint, type-check and test affected projects
-        run: pnpm exec nx affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD"
+      - name: Lint, type-check, test and check schema drift of affected projects
+        run: pnpm exec nx affected -t lint typecheck test schema-drift --base="$NX_BASE" --head="$NX_HEAD"

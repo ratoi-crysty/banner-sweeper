@@ -4,6 +4,7 @@ Always use skills:angular-components when writing Angular
 Always use skills:nestjs when writing in NestJS
 Always use skills:react-components when writing in React
 Always use skills:typescript-standards when writing in TypeScript
+Use mattpocock-skills:codebase-design before implementing a ticket that adds or reshapes modules, to plan their interfaces and seams (check the spec for every caller, not just HTTP)
 
 ## Agent skills
 

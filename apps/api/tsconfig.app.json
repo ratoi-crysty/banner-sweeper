@@ -29,6 +29,12 @@
   ],
   "references": [
     {
+      "path": "../../libs/autoconsent-config/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/api-interfaces/tsconfig.lib.json"
+    },
+    {
       "path": "../../libs/llm-backend/tsconfig.lib.json"
     }
   ]
