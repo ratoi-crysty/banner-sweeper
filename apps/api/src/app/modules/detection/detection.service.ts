@@ -16,7 +16,7 @@ import { DetectionJobEntity } from './detection-job.entity';
 import { toDetectionJob, toDetectionSummary, usageColumns } from './detection-job.mapper';
 import { type ApiConfig, apiConfig } from '../../../config/api.config';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
-import { firstLine, stackOf } from '../../shared/error-utils/error-text';
+import { firstLine, stackOf } from '../../shared/error-utils/error-text.utils';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';
 import { BrowserUnavailableError } from '../browser/browser-unavailable.error';
 
