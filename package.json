@@ -50,7 +50,6 @@
     "@types/chrome": "^0.1.37",
     "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",
-    "@types/p-queue": "^3.2.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/supertest": "^7.2.1",

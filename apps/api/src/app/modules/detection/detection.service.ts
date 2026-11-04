@@ -8,7 +8,13 @@ import {
   DetectionUsage,
   ErrorResult,
 } from '@banner-sweeper/api-interfaces';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnApplicationShutdown,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import PQueue from 'p-queue';
@@ -26,9 +32,10 @@ import { BrowserUnavailableError } from '../browser/browser-unavailable.error';
 
 /** Detection jobs as the API sees them; how a job is stored stays in here. */
 @Injectable()
-export class DetectionService {
+export class DetectionService implements OnApplicationShutdown {
   protected readonly queue: PQueue;
   protected readonly logger: Logger = new Logger(DetectionService.name);
+  protected applicationShuttingDown = false;
 
   constructor(
     @InjectRepository(DetectionJobEntity)
@@ -39,7 +46,17 @@ export class DetectionService {
     this.queue = new PQueue({ concurrency: this.config.detectionConcurrency });
   }
 
+  async onApplicationShutdown(): Promise<void> {
+    this.applicationShuttingDown = true;
+
+    await this.queue.onIdle();
+  }
+
   async create(request: CreateDetectionRequest): Promise<DetectionSummary> {
+    if (this.applicationShuttingDown) {
+      throw new ServiceUnavailableException('Application is shutting down');
+    }
+
     const job: DetectionJobEntity = this.jobs.create({
       id: randomUUID(),
       url: request.url,
@@ -58,7 +75,14 @@ export class DetectionService {
     await this.jobs.insert(job);
 
     // Fire and forget, as it is added in queue
-    void this.queue.add(() => this.detect(job.id));
+    void this.queue
+      .add(() => this.detect(job.id))
+      .catch((err: unknown) => {
+        this.logger.error(
+          `Detection job failed ${request.url} failed (${err})`,
+          stackOf(err),
+        );
+      });
 
     return toDetectionSummary(job);
   }
@@ -84,7 +108,7 @@ export class DetectionService {
       startedAt: new Date(),
     });
 
-    const startedAt = Date.now();
+    const startedAt: number = Date.now();
 
     const result: DetectionResult = await this.runDetection({
       url: job.url,
