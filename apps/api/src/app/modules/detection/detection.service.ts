@@ -14,7 +14,6 @@ import {
   Logger,
   OnApplicationBootstrap,
   OnApplicationShutdown,
-  ServiceUnavailableException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -80,10 +79,6 @@ export class DetectionService
   }
 
   async create(request: CreateDetectionRequest): Promise<DetectionSummary> {
-    if (this.shutdown.signal.aborted) {
-      throw new ServiceUnavailableException('Application is shutting down');
-    }
-
     const job: DetectionJobEntity = this.jobs.create({
       id: randomUUID(),
       url: request.url,
@@ -115,7 +110,7 @@ export class DetectionService
   // Fire and forget: the queue runs the job once a slot is free
   protected enqueue(jobId: string): void {
     void this.queue
-      .add((): Promise<void> => this.detect(jobId, this.shutdown.signal))
+      .add((): Promise<void> => this.detect(jobId))
       .catch((err: unknown): void => {
         // Shutdown cleared it before it started; it stays queued in the database for the next start
         if (err instanceof DOMException && err.name === 'AbortError') {
@@ -129,7 +124,7 @@ export class DetectionService
       });
   }
 
-  protected async detect(jobId: string, signal: AbortSignal): Promise<void> {
+  protected async detect(jobId: string): Promise<void> {
     const job: DetectionJobEntity | undefined =
       (await this.jobs.findOneBy({ id: jobId })) ?? undefined;
 
@@ -145,12 +140,12 @@ export class DetectionService
 
     const startedAt: number = Date.now();
 
-    const result: DetectionResult = await this.runDetection(
-      { url: job.url, hint: job.hint ?? undefined },
-      signal,
-    );
+    const result: DetectionResult = await this.runDetection({
+      url: job.url,
+      hint: job.hint ?? undefined,
+    });
 
-    if (signal.aborted) {
+    if (this.shutdown.signal.aborted) {
       // Cancelled by shutdown, so the result means nothing: put the job back as never picked
       await this.jobs.update(jobId, {
         status: 'queued',
@@ -174,12 +169,11 @@ export class DetectionService
 
   protected async runDetection(
     request: CreateDetectionRequest,
-    signal: AbortSignal,
   ): Promise<DetectionResult> {
     try {
       const stock: StockCheckResult = await this.stockCheck.run(
         request.url,
-        signal,
+        this.shutdown.signal,
       );
 
       if (stock.covered) {
@@ -202,7 +196,7 @@ export class DetectionService
       const failure: ErrorResult = this.describeFailure(error);
 
       // A cancelled stock check fails as it stops; that's no failure of the Site's
-      if (!signal.aborted) {
+      if (!this.shutdown.signal.aborted) {
         this.logger.error(
           `Detection of ${request.url} failed (${failure.kind})`,
           stackOf(error),
