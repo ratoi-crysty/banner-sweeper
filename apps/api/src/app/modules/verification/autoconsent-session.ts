@@ -54,6 +54,8 @@ export type MessageMatcher<T extends ContentScriptMessage> = (
 interface Waiter {
   match: (received: ReceivedMessage) => boolean;
   resolve: (received: ReceivedMessage) => void;
+  // Ends the wait as if it timed out
+  cancel: () => void;
 }
 
 /**
@@ -66,7 +68,17 @@ export class AutoconsentSession {
   protected waiters: Waiter[] = [];
   protected readonly frameUrls: Map<string, string> = new Map<string, string>();
 
+  protected cancelled = false;
+
   constructor(protected readonly options: AutoconsentSessionOptions) {}
+
+  /** Ends every wait at once, as if it timed out, and makes later waits end at once too. */
+  cancel(): void {
+    this.cancelled = true;
+    const waiters: Waiter[] = this.waiters;
+    this.waiters = [];
+    waiters.forEach((waiter: Waiter): void => waiter.cancel());
+  }
 
   async receive(
     message: ContentScriptMessage,
@@ -118,6 +130,10 @@ export class AutoconsentSession {
       return Promise.resolve(found as ReceivedMessage<T>);
     }
 
+    if (this.cancelled) {
+      return Promise.resolve(undefined);
+    }
+
     return new Promise<ReceivedMessage<T> | undefined>(
       (resolve: (received: ReceivedMessage<T> | undefined) => void): void => {
         const waiter: Waiter = {
@@ -125,6 +141,10 @@ export class AutoconsentSession {
           resolve: (received: ReceivedMessage): void => {
             clearTimeout(timer);
             resolve(received as ReceivedMessage<T>);
+          },
+          cancel: (): void => {
+            clearTimeout(timer);
+            resolve(undefined);
           },
         };
         const timer: NodeJS.Timeout = setTimeout(

@@ -12,6 +12,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  OnApplicationBootstrap,
   OnApplicationShutdown,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -32,10 +33,13 @@ import { BrowserUnavailableError } from '../browser/browser-unavailable.error';
 
 /** Detection jobs as the API sees them; how a job is stored stays in here. */
 @Injectable()
-export class DetectionService implements OnApplicationShutdown {
+export class DetectionService
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   protected readonly queue: PQueue;
   protected readonly logger: Logger = new Logger(DetectionService.name);
-  protected applicationShuttingDown = false;
+  // Aborts on shutdown: running Detections stop, and their jobs go back to the queue
+  protected readonly shutdown: AbortController = new AbortController();
 
   constructor(
     @InjectRepository(DetectionJobEntity)
@@ -46,14 +50,37 @@ export class DetectionService implements OnApplicationShutdown {
     this.queue = new PQueue({ concurrency: this.config.detectionConcurrency });
   }
 
+  /** Picks up the jobs a previous run left unfinished, oldest first. */
+  async onApplicationBootstrap(): Promise<void> {
+    // Only a crash or a hard stop leaves a job running; nothing will finish it, so run it again
+    await this.jobs.update(
+      { status: 'running' },
+      { status: 'queued', phase: null, startedAt: null },
+    );
+    const queued: DetectionJobEntity[] = await this.jobs
+      .createQueryBuilder('job')
+      .where('job.status = :status', { status: 'queued' })
+      // `rowid` follows insertion, so it orders jobs created in the same millisecond
+      .orderBy('job.createdAt', 'ASC')
+      .addOrderBy('job.rowid', 'ASC')
+      .getMany();
+
+    queued.forEach((job: DetectionJobEntity): void => this.enqueue(job.id));
+  }
+
+  /**
+   * Leaves the waiting jobs queued in the database, cancels the running ones and puts them back,
+   * so the next start resumes all of them.
+   */
   async onApplicationShutdown(): Promise<void> {
-    this.applicationShuttingDown = true;
+    this.queue.clear();
+    this.shutdown.abort();
 
     await this.queue.onIdle();
   }
 
   async create(request: CreateDetectionRequest): Promise<DetectionSummary> {
-    if (this.applicationShuttingDown) {
+    if (this.shutdown.signal.aborted) {
       throw new ServiceUnavailableException('Application is shutting down');
     }
 
@@ -73,16 +100,7 @@ export class DetectionService implements OnApplicationShutdown {
       trace: null,
     });
     await this.jobs.insert(job);
-
-    // Fire and forget, as it is added in queue
-    void this.queue
-      .add(() => this.detect(job.id))
-      .catch((err: unknown) => {
-        this.logger.error(
-          `Detection job failed ${request.url} failed (${err})`,
-          stackOf(err),
-        );
-      });
+    this.enqueue(job.id);
 
     return toDetectionSummary(job);
   }
@@ -94,7 +112,24 @@ export class DetectionService implements OnApplicationShutdown {
     return job ? toDetectionJob(job) : undefined;
   }
 
-  protected async detect(jobId: string): Promise<void> {
+  // Fire and forget: the queue runs the job once a slot is free
+  protected enqueue(jobId: string): void {
+    void this.queue
+      .add((): Promise<void> => this.detect(jobId, this.shutdown.signal))
+      .catch((err: unknown): void => {
+        // Shutdown cleared it before it started; it stays queued in the database for the next start
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          return;
+        }
+
+        this.logger.error(
+          `Detection job ${jobId} crashed: ${firstLine(err)}`,
+          stackOf(err),
+        );
+      });
+  }
+
+  protected async detect(jobId: string, signal: AbortSignal): Promise<void> {
     const job: DetectionJobEntity | undefined =
       (await this.jobs.findOneBy({ id: jobId })) ?? undefined;
 
@@ -110,10 +145,21 @@ export class DetectionService implements OnApplicationShutdown {
 
     const startedAt: number = Date.now();
 
-    const result: DetectionResult = await this.runDetection({
-      url: job.url,
-      hint: job.hint ?? undefined,
-    });
+    const result: DetectionResult = await this.runDetection(
+      { url: job.url, hint: job.hint ?? undefined },
+      signal,
+    );
+
+    if (signal.aborted) {
+      // Cancelled by shutdown, so the result means nothing: put the job back as never picked
+      await this.jobs.update(jobId, {
+        status: 'queued',
+        phase: null,
+        startedAt: null,
+      });
+
+      return;
+    }
 
     await this.jobs.update(jobId, {
       status: 'finished',
@@ -128,9 +174,13 @@ export class DetectionService implements OnApplicationShutdown {
 
   protected async runDetection(
     request: CreateDetectionRequest,
+    signal: AbortSignal,
   ): Promise<DetectionResult> {
     try {
-      const stock: StockCheckResult = await this.stockCheck.run(request.url);
+      const stock: StockCheckResult = await this.stockCheck.run(
+        request.url,
+        signal,
+      );
 
       if (stock.covered) {
         return {
@@ -151,10 +201,13 @@ export class DetectionService implements OnApplicationShutdown {
     } catch (error: unknown) {
       const failure: ErrorResult = this.describeFailure(error);
 
-      this.logger.error(
-        `Detection of ${request.url} failed (${failure.kind})`,
-        stackOf(error),
-      );
+      // A cancelled stock check fails as it stops; that's no failure of the Site's
+      if (!signal.aborted) {
+        this.logger.error(
+          `Detection of ${request.url} failed (${failure.kind})`,
+          stackOf(error),
+        );
+      }
 
       return failure;
     }

@@ -1,6 +1,8 @@
 import type {
   BackgroundMessage,
   Config,
+  ContentScriptMessage,
+  FoundMessage,
   RuleBundle,
 } from '@duckduckgo/autoconsent';
 import { evalSnippets } from '@duckduckgo/autoconsent';
@@ -152,5 +154,25 @@ describe('AutoconsentSession, playing the extension background', () => {
         ],
       },
     ]);
+  });
+
+  it('ends every wait at once when cancelled, as if it timed out', async () => {
+    vi.useFakeTimers({ now: 0 });
+    const session: AutoconsentSession = new AutoconsentSession({
+      config: CONFIG,
+      rulesForFrame: rulesFor,
+    });
+    const isPopupFound = (
+      message: ContentScriptMessage,
+    ): message is FoundMessage => message.type === 'popupFound';
+
+    const waiting: Promise<unknown> = session.waitFor(isPopupFound, 25_000);
+    session.cancel();
+
+    await expect(waiting).resolves.toBeUndefined();
+    await expect(
+      session.waitFor(isPopupFound, 25_000),
+    ).resolves.toBeUndefined();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

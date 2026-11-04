@@ -17,8 +17,9 @@ export type StockCheckResult = CoveredStockCheck | NotCoveredStockCheck;
 
 /**
  * Runs stock autoconsent (Bundled Rules plus Published Rules, the extension's exact config) on
- * a URL in a fresh browser context, and judges whether those Rules Decline its banner.
+ * a URL in a fresh browser context, and judges whether those Rules Decline its banner. It stops
+ * early when `signal` aborts; whatever it returns or throws after that means nothing.
  */
 export abstract class StockCheck {
-  abstract run(url: string): Promise<StockCheckResult>;
+  abstract run(url: string, signal: AbortSignal): Promise<StockCheckResult>;
 }

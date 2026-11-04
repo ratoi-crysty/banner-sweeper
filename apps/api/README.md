@@ -39,6 +39,8 @@ Sites mostly pick the banner by the visitor's IP, so set `BROWSER_LOCALE` and `B
 npx nx serve @banner-sweeper/api
 ```
 
+Jobs survive a restart. On shutdown, waiting jobs stay `queued` and running ones are cancelled and put back to `queued`, so stopping doesn't wait for a Detection to finish. On start, the API runs every `queued` job again, oldest first, including any a crash left `running`.
+
 ## Tests
 
 ```bash

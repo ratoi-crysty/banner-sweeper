@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import Database from 'better-sqlite3';
 import request, { Response } from 'supertest';
 import {
   DetectionJob,
@@ -16,31 +17,30 @@ import { configureApp } from '../../configure-app';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
 
-/** A stock check whose runs the test finishes by hand, in the order they started. */
+/**
+ * A stock check whose runs the test finishes by hand, in the order they started. Like the real
+ * one, a run stops when the app shuts down.
+ */
 class FakeStockCheck extends StockCheck {
   readonly runs: PendingRun[] = [];
-  protected stopped = false;
 
-  run(url: string): Promise<StockCheckResult> {
-    if (this.stopped) {
-      return Promise.reject(new Error('The test is over'));
-    }
-
+  run(url: string, signal: AbortSignal): Promise<StockCheckResult> {
     return new Promise<StockCheckResult>(
       (
         resolve: (result: StockCheckResult) => void,
         reject: (error: unknown) => void,
       ): void => {
+        if (signal.aborted) {
+          reject(signal.reason);
+
+          return;
+        }
+
+        signal.addEventListener('abort', (): void => reject(signal.reason), {
+          once: true,
+        });
         this.runs.push({ url, resolve, reject });
       },
-    );
-  }
-
-  // Ends every run, so the app can shut down
-  stop(): void {
-    this.stopped = true;
-    this.runs.forEach((run: PendingRun): void =>
-      run.reject(new Error('The test is over')),
     );
   }
 }
@@ -74,6 +74,16 @@ describe('Detection jobs over HTTP', () => {
 
   beforeEach(async () => {
     dataDir = mkdtempSync(join(tmpdir(), 'detections-api-'));
+    await startApp();
+  });
+
+  afterEach(async () => {
+    await app.close();
+    rmSync(dataDir, { recursive: true, force: true });
+  });
+
+  // Starts the API on the test's database, with a fresh fake stock check
+  async function startApp(): Promise<void> {
     stockCheck = new FakeStockCheck();
     const config: ApiConfig = {
       playwrightHost: 'ws://playwright.invalid:1/',
@@ -93,13 +103,7 @@ describe('Detection jobs over HTTP', () => {
     app = moduleRef.createNestApplication({ logger: false });
     configureApp(app);
     await app.init();
-  });
-
-  afterEach(async () => {
-    stockCheck.stop();
-    await app.close();
-    rmSync(dataDir, { recursive: true, force: true });
-  });
+  }
 
   it('accepts a Detection and points to the job', async () => {
     const response: Response = await request(app.getHttpServer())
@@ -266,6 +270,60 @@ describe('Detection jobs over HTTP', () => {
       'https://two.example/',
     ]);
     expect((await getJob(second)).status).toBe('running');
+  });
+
+  it('puts unfinished jobs back on shutdown and resumes them in order on start', async () => {
+    const first: string = await createJob({ url: 'https://one.example/' });
+    const second: string = await createJob({ url: 'https://two.example/' });
+    await waitForJob(
+      first,
+      (job: DetectionJob): boolean => job.status === 'running',
+    );
+
+    // The first job's stock check never ends by itself, so the restart can only finish by cancelling it
+    await app.close();
+    await startApp();
+
+    await vi.waitFor((): void => expect(stockCheck.runs).toHaveLength(1));
+    expect(stockCheck.runs[0]?.url).toBe('https://one.example/');
+    expect(await getJob(first)).toMatchObject({
+      status: 'running',
+      outcome: null,
+    });
+    expect((await getJob(second)).status).toBe('queued');
+
+    stockCheck.runs[0]?.resolve(COVERED);
+    await waitForJob(
+      first,
+      (job: DetectionJob): boolean => job.status === 'finished',
+    );
+    await vi.waitFor((): void => expect(stockCheck.runs).toHaveLength(2));
+    expect(stockCheck.runs[1]?.url).toBe('https://two.example/');
+  });
+
+  it('runs a job again when the API stopped without shutting down', async () => {
+    const id: string = await createJob({ url: 'https://crash.example/' });
+    await waitForJob(
+      id,
+      (job: DetectionJob): boolean => job.status === 'running',
+    );
+    await app.close();
+
+    // What a crash leaves behind: the job still marked as running, with nothing to finish it
+    const database: Database.Database = new Database(
+      join(dataDir, 'api.sqlite'),
+    );
+    database
+      .prepare(
+        `UPDATE detection_jobs SET status = 'running', phase = 'stockCheck' WHERE id = ?`,
+      )
+      .run(id);
+    database.close();
+
+    await startApp();
+
+    await vi.waitFor((): void => expect(stockCheck.runs).toHaveLength(1));
+    expect(stockCheck.runs[0]?.url).toBe('https://crash.example/');
   });
 
   it.each([

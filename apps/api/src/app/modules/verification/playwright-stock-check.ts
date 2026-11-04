@@ -36,20 +36,29 @@ export class PlaywrightStockCheck extends StockCheck {
     super();
   }
 
-  async run(url: string): Promise<StockCheckResult> {
+  async run(url: string, signal: AbortSignal): Promise<StockCheckResult> {
+    signal.throwIfAborted();
     const published: AutoConsentCMPRule[] = await this.publishedRules.list();
     const context: BrowserContext = await this.browser.newContext();
+    // The extension's exact config: heuristics (tier1/tier2) stay off
+    const session: AutoconsentSession = new AutoconsentSession({
+      config: autoconsentConfig,
+      rulesForFrame: (frame: FrameContext): RuleBundle => ({
+        autoconsent: published,
+        compact: compactRulesForFrame(frame),
+      }),
+    });
+    // Closing the context ends navigation at once; cancelling the session ends its waits
+    const stop: () => void = (): void => {
+      session.cancel();
+      void context.close().catch((): void => undefined);
+    };
+    signal.addEventListener('abort', stop, { once: true });
 
     try {
+      // It may have aborted while the context was opening, before the listener was there
+      signal.throwIfAborted();
       const page: Page = await context.newPage();
-      // The extension's exact config: heuristics (tier1/tier2) stay off
-      const session: AutoconsentSession = new AutoconsentSession({
-        config: autoconsentConfig,
-        rulesForFrame: (frame: FrameContext): RuleBundle => ({
-          autoconsent: published,
-          compact: compactRulesForFrame(frame),
-        }),
-      });
       await injectIntoIsolatedWorld(
         page,
         (transport: MessageTransport): MessageHandler =>
@@ -67,6 +76,7 @@ export class PlaywrightStockCheck extends StockCheck {
       await this.openSite(page, url);
 
       const result: StockCheckResult = await checkExistingRules(session);
+      signal.throwIfAborted();
 
       // A browser that went away mid-run makes the waits time out, which says nothing about the Site
       if (!context.browser()?.isConnected()) {
@@ -77,6 +87,7 @@ export class PlaywrightStockCheck extends StockCheck {
 
       return result;
     } finally {
+      signal.removeEventListener('abort', stop);
       await context.close().catch((): void => undefined);
     }
   }
