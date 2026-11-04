@@ -8,7 +8,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { format } from 'prettier';
+import { isDeepStrictEqual } from 'node:util';
+import { format, type Options, resolveConfig } from 'prettier';
 import { createGenerator, type Schema } from 'ts-json-schema-generator';
 
 interface SchemaFile {
@@ -89,13 +90,21 @@ function toLlmRuleSchema(schema: Schema): Schema {
   return { ...rule, definitions };
 }
 
-async function serialize(schema: Schema): Promise<string> {
-  return format(JSON.stringify(schema), { parser: 'json' });
+// Format with the repo's Prettier config, so the committed files also pass `nx format:check`
+async function serialize(file: SchemaFile): Promise<string> {
+  const options: Options = (await resolveConfig(file.path)) ?? {};
+  return format(JSON.stringify(file.schema), { ...options, filepath: file.path });
 }
 
+// Compares content, not bytes: how Prettier lays out a JSON file depends on its previous layout
 async function isUpToDate(file: SchemaFile): Promise<boolean> {
-  const committed: string = await readFile(file.path, 'utf8').catch((): string => '');
-  return committed === (await serialize(file.schema));
+  try {
+    const committed: unknown = JSON.parse(await readFile(file.path, 'utf8'));
+    // Round-trip the fresh schema so keys JSON drops (set to `undefined`) don't count
+    return isDeepStrictEqual(committed, JSON.parse(JSON.stringify(file.schema)));
+  } catch {
+    return false;
+  }
 }
 
 async function main(): Promise<void> {
@@ -110,7 +119,7 @@ async function main(): Promise<void> {
 
   if (!process.argv.includes('--check')) {
     for (const file of files) {
-      await writeFile(file.path, await serialize(file.schema));
+      await writeFile(file.path, await serialize(file));
     }
     return;
   }
