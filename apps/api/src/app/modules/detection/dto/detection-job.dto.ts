@@ -17,13 +17,7 @@ import { VerificationReportDto } from './verification-report.dto';
 
 const STATUSES: DetectionStatus[] = ['queued', 'running', 'finished'];
 const PHASES: DetectionPhase[] = ['stockCheck', 'agent', 'finalVerification'];
-const OUTCOMES: DetectionOutcome[] = [
-  'drafted',
-  'covered',
-  'noBanner',
-  'noRefusal',
-  'error',
-];
+const OUTCOMES: DetectionOutcome[] = ['drafted', 'covered', 'noBanner', 'noRefusal', 'error'];
 const ERROR_KINDS: DetectionErrorKind[] = [
   'siteUnreachable',
   'browserUnavailable',

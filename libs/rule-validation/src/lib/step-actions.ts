@@ -24,12 +24,7 @@ export const ACTIONS: readonly string[] = [
 ];
 
 // autoconsent runs these whenever they are present; every other action only when its value is truthy
-export const PRESENCE_TESTED_ACTIONS: readonly string[] = [
-  'removeClass',
-  'setStyle',
-  'addStyle',
-  'stylesheet',
-];
+export const PRESENCE_TESTED_ACTIONS: readonly string[] = ['removeClass', 'setStyle', 'addStyle', 'stylesheet'];
 
 // Each modifier and the actions it belongs to; `optional`, `comment` and `negated` go on any Step
 export const MODIFIER_ACTIONS: Readonly<Record<string, readonly string[]>> = {

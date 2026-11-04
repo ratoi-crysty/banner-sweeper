@@ -5,11 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import Database from 'better-sqlite3';
 import request, { Response } from 'supertest';
-import {
-  DetectionJob,
-  DetectionSummary,
-  VerificationReport,
-} from '@banner-sweeper/api-interfaces';
+import { DetectionJob, DetectionSummary, VerificationReport } from '@banner-sweeper/api-interfaces';
 import { apiConfig } from '../../../config/api.config';
 import type { ApiConfig } from '../../../config/api.config';
 import { AppModule } from '../../app.module';
@@ -26,10 +22,7 @@ class FakeStockCheck extends StockCheck {
 
   run(url: string, signal: AbortSignal): Promise<StockCheckResult> {
     return new Promise<StockCheckResult>(
-      (
-        resolve: (result: StockCheckResult) => void,
-        reject: (error: unknown) => void,
-      ): void => {
+      (resolve: (result: StockCheckResult) => void, reject: (error: unknown) => void): void => {
         if (signal.aborted) {
           reject(signal.reason);
 
@@ -125,26 +118,18 @@ describe('Detection jobs over HTTP', () => {
   });
 
   async function createJob(body: object): Promise<string> {
-    const response: Response = await request(app.getHttpServer())
-      .post('/api/detections')
-      .send(body)
-      .expect(202);
+    const response: Response = await request(app.getHttpServer()).post('/api/detections').send(body).expect(202);
 
     return (response.body as DetectionSummary).id;
   }
 
   async function getJob(id: string): Promise<DetectionJob> {
-    const response: Response = await request(app.getHttpServer())
-      .get(`/api/detections/${id}`)
-      .expect(200);
+    const response: Response = await request(app.getHttpServer()).get(`/api/detections/${id}`).expect(200);
 
     return response.body;
   }
 
-  async function waitForJob(
-    id: string,
-    done: (job: DetectionJob) => boolean,
-  ): Promise<DetectionJob> {
+  async function waitForJob(id: string, done: (job: DetectionJob) => boolean): Promise<DetectionJob> {
     return vi.waitFor(async (): Promise<DetectionJob> => {
       const job: DetectionJob = await getJob(id);
       expect(done(job)).toBe(true);
@@ -159,10 +144,7 @@ describe('Detection jobs over HTTP', () => {
       hint: 'The banner shows after a few seconds',
     });
 
-    const running: DetectionJob = await waitForJob(
-      id,
-      (job: DetectionJob): boolean => job.status === 'running',
-    );
+    const running: DetectionJob = await waitForJob(id, (job: DetectionJob): boolean => job.status === 'running');
     expect(running).toMatchObject({
       id,
       url: 'https://www.example.org/news',
@@ -175,15 +157,10 @@ describe('Detection jobs over HTTP', () => {
       usage: null,
       outcome: null,
     });
-    expect(stockCheck.runs.map((run: PendingRun): string => run.url)).toEqual([
-      'https://www.example.org/news',
-    ]);
+    expect(stockCheck.runs.map((run: PendingRun): string => run.url)).toEqual(['https://www.example.org/news']);
 
     stockCheck.runs[0]?.resolve(COVERED);
-    const finished: DetectionJob = await waitForJob(
-      id,
-      (job: DetectionJob): boolean => job.status === 'finished',
-    );
+    const finished: DetectionJob = await waitForJob(id, (job: DetectionJob): boolean => job.status === 'finished');
 
     expect(finished).toMatchObject({
       status: 'finished',
@@ -213,17 +190,12 @@ describe('Detection jobs over HTTP', () => {
       notCoveredReason: 'cc_banner only hid the banner (a cosmetic Rule)',
       report: REPORT,
     });
-    const finished: DetectionJob = await waitForJob(
-      id,
-      (job: DetectionJob): boolean => job.status === 'finished',
-    );
+    const finished: DetectionJob = await waitForJob(id, (job: DetectionJob): boolean => job.status === 'finished');
 
     expect(finished).toMatchObject({
       outcome: 'error',
       kind: 'internal',
-      message: expect.stringContaining(
-        'Not Covered: cc_banner only hid the banner (a cosmetic Rule)',
-      ),
+      message: expect.stringContaining('Not Covered: cc_banner only hid the banner (a cosmetic Rule)'),
     });
     expect(finished.usage).toMatchObject({ inputTokens: 0, outputTokens: 0 });
   });
@@ -238,16 +210,12 @@ describe('Detection jobs over HTTP', () => {
         new Error('page.goto: net::ERR_NAME_NOT_RESOLVED\nCall log: …'),
       ),
     );
-    const finished: DetectionJob = await waitForJob(
-      id,
-      (job: DetectionJob): boolean => job.status === 'finished',
-    );
+    const finished: DetectionJob = await waitForJob(id, (job: DetectionJob): boolean => job.status === 'finished');
 
     expect(finished).toMatchObject({
       outcome: 'error',
       kind: 'siteUnreachable',
-      message:
-        "Couldn't load https://nowhere.invalid/: page.goto: net::ERR_NAME_NOT_RESOLVED",
+      message: "Couldn't load https://nowhere.invalid/: page.goto: net::ERR_NAME_NOT_RESOLVED",
     });
   });
 
@@ -259,10 +227,7 @@ describe('Detection jobs over HTTP', () => {
     expect((await getJob(second)).status).toBe('queued');
 
     stockCheck.runs[0]?.resolve(COVERED);
-    await waitForJob(
-      first,
-      (job: DetectionJob): boolean => job.status === 'finished',
-    );
+    await waitForJob(first, (job: DetectionJob): boolean => job.status === 'finished');
     await vi.waitFor((): void => expect(stockCheck.runs).toHaveLength(2));
 
     expect(stockCheck.runs.map((run: PendingRun): string => run.url)).toEqual([
@@ -275,10 +240,7 @@ describe('Detection jobs over HTTP', () => {
   it('puts unfinished jobs back on shutdown and resumes them in order on start', async () => {
     const first: string = await createJob({ url: 'https://one.example/' });
     const second: string = await createJob({ url: 'https://two.example/' });
-    await waitForJob(
-      first,
-      (job: DetectionJob): boolean => job.status === 'running',
-    );
+    await waitForJob(first, (job: DetectionJob): boolean => job.status === 'running');
 
     // The first job's stock check never ends by itself, so the restart can only finish by cancelling it
     await app.close();
@@ -293,31 +255,19 @@ describe('Detection jobs over HTTP', () => {
     expect((await getJob(second)).status).toBe('queued');
 
     stockCheck.runs[0]?.resolve(COVERED);
-    await waitForJob(
-      first,
-      (job: DetectionJob): boolean => job.status === 'finished',
-    );
+    await waitForJob(first, (job: DetectionJob): boolean => job.status === 'finished');
     await vi.waitFor((): void => expect(stockCheck.runs).toHaveLength(2));
     expect(stockCheck.runs[1]?.url).toBe('https://two.example/');
   });
 
   it('runs a job again when the API stopped without shutting down', async () => {
     const id: string = await createJob({ url: 'https://crash.example/' });
-    await waitForJob(
-      id,
-      (job: DetectionJob): boolean => job.status === 'running',
-    );
+    await waitForJob(id, (job: DetectionJob): boolean => job.status === 'running');
     await app.close();
 
     // What a crash leaves behind: the job still marked as running, with nothing to finish it
-    const database: Database.Database = new Database(
-      join(dataDir, 'api.sqlite'),
-    );
-    database
-      .prepare(
-        `UPDATE detection_jobs SET status = 'running', phase = 'stockCheck' WHERE id = ?`,
-      )
-      .run(id);
+    const database: Database.Database = new Database(join(dataDir, 'api.sqlite'));
+    database.prepare(`UPDATE detection_jobs SET status = 'running', phase = 'stockCheck' WHERE id = ?`).run(id);
     database.close();
 
     await startApp();
@@ -331,23 +281,11 @@ describe('Detection jobs over HTTP', () => {
     ['a non-http URL', { url: 'ftp://example.org/' }],
     ['a javascript: URL', { url: 'javascript:alert(1)' }],
     ['a missing URL', {}],
-    [
-      'a URL over 2048 characters',
-      { url: `https://example.org/${'a'.repeat(2029)}` },
-    ],
-    [
-      'a Hint over 2000 characters',
-      { url: 'https://example.org/', hint: 'a'.repeat(2001) },
-    ],
-    [
-      'an unknown field',
-      { url: 'https://example.org/', model: 'claude-opus-5-5' },
-    ],
+    ['a URL over 2048 characters', { url: `https://example.org/${'a'.repeat(2029)}` }],
+    ['a Hint over 2000 characters', { url: 'https://example.org/', hint: 'a'.repeat(2001) }],
+    ['an unknown field', { url: 'https://example.org/', model: 'claude-opus-5-5' }],
   ])('rejects %s', async (_case: string, body: object) => {
-    await request(app.getHttpServer())
-      .post('/api/detections')
-      .send(body)
-      .expect(400);
+    await request(app.getHttpServer()).post('/api/detections').send(body).expect(400);
 
     expect(stockCheck.runs).toHaveLength(0);
   });
@@ -362,8 +300,6 @@ describe('Detection jobs over HTTP', () => {
   });
 
   it('answers 404 for an unknown job', async () => {
-    await request(app.getHttpServer())
-      .get('/api/detections/0b0b6d9e-5d3c-4c55-9d6f-2b1d1e1f2a3b')
-      .expect(404);
+    await request(app.getHttpServer()).get('/api/detections/0b0b6d9e-5d3c-4c55-9d6f-2b1d1e1f2a3b').expect(404);
   });
 });

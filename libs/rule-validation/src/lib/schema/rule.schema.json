@@ -221,10 +221,7 @@
       }
     },
     "ElementSelector": {
-      "anyOf": [
-        { "type": "string" },
-        { "type": "array", "items": { "type": "string" } }
-      ]
+      "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
     },
     "VisibilityCheck": { "type": "string", "enum": ["any", "all", "none"] },
     "HideMethod": { "type": "string", "enum": ["display", "opacity"] }

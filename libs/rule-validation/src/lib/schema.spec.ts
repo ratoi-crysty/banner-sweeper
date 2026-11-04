@@ -67,22 +67,16 @@ describe('llmRuleSchema', () => {
       'cosmetic',
     ]) {
       expect(propertyNames(llmRuleSchema)).not.toContain(field);
-      expect(compile(llmRuleSchema)({ ...LLM_RULE, [field]: true })).toBe(
-        false,
-      );
+      expect(compile(llmRuleSchema)({ ...LLM_RULE, [field]: true })).toBe(false);
     }
   });
 
   it('does not offer runContext.frame', () => {
-    expect(
-      propertyNames(definition(llmRuleSchema, 'RunContext')),
-    ).not.toContain('frame');
+    expect(propertyNames(definition(llmRuleSchema, 'RunContext'))).not.toContain('frame');
   });
 
   it('does not offer eval', () => {
-    expect(
-      propertyNames(definition(llmRuleSchema, 'AutoConsentRuleStep')),
-    ).not.toContain('eval');
+    expect(propertyNames(definition(llmRuleSchema, 'AutoConsentRuleStep'))).not.toContain('eval');
     expect(
       compile(llmRuleSchema)({
         ...LLM_RULE,
@@ -92,9 +86,7 @@ describe('llmRuleSchema', () => {
   });
 
   it('fixes optIn to []', () => {
-    expect(
-      compile(llmRuleSchema)({ ...LLM_RULE, optIn: [{ click: '#accept' }] }),
-    ).toBe(false);
+    expect(compile(llmRuleSchema)({ ...LLM_RULE, optIn: [{ click: '#accept' }] })).toBe(false);
   });
 
   it('gives a valid Rule once our code fills in the fields it owns', () => {

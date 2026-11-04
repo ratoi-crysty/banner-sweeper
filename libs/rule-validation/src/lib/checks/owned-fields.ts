@@ -6,10 +6,7 @@ import { RuleContext } from '../rule-context.js';
 import { RuleProblem } from '../rule-problem.js';
 
 /** `name` and `minimumRuleStepVersion` are set by our code; Rule metadata is ours too. */
-export function ownedFieldProblems(
-  rule: AutoConsentCMPRule,
-  context: RuleContext,
-): RuleProblem[] {
+export function ownedFieldProblems(rule: AutoConsentCMPRule, context: RuleContext): RuleProblem[] {
   const problems: RuleProblem[] = [];
   const name: string = ruleName(context);
   if (rule.name.startsWith('auto_')) {

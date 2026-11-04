@@ -41,13 +41,8 @@ function selectorProblems(selector: unknown, path: string): RuleProblem[] {
   return [];
 }
 
-function selectorFieldProblems(
-  fields: JsonObject,
-  path: string,
-): RuleProblem[] {
-  return SELECTOR_FIELDS.flatMap((field: string): RuleProblem[] =>
-    selectorProblems(fields[field], `${path}.${field}`),
-  );
+function selectorFieldProblems(fields: JsonObject, path: string): RuleProblem[] {
+  return SELECTOR_FIELDS.flatMap((field: string): RuleProblem[] => selectorProblems(fields[field], `${path}.${field}`));
 }
 
 function stepCapProblems({ step, path, nesting }: VisitedStep): RuleProblem[] {
@@ -61,10 +56,7 @@ function stepCapProblems({ step, path, nesting }: VisitedStep): RuleProblem[] {
       });
     }
   }
-  if (
-    (step['if'] !== undefined || step['any'] !== undefined) &&
-    nesting >= MAX_NESTING
-  ) {
+  if ((step['if'] !== undefined || step['any'] !== undefined) && nesting >= MAX_NESTING) {
     problems.push({
       path,
       message: `nests \`if\`/\`any\` more than ${MAX_NESTING} levels deep`,
@@ -95,12 +87,8 @@ export function capProblems(rule: AutoConsentCMPRule): RuleProblem[] {
       message: `has ${steps.length} Steps; a Rule may have at most ${MAX_STEPS}`,
     });
   }
-  (rule.prehideSelectors ?? []).forEach(
-    (selector: string, index: number): void => {
-      problems.push(
-        ...selectorProblems(selector, `$.prehideSelectors[${index}]`),
-      );
-    },
-  );
+  (rule.prehideSelectors ?? []).forEach((selector: string, index: number): void => {
+    problems.push(...selectorProblems(selector, `$.prehideSelectors[${index}]`));
+  });
   return [...problems, ...steps.flatMap(stepCapProblems)];
 }

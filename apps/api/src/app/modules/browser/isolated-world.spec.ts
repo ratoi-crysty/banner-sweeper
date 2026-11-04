@@ -1,17 +1,5 @@
-import {
-  Browser,
-  BrowserContext,
-  Frame,
-  LaunchOptions,
-  Page,
-  Route,
-  chromium,
-} from 'playwright-core';
-import {
-  MessageHandler,
-  MessageTransport,
-  injectIntoIsolatedWorld,
-} from './isolated-world';
+import { Browser, BrowserContext, Frame, LaunchOptions, Page, Route, chromium } from 'playwright-core';
+import { MessageHandler, MessageTransport, injectIntoIsolatedWorld } from './isolated-world';
 
 // Needs a Playwright 1.64 browser server, but not the internet: the pages are served by routing
 const PLAYWRIGHT_HOST: string | undefined = process.env['PLAYWRIGHT_HOST'];
@@ -30,10 +18,7 @@ function pageHtml(secret: string, body = ''): string {
 }
 
 const PAGES: Record<string, string> = {
-  [TOP_URL]: pageHtml(
-    'top',
-    `<iframe src="${SAME_SITE_URL}"></iframe><iframe src="${CROSS_SITE_URL}"></iframe>`,
-  ),
+  [TOP_URL]: pageHtml('top', `<iframe src="${SAME_SITE_URL}"></iframe><iframe src="${CROSS_SITE_URL}"></iframe>`),
   [SAME_SITE_URL]: pageHtml('same'),
   [CROSS_SITE_URL]: pageHtml('cross'),
   [CROSS_SITE_NEXT_URL]: pageHtml('next'),
@@ -138,10 +123,7 @@ describe.skipIf(!PLAYWRIGHT_HOST)('injectIntoIsolatedWorld', () => {
     });
 
     function initsFrom(url: string): Received[] {
-      return received.filter(
-        ({ message }: Received): boolean =>
-          message.type === 'init' && message.url === url,
-      );
+      return received.filter(({ message }: Received): boolean => message.type === 'init' && message.url === url);
     }
 
     async function initFrom(url: string): Promise<Received> {
@@ -171,27 +153,19 @@ describe.skipIf(!PLAYWRIGHT_HOST)('injectIntoIsolatedWorld', () => {
 
     it('runs the script once in every document, each in its own world', async () => {
       // Precondition: the iframes are where this build should put them, so the intended bridge path runs
-      const crossSiteSession: Promise<unknown> = context.newCDPSession(
-        frameAt(CROSS_SITE_URL),
-      );
+      const crossSiteSession: Promise<unknown> = context.newCDPSession(frameAt(CROSS_SITE_URL));
       await (build.crossSiteOutOfProcess
         ? expect(crossSiteSession).resolves.toBeDefined()
         : expect(crossSiteSession).rejects.toThrow());
-      await expect(
-        context.newCDPSession(frameAt(SAME_SITE_URL)),
-      ).rejects.toThrow();
+      await expect(context.newCDPSession(frameAt(SAME_SITE_URL))).rejects.toThrow();
 
-      const inits: Received[] = await Promise.all(
-        [TOP_URL, SAME_SITE_URL, CROSS_SITE_URL].map(initFrom),
-      );
+      const inits: Received[] = await Promise.all([TOP_URL, SAME_SITE_URL, CROSS_SITE_URL].map(initFrom));
       await page.waitForTimeout(300);
 
       expect(initsFrom(TOP_URL)).toHaveLength(1);
       expect(initsFrom(SAME_SITE_URL)).toHaveLength(1);
       expect(initsFrom(CROSS_SITE_URL)).toHaveLength(1);
-      expect(
-        new Set(inits.map(({ frameRef }: Received): string => frameRef)).size,
-      ).toBe(3);
+      expect(new Set(inits.map(({ frameRef }: Received): string => frameRef)).size).toBe(3);
     });
 
     it('tells the top frame from the iframes', async () => {
@@ -214,18 +188,9 @@ describe.skipIf(!PLAYWRIGHT_HOST)('injectIntoIsolatedWorld', () => {
           message.type === 'init' ? message.seesPageSecret : message.type,
         ),
       ).toEqual(['undefined', 'undefined', 'undefined']);
-      expect(
-        await transport.evalInMainWorld(top.frameRef, 'window.pageSecret'),
-      ).toBe('top');
-      expect(
-        await transport.evalInMainWorld(sameSite.frameRef, 'window.pageSecret'),
-      ).toBe('same');
-      expect(
-        await transport.evalInMainWorld(
-          crossSite.frameRef,
-          'window.pageSecret',
-        ),
-      ).toBe('cross');
+      expect(await transport.evalInMainWorld(top.frameRef, 'window.pageSecret')).toBe('top');
+      expect(await transport.evalInMainWorld(sameSite.frameRef, 'window.pageSecret')).toBe('same');
+      expect(await transport.evalInMainWorld(crossSite.frameRef, 'window.pageSecret')).toBe('cross');
     });
 
     it('delivers a message only to the frame it is for', async () => {
@@ -254,9 +219,7 @@ describe.skipIf(!PLAYWRIGHT_HOST)('injectIntoIsolatedWorld', () => {
 
       expect(next.frameRef).not.toBe(first.frameRef);
       expect(transport.isMainFrame(next.frameRef)).toBe(false);
-      expect(
-        await transport.evalInMainWorld(next.frameRef, 'window.pageSecret'),
-      ).toBe('next');
+      expect(await transport.evalInMainWorld(next.frameRef, 'window.pageSecret')).toBe('next');
     });
   });
 });

@@ -8,9 +8,7 @@ import {
 } from '@banner-sweeper/api-interfaces';
 import { DetectionJobEntity } from './detection-job.entity';
 
-export function toDetectionSummary(
-  entity: DetectionJobEntity,
-): DetectionSummary {
+export function toDetectionSummary(entity: DetectionJobEntity): DetectionSummary {
   return {
     id: entity.id,
     url: entity.url,

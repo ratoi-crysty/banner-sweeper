@@ -24,11 +24,7 @@ import type { Response } from 'express';
 import { GLOBAL_PREFIX } from '../../configure-app';
 import { DetectionService } from './detection.service';
 import { CreateDetectionDto } from './dto/create-detection.dto';
-import {
-  DETECTION_JOB_MODELS,
-  DETECTION_JOB_SCHEMA,
-  DetectionSummaryDto,
-} from './dto/detection-job.dto';
+import { DETECTION_JOB_MODELS, DETECTION_JOB_SCHEMA, DetectionSummaryDto } from './dto/detection-job.dto';
 
 // Detection jobs don't fit a CRUD controller: creating one queues work, and the job is read-only after
 @ApiTags('detections')
@@ -41,8 +37,7 @@ export class DetectionController {
   @HttpCode(HttpStatus.ACCEPTED)
   @ApiOperation({
     summary: 'Request a Detection',
-    description:
-      'Queues a Detection job for the URL. The `Location` header points to the job.',
+    description: 'Queues a Detection job for the URL. The `Location` header points to the job.',
   })
   @ApiAcceptedResponse({ type: DetectionSummaryDto })
   @ApiBadRequestResponse({ description: 'Invalid `url` or `hint`' })
@@ -64,9 +59,7 @@ export class DetectionController {
   })
   @ApiOkResponse({ schema: DETECTION_JOB_SCHEMA })
   @ApiNotFoundResponse({ description: 'No job with this id' })
-  async get(
-    @Param('id', new ParseUUIDPipe()) id: string,
-  ): Promise<DetectionJob> {
+  async get(@Param('id', new ParseUUIDPipe()) id: string): Promise<DetectionJob> {
     const job: DetectionJob | undefined = await this.detections.get(id);
 
     if (!job) {

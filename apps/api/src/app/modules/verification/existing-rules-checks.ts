@@ -1,19 +1,6 @@
-import type {
-  CheckResult,
-  VerificationReport,
-} from '@banner-sweeper/api-interfaces';
-import type {
-  ContentScriptMessage,
-  DetectedMessage,
-  DoneMessage,
-  FoundMessage,
-} from '@duckduckgo/autoconsent';
-import {
-  AutoconsentSession,
-  ContentScriptFrame,
-  MessageMatcher,
-  ReceivedMessage,
-} from './autoconsent-session';
+import type { CheckResult, VerificationReport } from '@banner-sweeper/api-interfaces';
+import type { ContentScriptMessage, DetectedMessage, DoneMessage, FoundMessage } from '@duckduckgo/autoconsent';
+import { AutoconsentSession, ContentScriptFrame, MessageMatcher, ReceivedMessage } from './autoconsent-session';
 import type { StockCheckResult } from './stock-check';
 
 // How long a Rule gets to find the banner, from the start of the run
@@ -21,10 +8,7 @@ export const DETECT_TIMEOUT_MS = 25_000;
 // How long the Rule gets to opt out and finish, from finding the banner
 export const DECLINE_TIMEOUT_MS = 45_000;
 
-type MessageOfType<T extends ContentScriptMessage['type']> = Extract<
-  ContentScriptMessage,
-  { type: T }
->;
+type MessageOfType<T extends ContentScriptMessage['type']> = Extract<ContentScriptMessage, { type: T }>;
 
 // What the judge found out, for the Verification Report
 interface Findings {
@@ -35,24 +19,20 @@ interface Findings {
   declinedBy?: ReceivedMessage<DoneMessage>;
 }
 
-const isPopupFound: MessageMatcher<FoundMessage> = (
-  message: ContentScriptMessage,
-): message is FoundMessage => message.type === 'popupFound';
+const isPopupFound: MessageMatcher<FoundMessage> = (message: ContentScriptMessage): message is FoundMessage =>
+  message.type === 'popupFound';
 
 /**
  * The judge: decides from autoconsent's messages whether the existing Rules (Bundled plus
  * Published) Decline the Site's banner, by asking three questions in order. autoconsent sends
  * nothing when nothing happens, so each question has a deadline, and silence past it means no.
  */
-export async function checkExistingRules(
-  session: AutoconsentSession,
-): Promise<StockCheckResult> {
+export async function checkExistingRules(session: AutoconsentSession): Promise<StockCheckResult> {
   // 1. Did an existing Rule find the banner within 25 s?
-  const found: ReceivedMessage<FoundMessage> | undefined =
-    await session.waitFor(
-      isPopupFound,
-      DETECT_TIMEOUT_MS - session.elapsedMs(),
-    );
+  const found: ReceivedMessage<FoundMessage> | undefined = await session.waitFor(
+    isPopupFound,
+    DETECT_TIMEOUT_MS - session.elapsedMs(),
+  );
 
   if (!found) {
     const reason: string = nothingFoundReason(session);
@@ -86,8 +66,12 @@ export async function checkExistingRules(
   });
 
   // 2. Did that Rule refuse?
-  const optOut: ReceivedMessage<MessageOfType<'optOutResult'>> | undefined =
-    await waitForRule(session, found, 'optOutResult', deadlineMs);
+  const optOut: ReceivedMessage<MessageOfType<'optOutResult'>> | undefined = await waitForRule(
+    session,
+    found,
+    'optOutResult',
+    deadlineMs,
+  );
 
   if (!optOut) {
     return notCovered(`${rule} didn't opt out within ${timeout}`);
@@ -139,19 +123,13 @@ function waitForRule<T extends 'optOutResult' | 'autoconsentDone'>(
     message: ContentScriptMessage,
     frame: ContentScriptFrame,
   ): message is MessageOfType<T> =>
-    message.type === type &&
-    frame.id === found.frame.id &&
-    'cmp' in message &&
-    message.cmp === found.message.cmp;
+    message.type === type && frame.id === found.frame.id && 'cmp' in message && message.cmp === found.message.cmp;
 
   return session.waitFor(matches, deadlineMs - session.elapsedMs());
 }
 
 // The report is the JSON contract, where a missing value is `null` so the key stays present
-function verificationReport(
-  session: AutoconsentSession,
-  findings: Findings,
-): VerificationReport {
+function verificationReport(session: AutoconsentSession, findings: Findings): VerificationReport {
   return {
     checks: { detected: findings.detected, declined: findings.declined },
     timings: {
@@ -160,28 +138,20 @@ function verificationReport(
       declinedMs: findings.declinedBy?.atMs ?? null,
     },
     messageLog: session.messageLog(),
-    popupFrameUrl: findings.found
-      ? session.frameUrl(findings.found.frame)
-      : null,
+    popupFrameUrl: findings.found ? session.frameUrl(findings.found.frame) : null,
   };
 }
 
 function nothingFoundReason(session: AutoconsentSession): string {
   const timeout: string = seconds(DETECT_TIMEOUT_MS);
-  const detected: ReceivedMessage<DetectedMessage>[] =
-    session.messagesOfType('cmpDetected');
+  const detected: ReceivedMessage<DetectedMessage>[] = session.messagesOfType('cmpDetected');
 
   if (detected.length === 0) {
     return `No existing Rule recognised a banner within ${timeout}`;
   }
 
   const rules: string = [
-    ...new Set(
-      detected.map(
-        (received: ReceivedMessage<DetectedMessage>): string =>
-          received.message.cmp,
-      ),
-    ),
+    ...new Set(detected.map((received: ReceivedMessage<DetectedMessage>): string => received.message.cmp)),
   ].join(', ');
 
   return `${rules} was detected, but found no banner within ${timeout}`;

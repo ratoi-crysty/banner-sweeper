@@ -5,8 +5,7 @@ import { IsAbsoluteHttpUrlConstraint } from './is-absolute-http-url.constraint';
 
 export class CreateDetectionDto implements CreateDetectionRequest {
   @ApiProperty({
-    description:
-      'The page to run Detection on, absolute http(s). Stored as given.',
+    description: 'The page to run Detection on, absolute http(s). Stored as given.',
     maxLength: 2048,
     example: 'https://www.example.org/',
   })
@@ -16,8 +15,7 @@ export class CreateDetectionDto implements CreateDetectionRequest {
   url!: string;
 
   @ApiPropertyOptional({
-    description:
-      'Guidance from the requesting Member about where or how the Consent Banner appears.',
+    description: 'Guidance from the requesting Member about where or how the Consent Banner appears.',
     maxLength: 2000,
   })
   @IsOptional()

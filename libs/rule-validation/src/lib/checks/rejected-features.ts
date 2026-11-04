@@ -5,9 +5,7 @@ import { stepsOf } from '../steps.js';
 export const EVAL_NOT_ALLOWED = 'is not allowed: a Rule never runs code';
 
 /** Features autoconsent supports that our Rules may never use. */
-export function rejectedFeatureProblems(
-  rule: AutoConsentCMPRule,
-): RuleProblem[] {
+export function rejectedFeatureProblems(rule: AutoConsentCMPRule): RuleProblem[] {
   const problems: RuleProblem[] = [];
   if (rule.optIn.length > 0) {
     problems.push({
@@ -24,15 +22,13 @@ export function rejectedFeatureProblems(
   if (rule.intermediate === true) {
     problems.push({
       path: '$.intermediate',
-      message:
-        'must not be true: Verification needs the Rule to finish (`autoconsentDone`)',
+      message: 'must not be true: Verification needs the Rule to finish (`autoconsentDone`)',
     });
   }
   if (rule.runContext?.frame === true) {
     problems.push({
       path: '$.runContext.frame',
-      message:
-        'must not be true: a Rule runs in the top frame only, so its urlPattern matches the Site',
+      message: 'must not be true: a Rule runs in the top frame only, so its urlPattern matches the Site',
     });
   }
   if (rule.cosmetic === true) {

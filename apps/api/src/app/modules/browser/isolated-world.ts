@@ -57,9 +57,7 @@ export interface MessageTransport {
 
 export type MessageHandler = (message: unknown, frameRef: string) => void;
 
-export type MessageHandlerFactory = (
-  transport: MessageTransport,
-) => MessageHandler;
+export type MessageHandlerFactory = (transport: MessageTransport) => MessageHandler;
 
 // Isolated world name: `<prefix><pageWorldUniqueId><separator><frameId>`. Encoding the page-world
 // uniqueId lets us later run eval snippets in that frame's main world.
@@ -94,10 +92,7 @@ export async function injectIntoIsolatedWorld(
   // isolated-world uniqueId -> page (main) world uniqueId
   const isolated2pageWorld: Map<string, string> = new Map<string, string>();
   // isolated-world uniqueId -> CDP session that owns it
-  const sessionByContext: Map<string, CDPSession> = new Map<
-    string,
-    CDPSession
-  >();
+  const sessionByContext: Map<string, CDPSession> = new Map<string, CDPSession>();
   // binding name -> isolated-world uniqueId
   const contextByBinding: Map<string, string> = new Map<string, string>();
   // isolated-world uniqueId -> binding name
@@ -111,12 +106,8 @@ export async function injectIntoIsolatedWorld(
   let mainFrameId: string | undefined;
 
   const handle: MessageHandler = createMessageHandler({
-    sendToContentScript: async (
-      isolatedUniqueId: string,
-      message: object,
-    ): Promise<void> => {
-      const client: CDPSession | undefined =
-        sessionByContext.get(isolatedUniqueId);
+    sendToContentScript: async (isolatedUniqueId: string, message: object): Promise<void> => {
+      const client: CDPSession | undefined = sessionByContext.get(isolatedUniqueId);
       if (!client) return;
       try {
         await client.send('Runtime.evaluate', {
@@ -130,131 +121,103 @@ export async function injectIntoIsolatedWorld(
         // The context may be gone if the frame navigated or detached.
       }
     },
-    evalInMainWorld: async (
-      isolatedUniqueId: string,
-      code: string,
-    ): Promise<unknown> => {
-      const client: CDPSession | undefined =
-        sessionByContext.get(isolatedUniqueId);
-      const pageWorldUniqueId: string | undefined =
-        isolated2pageWorld.get(isolatedUniqueId);
+    evalInMainWorld: async (isolatedUniqueId: string, code: string): Promise<unknown> => {
+      const client: CDPSession | undefined = sessionByContext.get(isolatedUniqueId);
+      const pageWorldUniqueId: string | undefined = isolated2pageWorld.get(isolatedUniqueId);
       if (!client || !pageWorldUniqueId) return false;
-      const { result, exceptionDetails }: EvaluateResult = await client.send(
-        'Runtime.evaluate',
-        {
-          expression: code,
-          uniqueContextId: pageWorldUniqueId,
-          returnByValue: true,
-          awaitPromise: true,
-          // Eval snippets must run even when the page's CSP disallows eval.
-          allowUnsafeEvalBlockedByCSP: true,
-        },
-      );
+      const { result, exceptionDetails }: EvaluateResult = await client.send('Runtime.evaluate', {
+        expression: code,
+        uniqueContextId: pageWorldUniqueId,
+        returnByValue: true,
+        awaitPromise: true,
+        // Eval snippets must run even when the page's CSP disallows eval.
+        allowUnsafeEvalBlockedByCSP: true,
+      });
       return exceptionDetails ? false : (result.value ?? false);
     },
     isMainFrame: (isolatedUniqueId: string): boolean => {
-      const session: CDPSession | undefined =
-        sessionByContext.get(isolatedUniqueId);
+      const session: CDPSession | undefined = sessionByContext.get(isolatedUniqueId);
 
       // An unknown frame has no session; don't let it match a page session not set up yet
-      return (
-        session !== undefined &&
-        session === pageSession &&
-        frameByContext.get(isolatedUniqueId) === mainFrameId
-      );
+      return session !== undefined && session === pageSession && frameByContext.get(isolatedUniqueId) === mainFrameId;
     },
   });
 
   async function attachToSession(client: CDPSession): Promise<void> {
-    client.on(
-      'Runtime.executionContextCreated',
-      async (event: ExecutionContextCreatedEvent): Promise<void> => {
-        const { context }: ExecutionContextCreatedEvent = event;
-        const frameId: unknown = context.auxData?.['frameId'];
-        const type: unknown = context.auxData?.['type'];
+    client.on('Runtime.executionContextCreated', async (event: ExecutionContextCreatedEvent): Promise<void> => {
+      const { context }: ExecutionContextCreatedEvent = event;
+      const frameId: unknown = context.auxData?.['frameId'];
+      const type: unknown = context.auxData?.['type'];
 
-        // Our isolated world finished initializing: wire up its binding and content script.
-        if (type === 'isolated' && context.name.startsWith(WORLD_PREFIX)) {
-          const separatorIndex: number = context.name.indexOf(WORLD_SEPARATOR);
-          const pageWorldUniqueId: string = context.name.slice(
-            WORLD_PREFIX.length,
-            separatorIndex,
-          );
-          const intendedFrameId: string = context.name.slice(
-            separatorIndex + WORLD_SEPARATOR.length,
-          );
-          // Chromium may create the named world in other frames too, and recreates it in the frame's
-          // next document; keep only the one we asked for in the current document.
-          if (
-            typeof frameId !== 'string' ||
-            intendedFrameId !== frameId ||
-            pageWorldByFrame.get(frameId) !== pageWorldUniqueId
-          )
-            return;
-
-          isolated2pageWorld.set(context.uniqueId, pageWorldUniqueId);
-          sessionByContext.set(context.uniqueId, client);
-          frameByContext.set(context.uniqueId, frameId);
-
-          const bindingName = `${BINDING_PREFIX}${context.uniqueId.replace(/\W/g, '_')}`;
-          contextByBinding.set(bindingName, context.uniqueId);
-          bindingByContext.set(context.uniqueId, bindingName);
-          try {
-            await client.send('Runtime.addBinding', {
-              name: bindingName,
-              executionContextName: context.name,
-            });
-            // CDP bindings take a single string arg, so wrap it in the shape the content script expects.
-            await client.send('Runtime.evaluate', {
-              expression: `window.autoconsentSendMessage = (m) => { window.${bindingName}(JSON.stringify(m)); return Promise.resolve(); };\n${contentScript}`,
-              uniqueContextId: context.uniqueId,
-              allowUnsafeEvalBlockedByCSP: true,
-            });
-          } catch {
-            // The frame may have navigated or detached before we finished wiring it up.
-          }
+      // Our isolated world finished initializing: wire up its binding and content script.
+      if (type === 'isolated' && context.name.startsWith(WORLD_PREFIX)) {
+        const separatorIndex: number = context.name.indexOf(WORLD_SEPARATOR);
+        const pageWorldUniqueId: string = context.name.slice(WORLD_PREFIX.length, separatorIndex);
+        const intendedFrameId: string = context.name.slice(separatorIndex + WORLD_SEPARATOR.length);
+        // Chromium may create the named world in other frames too, and recreates it in the frame's
+        // next document; keep only the one we asked for in the current document.
+        if (
+          typeof frameId !== 'string' ||
+          intendedFrameId !== frameId ||
+          pageWorldByFrame.get(frameId) !== pageWorldUniqueId
+        )
           return;
-        }
 
-        // A regular page (main) world: request an isolated world for it, tagged with its id.
-        if (typeof frameId !== 'string' || type !== 'default') return;
-        pageWorldByFrame.set(frameId, context.uniqueId);
-        if (!context.origin || context.origin === '://') return;
+        isolated2pageWorld.set(context.uniqueId, pageWorldUniqueId);
+        sessionByContext.set(context.uniqueId, client);
+        frameByContext.set(context.uniqueId, frameId);
+
+        const bindingName = `${BINDING_PREFIX}${context.uniqueId.replace(/\W/g, '_')}`;
+        contextByBinding.set(bindingName, context.uniqueId);
+        bindingByContext.set(context.uniqueId, bindingName);
         try {
-          await client.send('Page.createIsolatedWorld', {
-            frameId,
-            worldName: `${WORLD_PREFIX}${context.uniqueId}${WORLD_SEPARATOR}${frameId}`,
+          await client.send('Runtime.addBinding', {
+            name: bindingName,
+            executionContextName: context.name,
+          });
+          // CDP bindings take a single string arg, so wrap it in the shape the content script expects.
+          await client.send('Runtime.evaluate', {
+            expression: `window.autoconsentSendMessage = (m) => { window.${bindingName}(JSON.stringify(m)); return Promise.resolve(); };\n${contentScript}`,
+            uniqueContextId: context.uniqueId,
+            allowUnsafeEvalBlockedByCSP: true,
           });
         } catch {
-          // The frame may have navigated or detached.
+          // The frame may have navigated or detached before we finished wiring it up.
         }
-      },
-    );
+        return;
+      }
 
-    client.on(
-      'Runtime.executionContextDestroyed',
-      (event: ExecutionContextDestroyedEvent): void => {
-        const uniqueId: string = event.executionContextUniqueId;
-        if (!uniqueId) return;
-        isolated2pageWorld.delete(uniqueId);
-        sessionByContext.delete(uniqueId);
-        frameByContext.delete(uniqueId);
-        const bindingName: string | undefined = bindingByContext.get(uniqueId);
-        if (bindingName) {
-          bindingByContext.delete(uniqueId);
-          contextByBinding.delete(bindingName);
-          // Each document gets its own binding, so drop the old one with its context.
-          client
-            .send('Runtime.removeBinding', { name: bindingName })
-            .catch((): void => undefined);
-        }
-      },
-    );
+      // A regular page (main) world: request an isolated world for it, tagged with its id.
+      if (typeof frameId !== 'string' || type !== 'default') return;
+      pageWorldByFrame.set(frameId, context.uniqueId);
+      if (!context.origin || context.origin === '://') return;
+      try {
+        await client.send('Page.createIsolatedWorld', {
+          frameId,
+          worldName: `${WORLD_PREFIX}${context.uniqueId}${WORLD_SEPARATOR}${frameId}`,
+        });
+      } catch {
+        // The frame may have navigated or detached.
+      }
+    });
+
+    client.on('Runtime.executionContextDestroyed', (event: ExecutionContextDestroyedEvent): void => {
+      const uniqueId: string = event.executionContextUniqueId;
+      if (!uniqueId) return;
+      isolated2pageWorld.delete(uniqueId);
+      sessionByContext.delete(uniqueId);
+      frameByContext.delete(uniqueId);
+      const bindingName: string | undefined = bindingByContext.get(uniqueId);
+      if (bindingName) {
+        bindingByContext.delete(uniqueId);
+        contextByBinding.delete(bindingName);
+        // Each document gets its own binding, so drop the old one with its context.
+        client.send('Runtime.removeBinding', { name: bindingName }).catch((): void => undefined);
+      }
+    });
 
     client.on('Runtime.bindingCalled', (event: BindingCalledEvent): void => {
-      const isolatedUniqueId: string | undefined = contextByBinding.get(
-        event.name,
-      );
+      const isolatedUniqueId: string | undefined = contextByBinding.get(event.name);
       if (!isolatedUniqueId) return;
       let message: unknown;
       try {
@@ -272,8 +235,7 @@ export async function injectIntoIsolatedWorld(
 
   // The page session covers the main frame and all same-process (in-process) iframes.
   pageSession = await page.context().newCDPSession(page);
-  const { frameTree }: FrameTreeResult =
-    await pageSession.send('Page.getFrameTree');
+  const { frameTree }: FrameTreeResult = await pageSession.send('Page.getFrameTree');
   mainFrameId = frameTree.frame.id;
   // Follow the top frame if Chromium replaces it (e.g. on prerender activation).
   pageSession.on('Page.frameNavigated', (event: FrameNavigatedEvent): void => {

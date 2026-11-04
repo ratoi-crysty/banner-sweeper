@@ -8,22 +8,12 @@ import {
   DetectionUsage,
   ErrorResult,
 } from '@banner-sweeper/api-interfaces';
-import {
-  Inject,
-  Injectable,
-  Logger,
-  OnApplicationBootstrap,
-  OnApplicationShutdown,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import PQueue from 'p-queue';
 import { DetectionJobEntity } from './detection-job.entity';
-import {
-  toDetectionJob,
-  toDetectionSummary,
-  usageColumns,
-} from './detection-job.mapper';
+import { toDetectionJob, toDetectionSummary, usageColumns } from './detection-job.mapper';
 import { type ApiConfig, apiConfig } from '../../../config/api.config';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
 import { firstLine, stackOf } from '../../error-text';
@@ -32,9 +22,7 @@ import { BrowserUnavailableError } from '../browser/browser-unavailable.error';
 
 /** Detection jobs as the API sees them; how a job is stored stays in here. */
 @Injectable()
-export class DetectionService
-  implements OnApplicationBootstrap, OnApplicationShutdown
-{
+export class DetectionService implements OnApplicationBootstrap, OnApplicationShutdown {
   protected readonly queue: PQueue;
   protected readonly logger: Logger = new Logger(DetectionService.name);
   // Aborts on shutdown: running Detections stop, and their jobs go back to the queue
@@ -52,10 +40,7 @@ export class DetectionService
   /** Picks up the jobs a previous run left unfinished, oldest first. */
   async onApplicationBootstrap(): Promise<void> {
     // Only a crash or a hard stop leaves a job running; nothing will finish it, so run it again
-    await this.jobs.update(
-      { status: 'running' },
-      { status: 'queued', phase: null, startedAt: null },
-    );
+    await this.jobs.update({ status: 'running' }, { status: 'queued', phase: null, startedAt: null });
     const queued: DetectionJobEntity[] = await this.jobs
       .createQueryBuilder('job')
       .where('job.status = :status', { status: 'queued' })
@@ -101,8 +86,7 @@ export class DetectionService
   }
 
   async get(id: string): Promise<DetectionJob | undefined> {
-    const job: DetectionJobEntity | undefined =
-      (await this.jobs.findOneBy({ id })) ?? undefined;
+    const job: DetectionJobEntity | undefined = (await this.jobs.findOneBy({ id })) ?? undefined;
 
     return job ? toDetectionJob(job) : undefined;
   }
@@ -117,16 +101,12 @@ export class DetectionService
           return;
         }
 
-        this.logger.error(
-          `Detection job ${jobId} crashed: ${firstLine(err)}`,
-          stackOf(err),
-        );
+        this.logger.error(`Detection job ${jobId} crashed: ${firstLine(err)}`, stackOf(err));
       });
   }
 
   protected async detect(jobId: string): Promise<void> {
-    const job: DetectionJobEntity | undefined =
-      (await this.jobs.findOneBy({ id: jobId })) ?? undefined;
+    const job: DetectionJobEntity | undefined = (await this.jobs.findOneBy({ id: jobId })) ?? undefined;
 
     if (!job) {
       return;
@@ -167,14 +147,9 @@ export class DetectionService
     });
   }
 
-  protected async runDetection(
-    request: CreateDetectionRequest,
-  ): Promise<DetectionResult> {
+  protected async runDetection(request: CreateDetectionRequest): Promise<DetectionResult> {
     try {
-      const stock: StockCheckResult = await this.stockCheck.run(
-        request.url,
-        this.shutdown.signal,
-      );
+      const stock: StockCheckResult = await this.stockCheck.run(request.url, this.shutdown.signal);
 
       if (stock.covered) {
         return {
@@ -197,10 +172,7 @@ export class DetectionService
 
       // A cancelled stock check fails as it stops; that's no failure of the Site's
       if (!this.shutdown.signal.aborted) {
-        this.logger.error(
-          `Detection of ${request.url} failed (${failure.kind})`,
-          stackOf(error),
-        );
+        this.logger.error(`Detection of ${request.url} failed (${failure.kind})`, stackOf(error));
       }
 
       return failure;

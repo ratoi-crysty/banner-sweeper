@@ -1,22 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import {
-  autoconsentConfig,
-  compactRulesForFrame,
-} from '@banner-sweeper/autoconsent-config';
+import { autoconsentConfig, compactRulesForFrame } from '@banner-sweeper/autoconsent-config';
 import type { FrameContext } from '@banner-sweeper/autoconsent-config';
-import type {
-  AutoConsentCMPRule,
-  ContentScriptMessage,
-  RuleBundle,
-} from '@duckduckgo/autoconsent';
+import type { AutoConsentCMPRule, ContentScriptMessage, RuleBundle } from '@duckduckgo/autoconsent';
 import type { BrowserContext, Page } from 'playwright-core';
 import { BrowserUnavailableError } from '../browser/browser-unavailable.error';
 import { BrowserService } from '../browser/browser.service';
-import {
-  MessageHandler,
-  MessageTransport,
-  injectIntoIsolatedWorld,
-} from '../browser/isolated-world';
+import { MessageHandler, MessageTransport, injectIntoIsolatedWorld } from '../browser/isolated-world';
 import { getAutoconsentBundle } from './autoconsent.utils';
 import { AutoconsentSession, ContentScriptFrame } from './autoconsent-session';
 import { checkExistingRules } from './existing-rules-checks';
@@ -101,10 +90,7 @@ export class PlaywrightStockCheck extends StockCheck {
   }
 
   // Puts autoconsent in every frame of the page, and sends everything it says to the session
-  protected async startAutoconsent(
-    page: Page,
-    session: AutoconsentSession,
-  ): Promise<void> {
+  protected async startAutoconsent(page: Page, session: AutoconsentSession): Promise<void> {
     const bundle: string = await getAutoconsentBundle();
 
     await injectIntoIsolatedWorld(
@@ -113,10 +99,7 @@ export class PlaywrightStockCheck extends StockCheck {
         (message: unknown, frameRef: string): void => {
           // Only our content script can call the isolated world's binding
           void session
-            .receive(
-              message as ContentScriptMessage,
-              this.contentScriptFrame(transport, frameRef),
-            )
+            .receive(message as ContentScriptMessage, this.contentScriptFrame(transport, frameRef))
             .catch((): void => undefined);
         },
       bundle,
@@ -124,17 +107,12 @@ export class PlaywrightStockCheck extends StockCheck {
   }
 
   // The bridge names frames by reference; the session wants one object per frame
-  protected contentScriptFrame(
-    transport: MessageTransport,
-    frameRef: string,
-  ): ContentScriptFrame {
+  protected contentScriptFrame(transport: MessageTransport, frameRef: string): ContentScriptFrame {
     return {
       id: frameRef,
       isMainFrame: transport.isMainFrame(frameRef),
-      send: (message: object): Promise<void> =>
-        transport.sendToContentScript(frameRef, message),
-      evalInMainWorld: (code: string): Promise<unknown> =>
-        transport.evalInMainWorld(frameRef, code),
+      send: (message: object): Promise<void> => transport.sendToContentScript(frameRef, message),
+      evalInMainWorld: (code: string): Promise<unknown> => transport.evalInMainWorld(frameRef, code),
     };
   }
 
@@ -155,9 +133,7 @@ export class PlaywrightStockCheck extends StockCheck {
   // A browser that went away makes everything fail or time out, which says nothing about the Site
   protected ensureBrowserConnected(page: Page, cause?: unknown): void {
     if (!page.context().browser()?.isConnected()) {
-      throw new BrowserUnavailableError(
-        cause ?? new Error('The browser disconnected during the stock check'),
-      );
+      throw new BrowserUnavailableError(cause ?? new Error('The browser disconnected during the stock check'));
     }
   }
 }

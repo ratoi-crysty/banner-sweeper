@@ -1,7 +1,4 @@
-import {
-  AutoConsentCMPRule,
-  AutoConsentRuleStep,
-} from '@duckduckgo/autoconsent';
+import { AutoConsentCMPRule, AutoConsentRuleStep } from '@duckduckgo/autoconsent';
 import { RuleProblem, validateRule } from './validate-rule.js';
 
 const URL = 'https://www.example.com/en/';
@@ -31,20 +28,12 @@ function withOptOut(...optOut: AutoConsentRuleStep[]): AutoConsentCMPRule {
   return { ...validRule(), optOut };
 }
 
-function withoutField(
-  field: keyof AutoConsentCMPRule,
-): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(validRule()).filter(
-      ([key]: [string, unknown]): boolean => key !== field,
-    ),
-  );
+function withoutField(field: keyof AutoConsentCMPRule): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(validRule()).filter(([key]: [string, unknown]): boolean => key !== field));
 }
 
 function problemPaths(rule: unknown): string[] {
-  return validateRule(rule, { url: URL }).map(
-    (problem: RuleProblem): string => problem.path,
-  );
+  return validateRule(rule, { url: URL }).map((problem: RuleProblem): string => problem.path);
 }
 
 describe('validateRule', () => {
@@ -54,9 +43,7 @@ describe('validateRule', () => {
 
   describe('schema', () => {
     it('rejects a field autoconsent does not know', () => {
-      expect(problemPaths({ ...validRule(), colour: 'red' })).toEqual([
-        '$.colour',
-      ]);
+      expect(problemPaths({ ...validRule(), colour: 'red' })).toEqual(['$.colour']);
     });
 
     it('rejects a Step field autoconsent does not know', () => {
@@ -69,21 +56,15 @@ describe('validateRule', () => {
     });
 
     it('rejects a missing required field', () => {
-      expect(problemPaths(withoutField('detectPopup'))).toEqual([
-        '$.detectPopup',
-      ]);
+      expect(problemPaths(withoutField('detectPopup'))).toEqual(['$.detectPopup']);
     });
 
     it('rejects a field of the wrong type', () => {
-      expect(
-        problemPaths({ ...validRule(), optOut: [{ wait: '500' }] }),
-      ).toEqual(['$.optOut[0].wait']);
+      expect(problemPaths({ ...validRule(), optOut: [{ wait: '500' }] })).toEqual(['$.optOut[0].wait']);
     });
 
     it('reports a malformed selector once', () => {
-      expect(
-        validateRule({ ...validRule(), optOut: [{ click: 5 }] }, { url: URL }),
-      ).toEqual([
+      expect(validateRule({ ...validRule(), optOut: [{ click: 5 }] }, { url: URL })).toEqual([
         {
           path: '$.optOut[0].click',
           message: expect.stringContaining('selector'),
@@ -92,12 +73,7 @@ describe('validateRule', () => {
     });
 
     it('rejects an eval that is not a bundled snippet as eval', () => {
-      expect(
-        validateRule(
-          { ...validRule(), optOut: [{ eval: 'document.cookie' }] },
-          { url: URL },
-        ),
-      ).toEqual([
+      expect(validateRule({ ...validRule(), optOut: [{ eval: 'document.cookie' }] }, { url: URL })).toEqual([
         {
           path: '$.optOut[0].eval',
           message: expect.stringContaining('not allowed'),
@@ -112,85 +88,60 @@ describe('validateRule', () => {
 
   describe('fields our code owns', () => {
     it('rejects a name other than bs_<site>', () => {
-      expect(problemPaths({ ...validRule(), name: 'bs_example.com' })).toEqual([
-        '$.name',
-      ]);
+      expect(problemPaths({ ...validRule(), name: 'bs_example.com' })).toEqual(['$.name']);
     });
 
     it('lowercases the hostname for the name', () => {
-      expect(
-        validateRule(validRule(), { url: 'https://WWW.Example.COM/en/' }),
-      ).toEqual([]);
+      expect(validateRule(validRule(), { url: 'https://WWW.Example.COM/en/' })).toEqual([]);
     });
 
     it('rejects the auto_ prefix', () => {
-      expect(
-        validateRule(
-          { ...validRule(), name: 'auto_www.example.com' },
-          { url: URL },
-        ),
-      ).toContainEqual({
+      expect(validateRule({ ...validRule(), name: 'auto_www.example.com' }, { url: URL })).toContainEqual({
         path: '$.name',
         message: expect.stringContaining('auto_'),
       });
     });
 
     it('rejects a name that collides with a Bundled Rule', () => {
-      expect(
-        validateRule({ ...validRule(), name: 'ziptozipmoving' }, { url: URL }),
-      ).toContainEqual({
+      expect(validateRule({ ...validRule(), name: 'ziptozipmoving' }, { url: URL })).toContainEqual({
         path: '$.name',
         message: expect.stringContaining('Bundled Rule'),
       });
     });
 
     it('rejects a name that collides with a hard-coded CMP', () => {
-      expect(
-        validateRule({ ...validRule(), name: 'Onetrust' }, { url: URL }),
-      ).toContainEqual({
+      expect(validateRule({ ...validRule(), name: 'Onetrust' }, { url: URL })).toContainEqual({
         path: '$.name',
         message: expect.stringContaining('hard-coded CMP'),
       });
     });
 
     it('rejects a missing minimumRuleStepVersion', () => {
-      expect(problemPaths(withoutField('minimumRuleStepVersion'))).toEqual([
+      expect(problemPaths(withoutField('minimumRuleStepVersion'))).toEqual(['$.minimumRuleStepVersion']);
+    });
+
+    it('rejects a minimumRuleStepVersion lower than the Steps need', () => {
+      expect(problemPaths(withOptOut({ addStyle: 'overflow: auto', selector: 'body' }))).toEqual([
         '$.minimumRuleStepVersion',
       ]);
     });
 
-    it('rejects a minimumRuleStepVersion lower than the Steps need', () => {
-      expect(
-        problemPaths(
-          withOptOut({ addStyle: 'overflow: auto', selector: 'body' }),
-        ),
-      ).toEqual(['$.minimumRuleStepVersion']);
-    });
-
     it('rejects a minimumRuleStepVersion higher than the Steps need', () => {
-      expect(
-        problemPaths({ ...validRule(), minimumRuleStepVersion: 3 }),
-      ).toEqual(['$.minimumRuleStepVersion']);
+      expect(problemPaths({ ...validRule(), minimumRuleStepVersion: 3 })).toEqual(['$.minimumRuleStepVersion']);
     });
 
     it('rejects _metadata', () => {
-      expect(
-        problemPaths({ ...validRule(), _metadata: { vendorUrl: 'https://x' } }),
-      ).toEqual(['$._metadata']);
+      expect(problemPaths({ ...validRule(), _metadata: { vendorUrl: 'https://x' } })).toEqual(['$._metadata']);
     });
 
     it('rejects vendorUrl', () => {
-      expect(
-        problemPaths({ ...validRule(), vendorUrl: 'https://www.example.com/' }),
-      ).toEqual(['$.vendorUrl']);
+      expect(problemPaths({ ...validRule(), vendorUrl: 'https://www.example.com/' })).toEqual(['$.vendorUrl']);
     });
   });
 
   describe('rejected features', () => {
     it('rejects eval', () => {
-      expect(
-        problemPaths(withOptOut({ eval: 'EVAL_ONETRUST_1' }, { click: '#x' })),
-      ).toEqual(['$.optOut[0].eval']);
+      expect(problemPaths(withOptOut({ eval: 'EVAL_ONETRUST_1' }, { click: '#x' }))).toEqual(['$.optOut[0].eval']);
     });
 
     it('rejects eval nested in an if', () => {
@@ -205,21 +156,15 @@ describe('validateRule', () => {
     });
 
     it('rejects an optIn other than []', () => {
-      expect(
-        problemPaths({ ...validRule(), optIn: [{ click: '#accept' }] }),
-      ).toEqual(['$.optIn']);
+      expect(problemPaths({ ...validRule(), optIn: [{ click: '#accept' }] })).toEqual(['$.optIn']);
     });
 
     it('rejects openCmp', () => {
-      expect(
-        problemPaths({ ...validRule(), openCmp: [{ click: '#settings' }] }),
-      ).toEqual(['$.openCmp']);
+      expect(problemPaths({ ...validRule(), openCmp: [{ click: '#settings' }] })).toEqual(['$.openCmp']);
     });
 
     it('rejects intermediate: true', () => {
-      expect(problemPaths({ ...validRule(), intermediate: true })).toEqual([
-        '$.intermediate',
-      ]);
+      expect(problemPaths({ ...validRule(), intermediate: true })).toEqual(['$.intermediate']);
     });
 
     it('allows intermediate: false', () => {
@@ -236,9 +181,7 @@ describe('validateRule', () => {
     });
 
     it('rejects cosmetic: true, pointing to report_no_refusal', () => {
-      expect(
-        validateRule({ ...validRule(), cosmetic: true }, { url: URL }),
-      ).toEqual([
+      expect(validateRule({ ...validRule(), cosmetic: true }, { url: URL })).toEqual([
         {
           path: '$.cosmetic',
           message: expect.stringContaining('report_no_refusal'),
@@ -249,15 +192,11 @@ describe('validateRule', () => {
 
   describe('Step shape', () => {
     it('rejects a Step without an action', () => {
-      expect(problemPaths(withOptOut({ optional: true }))).toEqual([
-        '$.optOut[0]',
-      ]);
+      expect(problemPaths(withOptOut({ optional: true }))).toEqual(['$.optOut[0]']);
     });
 
     it('rejects a Step with two actions', () => {
-      expect(
-        problemPaths(withOptOut({ click: '#reject', hide: '#banner' })),
-      ).toEqual(['$.optOut[0]']);
+      expect(problemPaths(withOptOut({ click: '#reject', hide: '#banner' }))).toEqual(['$.optOut[0]']);
     });
 
     // autoconsent skips these actions when their value is falsy, leaving an "Unrecognized rule"
@@ -302,28 +241,21 @@ describe('validateRule', () => {
       ['selector', { click: '#reject', selector: 'body' }],
       ['stylesheetId', { hide: '#banner', stylesheetId: 'bs' }],
     ])('rejects %s on an action it does not belong to', (modifier, step) => {
-      expect(problemPaths(withOptOut(step))).toEqual([
-        `$.optOut[0].${modifier}`,
-      ]);
+      expect(problemPaths(withOptOut(step))).toEqual([`$.optOut[0].${modifier}`]);
     });
 
-    it.each(['removeClass', 'setStyle', 'addStyle'])(
-      'rejects %s without a selector',
-      (action: string) => {
-        expect(
-          problemPaths({
-            ...validRule(),
-            minimumRuleStepVersion: 2,
-            optOut: [{ [action]: 'x' }],
-          }),
-        ).toEqual(['$.optOut[0]']);
-      },
-    );
+    it.each(['removeClass', 'setStyle', 'addStyle'])('rejects %s without a selector', (action: string) => {
+      expect(
+        problemPaths({
+          ...validRule(),
+          minimumRuleStepVersion: 2,
+          optOut: [{ [action]: 'x' }],
+        }),
+      ).toEqual(['$.optOut[0]']);
+    });
 
     it('rejects an if without a condition', () => {
-      expect(
-        problemPaths(withOptOut({ if: {}, then: [{ click: '#reject' }] })),
-      ).toEqual(['$.optOut[0].if']);
+      expect(problemPaths(withOptOut({ if: {}, then: [{ click: '#reject' }] }))).toEqual(['$.optOut[0].if']);
     });
 
     it('rejects an if with two conditions', () => {
@@ -349,19 +281,12 @@ describe('validateRule', () => {
     });
 
     it('rejects an if without then', () => {
-      expect(problemPaths(withOptOut({ if: { exists: '#banner' } }))).toEqual([
-        '$.optOut[0]',
-      ]);
+      expect(problemPaths(withOptOut({ if: { exists: '#banner' } }))).toEqual(['$.optOut[0]']);
     });
 
-    it.each(['detectCmp', 'detectPopup', 'optOut'])(
-      'rejects an empty %s',
-      (list: string) => {
-        expect(problemPaths({ ...validRule(), [list]: [] })).toEqual([
-          `$.${list}`,
-        ]);
-      },
-    );
+    it.each(['detectCmp', 'detectPopup', 'optOut'])('rejects an empty %s', (list: string) => {
+      expect(problemPaths({ ...validRule(), [list]: [] })).toEqual([`$.${list}`]);
+    });
 
     it('rejects an empty test', () => {
       expect(problemPaths({ ...validRule(), test: [] })).toEqual(['$.test']);
@@ -386,9 +311,7 @@ describe('validateRule', () => {
     }
 
     function nestedAny(levels: number): AutoConsentRuleStep {
-      return levels === 0
-        ? { click: '#reject' }
-        : { any: [nestedAny(levels - 1)] };
+      return levels === 0 ? { click: '#reject' } : { any: [nestedAny(levels - 1)] };
     }
 
     it('allows a wait of 5000 ms', () => {
@@ -396,33 +319,23 @@ describe('validateRule', () => {
     });
 
     it('rejects a wait over 5000 ms', () => {
-      expect(problemPaths(withOptOut({ wait: 5001 }))).toEqual([
-        '$.optOut[0].wait',
-      ]);
+      expect(problemPaths(withOptOut({ wait: 5001 }))).toEqual(['$.optOut[0].wait']);
     });
 
     it('allows a timeout of 10000 ms', () => {
-      expect(
-        problemPaths(withOptOut({ waitFor: '#reject', timeout: 10000 })),
-      ).toEqual([]);
+      expect(problemPaths(withOptOut({ waitFor: '#reject', timeout: 10000 }))).toEqual([]);
     });
 
     it('rejects a timeout over 10000 ms', () => {
-      expect(
-        problemPaths(withOptOut({ waitFor: '#reject', timeout: 10001 })),
-      ).toEqual(['$.optOut[0].timeout']);
+      expect(problemPaths(withOptOut({ waitFor: '#reject', timeout: 10001 }))).toEqual(['$.optOut[0].timeout']);
     });
 
     it('allows 5 retries', () => {
-      expect(
-        problemPaths(withOptOut({ waitForThenClick: '#reject', retry: 5 })),
-      ).toEqual([]);
+      expect(problemPaths(withOptOut({ waitForThenClick: '#reject', retry: 5 }))).toEqual([]);
     });
 
     it('rejects more than 5 retries', () => {
-      expect(
-        problemPaths(withOptOut({ waitForThenClick: '#reject', retry: 6 })),
-      ).toEqual(['$.optOut[0].retry']);
+      expect(problemPaths(withOptOut({ waitForThenClick: '#reject', retry: 6 }))).toEqual(['$.optOut[0].retry']);
     });
 
     it('allows if/any nested 3 deep', () => {
@@ -445,23 +358,16 @@ describe('validateRule', () => {
     });
 
     it('rejects more than 40 Steps', () => {
-      expect(problemPaths(withOptOut(...clicks(41 - OTHER_STEPS)))).toEqual([
-        '$',
-      ]);
+      expect(problemPaths(withOptOut(...clicks(41 - OTHER_STEPS)))).toEqual(['$']);
     });
 
     it('allows a selector of 500 characters', () => {
-      expect(
-        problemPaths(withOptOut({ click: `#${'a'.repeat(499)}` })),
-      ).toEqual([]);
+      expect(problemPaths(withOptOut({ click: `#${'a'.repeat(499)}` }))).toEqual([]);
     });
 
     it.each<[string, AutoConsentCMPRule]>([
       ['$.optOut[0].click', withOptOut({ click: `#${'a'.repeat(500)}` })],
-      [
-        '$.optOut[0].waitForThenClick[1]',
-        withOptOut({ waitForThenClick: ['#host', `#${'a'.repeat(500)}`] }),
-      ],
+      ['$.optOut[0].waitForThenClick[1]', withOptOut({ waitForThenClick: ['#host', `#${'a'.repeat(500)}`] })],
       [
         '$.optOut[0].if.visible',
         withOptOut({
@@ -477,10 +383,7 @@ describe('validateRule', () => {
           minimumRuleStepVersion: 2,
         },
       ],
-      [
-        '$.prehideSelectors[0]',
-        { ...validRule(), prehideSelectors: [`#${'a'.repeat(500)}`] },
-      ],
+      ['$.prehideSelectors[0]', { ...validRule(), prehideSelectors: [`#${'a'.repeat(500)}`] }],
     ])('rejects a selector over 500 characters at %s', (path, rule) => {
       expect(problemPaths(rule)).toEqual([path]);
     });
@@ -488,21 +391,15 @@ describe('validateRule', () => {
     it('allows a Rule of 16 KB serialized', () => {
       // Adding `,"comment":"…"` grows the JSON by 13 characters plus the comment
       const size: number = JSON.stringify(validRule()).length + 13;
-      expect(
-        problemPaths({ ...validRule(), comment: 'a'.repeat(16 * 1024 - size) }),
-      ).toEqual([]);
+      expect(problemPaths({ ...validRule(), comment: 'a'.repeat(16 * 1024 - size) })).toEqual([]);
     });
 
     it('rejects a Rule over 16 KB serialized', () => {
-      expect(
-        problemPaths({ ...validRule(), comment: 'a'.repeat(16 * 1024) }),
-      ).toEqual(['$']);
+      expect(problemPaths({ ...validRule(), comment: 'a'.repeat(16 * 1024) })).toEqual(['$']);
     });
 
     it('counts the serialized size in bytes', () => {
-      expect(
-        problemPaths({ ...validRule(), comment: '€'.repeat(6 * 1024) }),
-      ).toEqual(['$']);
+      expect(problemPaths({ ...validRule(), comment: '€'.repeat(6 * 1024) })).toEqual(['$']);
     });
   });
 });

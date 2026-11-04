@@ -1,25 +1,15 @@
 import { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { RuleProblem } from '../rule-problem.js';
-import {
-  ACTIONS,
-  MODIFIER_ACTIONS,
-  PRESENCE_TESTED_ACTIONS,
-} from '../step-actions.js';
+import { ACTIONS, MODIFIER_ACTIONS, PRESENCE_TESTED_ACTIONS } from '../step-actions.js';
 import { isJsonObject, JsonObject, stepsOf, VisitedStep } from '../steps.js';
 
-const OFFERED_ACTIONS: readonly string[] = ACTIONS.filter(
-  (action: string): boolean => action !== 'eval',
-);
+const OFFERED_ACTIONS: readonly string[] = ACTIONS.filter((action: string): boolean => action !== 'eval');
 
 const SELECTOR_ACTIONS: readonly string[] = MODIFIER_ACTIONS['selector'] ?? [];
 
 type RequiredStepList = 'detectCmp' | 'detectPopup' | 'optOut';
 
-const REQUIRED_STEP_LISTS: readonly RequiredStepList[] = [
-  'detectCmp',
-  'detectPopup',
-  'optOut',
-];
+const REQUIRED_STEP_LISTS: readonly RequiredStepList[] = ['detectCmp', 'detectPopup', 'optOut'];
 
 function quoted(names: readonly string[]): string {
   return names.map((name: string): string => `\`${name}\``).join(', ');
@@ -27,9 +17,7 @@ function quoted(names: readonly string[]): string {
 
 function conditionProblems(condition: JsonObject, path: string): RuleProblem[] {
   const problems: RuleProblem[] = [];
-  const tests: string[] = ['exists', 'visible'].filter(
-    (key: string): boolean => condition[key] !== undefined,
-  );
+  const tests: string[] = ['exists', 'visible'].filter((key: string): boolean => condition[key] !== undefined);
   if (tests.length !== 1) {
     problems.push({
       path,
@@ -45,11 +33,7 @@ function conditionProblems(condition: JsonObject, path: string): RuleProblem[] {
   return problems;
 }
 
-function actionProblems(
-  step: JsonObject,
-  path: string,
-  action: string,
-): RuleProblem[] {
+function actionProblems(step: JsonObject, path: string, action: string): RuleProblem[] {
   const problems: RuleProblem[] = [];
   if (!PRESENCE_TESTED_ACTIONS.includes(action) && !step[action]) {
     problems.push({
@@ -81,9 +65,7 @@ function actionProblems(
 }
 
 function stepProblems({ step, path }: VisitedStep): RuleProblem[] {
-  const actions: string[] = ACTIONS.filter(
-    (key: string): boolean => step[key] !== undefined,
-  );
+  const actions: string[] = ACTIONS.filter((key: string): boolean => step[key] !== undefined);
   const [action]: string[] = actions;
   if (action === undefined) {
     return [

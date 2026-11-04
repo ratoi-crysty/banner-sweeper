@@ -13,10 +13,7 @@ export type { RuleProblem } from './rule-problem.js';
  * Validation, the hard gate every candidate Rule passes before it runs: every problem found,
  * or `[]` for a valid Rule. Code never repairs a Rule.
  */
-export function validateRule(
-  rule: unknown,
-  context: RuleContext,
-): RuleProblem[] {
+export function validateRule(rule: unknown, context: RuleContext): RuleProblem[] {
   const schema: SchemaResult = checkSchema(rule);
   if (!schema.valid) {
     return schema.problems;

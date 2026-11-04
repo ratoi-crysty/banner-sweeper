@@ -29,12 +29,9 @@ function jsonPath(pointer: string): string {
   return pointer
     .split('/')
     .slice(1)
-    .map((segment: string): string =>
-      segment.replaceAll('~1', '/').replaceAll('~0', '~'),
-    )
+    .map((segment: string): string => segment.replaceAll('~1', '/').replaceAll('~0', '~'))
     .reduce(
-      (path: string, segment: string): string =>
-        /^\d+$/.test(segment) ? `${path}[${segment}]` : `${path}.${segment}`,
+      (path: string, segment: string): string => (/^\d+$/.test(segment) ? `${path}[${segment}]` : `${path}.${segment}`),
       '$',
     );
 }
@@ -67,10 +64,7 @@ function schemaProblem(error: ErrorObject): RuleProblem {
 }
 
 // An `anyOf` error already sums up why each of its branches failed
-function isInsideFailedAnyOf(
-  error: ErrorObject,
-  errors: ErrorObject[],
-): boolean {
+function isInsideFailedAnyOf(error: ErrorObject, errors: ErrorObject[]): boolean {
   return errors.some(
     (other: ErrorObject): boolean =>
       other.keyword === 'anyOf' &&
@@ -101,17 +95,13 @@ export function checkSchema(rule: unknown): SchemaResult {
   }
   const errors: ErrorObject[] = validateSchema.errors ?? [];
   const problems: RuleProblem[] = errors
-    .filter(
-      (error: ErrorObject): boolean => !isInsideFailedAnyOf(error, errors),
-    )
+    .filter((error: ErrorObject): boolean => !isInsideFailedAnyOf(error, errors))
     .map(schemaProblem);
   return {
     valid: false,
     problems: problems.filter(
       (problem: RuleProblem, index: number): boolean =>
-        problems.findIndex((other: RuleProblem): boolean =>
-          isSameProblem(problem, other),
-        ) === index,
+        problems.findIndex((other: RuleProblem): boolean => isSameProblem(problem, other)) === index,
     ),
   };
 }

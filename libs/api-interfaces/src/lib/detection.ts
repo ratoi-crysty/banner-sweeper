@@ -12,12 +12,7 @@ export type DetectionStatus = 'queued' | 'running' | 'finished';
 
 export type DetectionPhase = 'stockCheck' | 'agent' | 'finalVerification';
 
-export type DetectionOutcome =
-  | 'drafted'
-  | 'covered'
-  | 'noBanner'
-  | 'noRefusal'
-  | 'error';
+export type DetectionOutcome = 'drafted' | 'covered' | 'noBanner' | 'noRefusal' | 'error';
 
 export type DetectionErrorKind =
   | 'siteUnreachable'
@@ -81,5 +76,4 @@ export interface PendingResult {
 }
 
 /** A Detection job: its envelope plus the result union, discriminated on `outcome`. */
-export type DetectionJob = DetectionEnvelope &
-  (PendingResult | DetectionResult);
+export type DetectionJob = DetectionEnvelope & (PendingResult | DetectionResult);

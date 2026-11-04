@@ -62,9 +62,7 @@ function dropProperties(schema: Schema, names: string[]): void {
   for (const name of names) {
     delete schema.properties?.[name];
   }
-  schema.required = schema.required?.filter(
-    (required: string): boolean => !names.includes(required),
-  );
+  schema.required = schema.required?.filter((required: string): boolean => !names.includes(required));
 }
 
 /**
@@ -76,14 +74,8 @@ function toLlmRuleSchema(schema: Schema): Schema {
   const rule: Schema = objectDefinition(definitions, RULE_TYPE);
 
   dropProperties(rule, LLM_DROPPED_RULE_FIELDS);
-  dropProperties(
-    objectDefinition(definitions, 'RunContext'),
-    LLM_DROPPED_RUN_CONTEXT_FIELDS,
-  );
-  dropProperties(
-    objectDefinition(definitions, 'AutoConsentRuleStep'),
-    LLM_DROPPED_STEP_FIELDS,
-  );
+  dropProperties(objectDefinition(definitions, 'RunContext'), LLM_DROPPED_RUN_CONTEXT_FIELDS);
+  dropProperties(objectDefinition(definitions, 'AutoConsentRuleStep'), LLM_DROPPED_STEP_FIELDS);
   rule.properties = {
     ...rule.properties,
     optIn: {
@@ -102,9 +94,7 @@ async function serialize(schema: Schema): Promise<string> {
 }
 
 async function isUpToDate(file: SchemaFile): Promise<boolean> {
-  const committed: string = await readFile(file.path, 'utf8').catch(
-    (): string => '',
-  );
+  const committed: string = await readFile(file.path, 'utf8').catch((): string => '');
   return committed === (await serialize(file.schema));
 }
 

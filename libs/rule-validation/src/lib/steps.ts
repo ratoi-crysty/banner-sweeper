@@ -9,14 +9,7 @@ export interface VisitedStep {
   nesting: number;
 }
 
-export const STEP_LISTS: readonly string[] = [
-  'detectCmp',
-  'detectPopup',
-  'optOut',
-  'optIn',
-  'openCmp',
-  'test',
-];
+export const STEP_LISTS: readonly string[] = ['detectCmp', 'detectPopup', 'optOut', 'optIn', 'openCmp', 'test'];
 
 // `then`/`else` belong to `if`, the Steps of `any` to `any`
 const NESTED_STEP_LISTS: readonly string[] = ['then', 'else', 'any'];
@@ -25,12 +18,7 @@ export function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-function visitList(
-  list: unknown,
-  path: string,
-  nesting: number,
-  visited: VisitedStep[],
-): void {
+function visitList(list: unknown, path: string, nesting: number, visited: VisitedStep[]): void {
   if (!Array.isArray(list)) {
     return;
   }
