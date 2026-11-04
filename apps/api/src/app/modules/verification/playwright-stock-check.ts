@@ -17,7 +17,7 @@ import {
   MessageTransport,
   injectIntoIsolatedWorld,
 } from '../browser/isolated-world';
-import { autoconsentBundle } from './autoconsent-bundle';
+import { getAutoconsentBundle } from './autoconsent.utils';
 import { AutoconsentSession, ContentScriptFrame } from './autoconsent-session';
 import { checkExistingRules } from './existing-rules-checks';
 import { PublishedRuleSource } from './published-rule-source';
@@ -26,7 +26,10 @@ import { StockCheck, StockCheckResult } from './stock-check';
 
 const NAVIGATION_TIMEOUT_MS = 30_000;
 
-/** The stock check in a real browser: one fresh context, the URL only, closed whatever happens. */
+/**
+ * The stock check in a real browser: start autoconsent the way the extension does, open the Site,
+ * and let the judge decide. Each run gets a fresh context, which is always closed afterwards.
+ */
 @Injectable()
 export class PlaywrightStockCheck extends StockCheck {
   constructor(
@@ -37,61 +40,90 @@ export class PlaywrightStockCheck extends StockCheck {
   }
 
   async run(url: string, signal: AbortSignal): Promise<StockCheckResult> {
-    signal.throwIfAborted();
+    const session: AutoconsentSession = await this.newSession();
+
+    return this.inFreshContext(
+      signal,
+      (): void => session.cancel(),
+      async (page: Page): Promise<StockCheckResult> => {
+        await this.startAutoconsent(page, session);
+        await this.openSite(page, url);
+        const result: StockCheckResult = await checkExistingRules(session);
+        this.ensureBrowserConnected(page);
+
+        return result;
+      },
+    );
+  }
+
+  // The extension's exact config (heuristics stay off) and Rules: Bundled plus Published
+  protected async newSession(): Promise<AutoconsentSession> {
     const published: AutoConsentCMPRule[] = await this.publishedRules.list();
-    const context: BrowserContext = await this.browser.newContext();
-    // The extension's exact config: heuristics (tier1/tier2) stay off
-    const session: AutoconsentSession = new AutoconsentSession({
+
+    return new AutoconsentSession({
       config: autoconsentConfig,
       rulesForFrame: (frame: FrameContext): RuleBundle => ({
         autoconsent: published,
         compact: compactRulesForFrame(frame),
       }),
     });
-    // Closing the context ends navigation at once; cancelling the session ends its waits
-    const stop: () => void = (): void => {
-      session.cancel();
+  }
+
+  /**
+   * Runs `work` on a page in a fresh browser context, and always closes the context afterwards.
+   * If `signal` aborts, the context closes at once (which stops navigation), `onAbort` runs, and
+   * the run fails with the abort reason: a result reached after that means nothing.
+   */
+  protected async inFreshContext<T>(
+    signal: AbortSignal,
+    onAbort: () => void,
+    work: (page: Page) => Promise<T>,
+  ): Promise<T> {
+    signal.throwIfAborted();
+    const context: BrowserContext = await this.browser.newContext();
+    const abort: () => void = (): void => {
+      onAbort();
       void context.close().catch((): void => undefined);
     };
-    signal.addEventListener('abort', stop, { once: true });
+    signal.addEventListener('abort', abort, { once: true });
 
     try {
       // It may have aborted while the context was opening, before the listener was there
       signal.throwIfAborted();
-      const page: Page = await context.newPage();
-      await injectIntoIsolatedWorld(
-        page,
-        (transport: MessageTransport): MessageHandler =>
-          (message: unknown, frameRef: string): void => {
-            // Only our content script can call the isolated world's binding
-            void session
-              .receive(
-                message as ContentScriptMessage,
-                this.contentScriptFrame(transport, frameRef),
-              )
-              .catch((): void => undefined);
-          },
-        autoconsentBundle(),
-      );
-      await this.openSite(page, url);
-
-      const result: StockCheckResult = await checkExistingRules(session);
+      const result: T = await work(await context.newPage());
       signal.throwIfAborted();
-
-      // A browser that went away mid-run makes the waits time out, which says nothing about the Site
-      if (!context.browser()?.isConnected()) {
-        throw new BrowserUnavailableError(
-          new Error('The browser disconnected during the stock check'),
-        );
-      }
 
       return result;
     } finally {
-      signal.removeEventListener('abort', stop);
+      signal.removeEventListener('abort', abort);
       await context.close().catch((): void => undefined);
     }
   }
 
+  // Puts autoconsent in every frame of the page, and sends everything it says to the session
+  protected async startAutoconsent(
+    page: Page,
+    session: AutoconsentSession,
+  ): Promise<void> {
+    const bundle: string = await getAutoconsentBundle();
+
+    await injectIntoIsolatedWorld(
+      page,
+      (transport: MessageTransport): MessageHandler =>
+        (message: unknown, frameRef: string): void => {
+          // Only our content script can call the isolated world's binding
+          void session
+            .receive(
+              message as ContentScriptMessage,
+              this.contentScriptFrame(transport, frameRef),
+            )
+            .catch((): void => undefined);
+        },
+      bundle,
+    );
+  }
+
+  // The bridge names frames by reference; the session wants one object per frame
   protected contentScriptFrame(
     transport: MessageTransport,
     frameRef: string,
@@ -114,11 +146,18 @@ export class PlaywrightStockCheck extends StockCheck {
         timeout: NAVIGATION_TIMEOUT_MS,
       });
     } catch (error: unknown) {
-      if (!page.context().browser()?.isConnected()) {
-        throw new BrowserUnavailableError(error);
-      }
+      this.ensureBrowserConnected(page, error);
 
       throw new SiteUnreachableError(url, error);
+    }
+  }
+
+  // A browser that went away makes everything fail or time out, which says nothing about the Site
+  protected ensureBrowserConnected(page: Page, cause?: unknown): void {
+    if (!page.context().browser()?.isConnected()) {
+      throw new BrowserUnavailableError(
+        cause ?? new Error('The browser disconnected during the stock check'),
+      );
     }
   }
 }

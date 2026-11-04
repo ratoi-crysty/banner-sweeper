@@ -1,5 +1,5 @@
 import type {
-  VerificationChecks,
+  CheckResult,
   VerificationReport,
 } from '@banner-sweeper/api-interfaces';
 import type {
@@ -7,7 +7,6 @@ import type {
   DetectedMessage,
   DoneMessage,
   FoundMessage,
-  OptOutResultMessage,
 } from '@duckduckgo/autoconsent';
 import {
   AutoconsentSession,
@@ -22,27 +21,36 @@ export const DETECT_TIMEOUT_MS = 25_000;
 // How long the Rule gets to opt out and finish, from finding the banner
 export const DECLINE_TIMEOUT_MS = 45_000;
 
-// What the checks found, before it's put into a Verification Report
-interface Evidence {
-  checks: VerificationChecks;
-  // autoconsent's word for the frame the banner was found in
-  popupFrameUrl?: string;
-  detectedMs?: number;
-  declinedMs?: number;
+type MessageOfType<T extends ContentScriptMessage['type']> = Extract<
+  ContentScriptMessage,
+  { type: T }
+>;
+
+// What the judge found out, for the Verification Report
+interface Findings {
+  detected: CheckResult;
+  declined: CheckResult;
+  // The banner being found, and the Rule finishing its refusal, when they happened
+  found?: ReceivedMessage<FoundMessage>;
+  declinedBy?: ReceivedMessage<DoneMessage>;
 }
 
+const isPopupFound: MessageMatcher<FoundMessage> = (
+  message: ContentScriptMessage,
+): message is FoundMessage => message.type === 'popupFound';
+
 /**
- * Judges a run of the existing Rules (Bundled plus Published): Covered when one of them finds the
- * banner and Declines it with a non-cosmetic completion. Every wait is a wall-clock timeout, because
- * autoconsent sends nothing when it finds nothing.
+ * The judge: decides from autoconsent's messages whether the existing Rules (Bundled plus
+ * Published) Decline the Site's banner, by asking three questions in order. autoconsent sends
+ * nothing when nothing happens, so each question has a deadline, and silence past it means no.
  */
 export async function checkExistingRules(
   session: AutoconsentSession,
 ): Promise<StockCheckResult> {
+  // 1. Did an existing Rule find the banner within 25 s?
   const found: ReceivedMessage<FoundMessage> | undefined =
     await session.waitFor(
-      (message: ContentScriptMessage): message is FoundMessage =>
-        message.type === 'popupFound',
+      isPopupFound,
       DETECT_TIMEOUT_MS - session.elapsedMs(),
     );
 
@@ -53,122 +61,108 @@ export async function checkExistingRules(
       covered: false,
       notCoveredReason: reason,
       report: verificationReport(session, {
-        checks: {
-          detected: { status: 'failed', reason },
-          declined: { status: 'skipped', reason: 'No banner to Decline' },
-        },
+        detected: { status: 'failed', reason },
+        declined: { status: 'skipped', reason: 'No banner to Decline' },
       }),
     };
   }
 
+  // From here on, only that Rule's messages from that frame count, within 45 s of finding the banner
   const rule: string = found.message.cmp;
-  const declined: DeclineOutcome = await waitForDecline(session, found);
-  const report: VerificationReport = verificationReport(session, {
-    checks: {
-      detected: { status: 'passed', reason: `${rule} found the banner` },
-      declined: {
-        status: declined.passed ? 'passed' : 'failed',
-        reason: declined.reason,
-      },
-    },
-    popupFrameUrl: session.frameUrl(found.frame),
-    detectedMs: found.atMs,
-    declinedMs: declined.passed ? declined.atMs : undefined,
+  const deadlineMs: number = found.atMs + DECLINE_TIMEOUT_MS;
+  const timeout: string = seconds(DECLINE_TIMEOUT_MS);
+  const detected: CheckResult = {
+    status: 'passed',
+    reason: `${rule} found the banner`,
+  };
+  const notCovered = (reason: string): StockCheckResult => ({
+    covered: false,
+    notCoveredReason: reason,
+    report: verificationReport(session, {
+      detected,
+      declined: { status: 'failed', reason },
+      found,
+    }),
   });
 
-  return declined.passed
-    ? { covered: true, coveredBy: rule, report }
-    : { covered: false, notCoveredReason: declined.reason, report };
+  // 2. Did that Rule refuse?
+  const optOut: ReceivedMessage<MessageOfType<'optOutResult'>> | undefined =
+    await waitForRule(session, found, 'optOutResult', deadlineMs);
+
+  if (!optOut) {
+    return notCovered(`${rule} didn't opt out within ${timeout}`);
+  }
+
+  if (!optOut.message.result) {
+    return notCovered(`${rule}'s opt-out failed`);
+  }
+
+  // 3. Did it finish, without only hiding the banner?
+  const done: ReceivedMessage<DoneMessage> | undefined = await waitForRule(
+    session,
+    found,
+    'autoconsentDone',
+    deadlineMs,
+  );
+
+  if (!done) {
+    return notCovered(`${rule} didn't finish within ${timeout}`);
+  }
+
+  if (done.message.isCosmetic) {
+    return notCovered(`${rule} only hid the banner (a cosmetic Rule)`);
+  }
+
+  return {
+    covered: true,
+    coveredBy: rule,
+    report: verificationReport(session, {
+      detected,
+      declined: {
+        status: 'passed',
+        reason: `${rule} opted out and finished without hiding the banner`,
+      },
+      found,
+      declinedBy: done,
+    }),
+  };
+}
+
+// The first `type` message from the Rule that found the banner, in the frame it found it in
+function waitForRule<T extends 'optOutResult' | 'autoconsentDone'>(
+  session: AutoconsentSession,
+  found: ReceivedMessage<FoundMessage>,
+  type: T,
+  deadlineMs: number,
+): Promise<ReceivedMessage<MessageOfType<T>> | undefined> {
+  const matches: MessageMatcher<MessageOfType<T>> = (
+    message: ContentScriptMessage,
+    frame: ContentScriptFrame,
+  ): message is MessageOfType<T> =>
+    message.type === type &&
+    frame.id === found.frame.id &&
+    'cmp' in message &&
+    message.cmp === found.message.cmp;
+
+  return session.waitFor(matches, deadlineMs - session.elapsedMs());
 }
 
 // The report is the JSON contract, where a missing value is `null` so the key stays present
 function verificationReport(
   session: AutoconsentSession,
-  evidence: Evidence,
+  findings: Findings,
 ): VerificationReport {
   return {
-    checks: evidence.checks,
+    checks: { detected: findings.detected, declined: findings.declined },
     timings: {
       totalMs: session.elapsedMs(),
-      detectedMs: evidence.detectedMs ?? null,
-      declinedMs: evidence.declinedMs ?? null,
+      detectedMs: findings.found?.atMs ?? null,
+      declinedMs: findings.declinedBy?.atMs ?? null,
     },
     messageLog: session.messageLog(),
-    popupFrameUrl: evidence.popupFrameUrl ?? null,
-  };
-}
-
-interface Declined {
-  passed: true;
-  reason: string;
-  atMs: number;
-}
-
-interface NotDeclined {
-  passed: false;
-  reason: string;
-}
-
-type DeclineOutcome = Declined | NotDeclined;
-
-async function waitForDecline(
-  session: AutoconsentSession,
-  found: ReceivedMessage<FoundMessage>,
-): Promise<DeclineOutcome> {
-  const rule: string = found.message.cmp;
-  const deadlineMs: number = found.atMs + DECLINE_TIMEOUT_MS;
-  const timeout: string = seconds(DECLINE_TIMEOUT_MS);
-  // Only the Rule that found the banner, in the frame it found it in, can Decline it
-  const fromSameRule = (
-    message: ContentScriptMessage,
-    frame: ContentScriptFrame,
-  ): boolean =>
-    frame.id === found.frame.id && 'cmp' in message && message.cmp === rule;
-  const isOptOutResult: MessageMatcher<OptOutResultMessage> = (
-    message: ContentScriptMessage,
-    frame: ContentScriptFrame,
-  ): message is OptOutResultMessage =>
-    message.type === 'optOutResult' && fromSameRule(message, frame);
-  const isDone: MessageMatcher<DoneMessage> = (
-    message: ContentScriptMessage,
-    frame: ContentScriptFrame,
-  ): message is DoneMessage =>
-    message.type === 'autoconsentDone' && fromSameRule(message, frame);
-
-  const optOut: ReceivedMessage<OptOutResultMessage> | undefined =
-    await session.waitFor(isOptOutResult, deadlineMs - session.elapsedMs());
-
-  if (!optOut) {
-    return {
-      passed: false,
-      reason: `${rule} didn't opt out within ${timeout}`,
-    };
-  }
-
-  if (!optOut.message.result) {
-    return { passed: false, reason: `${rule}'s opt-out failed` };
-  }
-
-  const done: ReceivedMessage<DoneMessage> | undefined = await session.waitFor(
-    isDone,
-    deadlineMs - session.elapsedMs(),
-  );
-
-  if (!done) {
-    return { passed: false, reason: `${rule} didn't finish within ${timeout}` };
-  }
-
-  if (done.message.isCosmetic) {
-    return {
-      passed: false,
-      reason: `${rule} only hid the banner (a cosmetic Rule)`,
-    };
-  }
-
-  return {
-    passed: true,
-    reason: `${rule} opted out and finished without hiding the banner`,
-    atMs: done.atMs,
+    popupFrameUrl: findings.found
+      ? session.frameUrl(findings.found.frame)
+      : null,
   };
 }
 
