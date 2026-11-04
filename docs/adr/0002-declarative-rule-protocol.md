@@ -38,7 +38,11 @@ Common patterns are compositions, not ops. Releasing a Scroll Lock is `style.set
 ## `css.inject`
 
 ```jsonc
-{ "op": "css.inject", "selector": "#onetrust-banner-sdk, .meter-modal", "declarations": [{ "property": "display", "value": "none", "important": true }] }
+{
+  "op": "css.inject",
+  "selector": "#onetrust-banner-sdk, .meter-modal",
+  "declarations": [{ "property": "display", "value": "none", "important": true }],
+}
 ```
 
 - **Delivered with `chrome.scripting.insertCSS({ origin: 'USER' })`** from the background worker, into the frames the Step targets. It is invisible to the page and the page cannot remove it, and user-origin `!important` declarations win the cascade over everything the page sets, including inline `!important`. Chosen over a content-script `<style>` element, which has guaranteed `document_start` timing but which the page can see, remove, or outrank. Accepted risk: the round-trip through the background worker may land after first paint and cause a brief flash. If a prototype shows this is common, we will revisit how the CSS is delivered, not the op.
