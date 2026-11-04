@@ -26,5 +26,13 @@
     "src/**/*.spec.js",
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx"
+  ],
+  "references": [
+    {
+      "path": "../../libs/autoconsent-config/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/api-interfaces/tsconfig.lib.json"
+    }
   ]
 }
