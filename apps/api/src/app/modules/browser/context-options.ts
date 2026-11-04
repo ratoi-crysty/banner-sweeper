@@ -15,10 +15,7 @@ export const CONTEXT_VIEWPORT: BrowserContextOptions['viewport'] = {
  * Options for every context Detection opens: the configured locale and timezone, a 1280×800
  * viewport, and a normal Chrome user agent, since some Sites treat the headless one as a bot.
  */
-export function contextOptions(
-  browserVersion: string,
-  region: BrowserRegion,
-): BrowserContextOptions {
+export function contextOptions(browserVersion: string, region: BrowserRegion): BrowserContextOptions {
   return {
     locale: region.locale,
     timezoneId: region.timezoneId,

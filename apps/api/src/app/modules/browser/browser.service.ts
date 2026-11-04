@@ -1,10 +1,5 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
-import {
-  Browser,
-  BrowserContext,
-  LaunchOptions,
-  chromium,
-} from 'playwright-core';
+import { Browser, BrowserContext, LaunchOptions, chromium } from 'playwright-core';
 import { apiConfig } from '../../../config/api.config';
 import type { ApiConfig } from '../../../config/api.config';
 import { BrowserUnavailableError } from './browser-unavailable.error';
@@ -48,9 +43,7 @@ export class BrowserService implements OnApplicationShutdown {
     }
 
     // A connection that fails during shutdown leaves nothing to close
-    const browser: Browser | undefined = await this.browser.catch(
-      (): undefined => undefined,
-    );
+    const browser: Browser | undefined = await this.browser.catch((): undefined => undefined);
     await browser?.close();
   }
 

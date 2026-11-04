@@ -65,18 +65,14 @@ describe('BrowserService, with the browser server down', () => {
   });
 
   it('reports it as BrowserUnavailableError', async () => {
-    await expect(browser.newContext()).rejects.toBeInstanceOf(
-      BrowserUnavailableError,
-    );
+    await expect(browser.newContext()).rejects.toBeInstanceOf(BrowserUnavailableError);
   });
 
   it('asks the browser server for full Chromium, not the headless shell', async () => {
     await expect(browser.newContext()).rejects.toThrow();
 
     expect(server.requests).toHaveLength(1);
-    expect(server.requests[0]).toMatch(
-      /^x-playwright-launch-options: {"channel":"chromium"}\r$/im,
-    );
+    expect(server.requests[0]).toMatch(/^x-playwright-launch-options: {"channel":"chromium"}\r$/im);
   });
 
   it('shares one connection attempt between callers at the same time', async () => {
@@ -85,11 +81,10 @@ describe('BrowserService, with the browser server down', () => {
       browser.newContext(),
     ]);
 
-    expect(
-      results.map(
-        (result: PromiseSettledResult<unknown>): string => result.status,
-      ),
-    ).toEqual(['rejected', 'rejected']);
+    expect(results.map((result: PromiseSettledResult<unknown>): string => result.status)).toEqual([
+      'rejected',
+      'rejected',
+    ]);
     expect(server.attempts).toBe(1);
   });
 

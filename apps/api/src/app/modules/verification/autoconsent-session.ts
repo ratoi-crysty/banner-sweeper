@@ -1,7 +1,4 @@
-import type {
-  AutoconsentLogEntry,
-  FrameMessageLog,
-} from '@banner-sweeper/api-interfaces';
+import type { AutoconsentLogEntry, FrameMessageLog } from '@banner-sweeper/api-interfaces';
 import type { FrameContext } from '@banner-sweeper/autoconsent-config';
 import type {
   BackgroundMessage,
@@ -17,11 +14,7 @@ import { evalSnippets } from '@duckduckgo/autoconsent';
 const EVAL_TIMEOUT_MS = 1000;
 
 // Messages too frequent or too internal to be worth keeping in a Verification Report
-const UNLOGGED_TYPES: ContentScriptMessage['type'][] = [
-  'eval',
-  'report',
-  'visualDelay',
-];
+const UNLOGGED_TYPES: ContentScriptMessage['type'][] = ['eval', 'report', 'visualDelay'];
 
 /** One frame's autoconsent content script, reached through the isolated-world bridge. */
 export interface ContentScriptFrame {
@@ -37,9 +30,7 @@ export interface AutoconsentSessionOptions {
   rulesForFrame(frame: FrameContext): RuleBundle;
 }
 
-export interface ReceivedMessage<
-  T extends ContentScriptMessage = ContentScriptMessage,
-> {
+export interface ReceivedMessage<T extends ContentScriptMessage = ContentScriptMessage> {
   message: T;
   frame: ContentScriptFrame;
   // Milliseconds since the session started
@@ -80,10 +71,7 @@ export class AutoconsentSession {
     waiters.forEach((waiter: Waiter): void => waiter.cancel());
   }
 
-  async receive(
-    message: ContentScriptMessage,
-    frame: ContentScriptFrame,
-  ): Promise<void> {
+  async receive(message: ContentScriptMessage, frame: ContentScriptFrame): Promise<void> {
     const received: ReceivedMessage = {
       message,
       frame,
@@ -121,9 +109,8 @@ export class AutoconsentSession {
   ): Promise<ReceivedMessage<T> | undefined> {
     // `match` is a type guard, so a message it accepted is a `T`; `find` and the waiter list can't
     // carry that narrowing, hence the casts below
-    const matches: (received: ReceivedMessage) => boolean = (
-      received: ReceivedMessage,
-    ): boolean => match(received.message, received.frame);
+    const matches: (received: ReceivedMessage) => boolean = (received: ReceivedMessage): boolean =>
+      match(received.message, received.frame);
     const found: ReceivedMessage | undefined = this.received.find(matches);
 
     if (found) {
@@ -149,9 +136,7 @@ export class AutoconsentSession {
         };
         const timer: NodeJS.Timeout = setTimeout(
           (): void => {
-            this.waiters = this.waiters.filter(
-              (other: Waiter): boolean => other !== waiter,
-            );
+            this.waiters = this.waiters.filter((other: Waiter): boolean => other !== waiter);
             resolve(undefined);
           },
           Math.max(0, timeoutMs),
@@ -180,10 +165,7 @@ export class AutoconsentSession {
   }
 
   messageLog(): FrameMessageLog[] {
-    const logs: Map<string, FrameMessageLog> = new Map<
-      string,
-      FrameMessageLog
-    >();
+    const logs: Map<string, FrameMessageLog> = new Map<string, FrameMessageLog>();
 
     for (const { message, frame, atMs } of this.received) {
       if (UNLOGGED_TYPES.includes(message.type)) {
@@ -207,19 +189,13 @@ export class AutoconsentSession {
     return [...logs.values()];
   }
 
-  protected rememberFrameUrl(
-    message: ContentScriptMessage,
-    frame: ContentScriptFrame,
-  ): void {
+  protected rememberFrameUrl(message: ContentScriptMessage, frame: ContentScriptFrame): void {
     if ('url' in message && !this.frameUrls.has(frame.id)) {
       this.frameUrls.set(frame.id, message.url);
     }
   }
 
-  protected async answerInit(
-    message: InitMessage,
-    frame: ContentScriptFrame,
-  ): Promise<void> {
+  protected async answerInit(message: InitMessage, frame: ContentScriptFrame): Promise<void> {
     await frame.send({
       type: 'initResp',
       config: this.options.config,
@@ -231,13 +207,8 @@ export class AutoconsentSession {
   }
 
   // Like the extension: only autoconsent's own snippets run, never the `code` a page could have sent
-  protected async answerEval(
-    message: EvalMessage,
-    frame: ContentScriptFrame,
-  ): Promise<void> {
-    const snippet: (() => unknown) | undefined = message.snippetId
-      ? evalSnippets[message.snippetId]
-      : undefined;
+  protected async answerEval(message: EvalMessage, frame: ContentScriptFrame): Promise<void> {
+    const snippet: (() => unknown) | undefined = message.snippetId ? evalSnippets[message.snippetId] : undefined;
     const result: boolean = snippet
       ? await this.withTimeout(
           frame
@@ -252,10 +223,7 @@ export class AutoconsentSession {
     await frame.send({ type: 'evalResp', id: message.id, result });
   }
 
-  protected toLogEntry(
-    message: ContentScriptMessage,
-    atMs: number,
-  ): AutoconsentLogEntry {
+  protected toLogEntry(message: ContentScriptMessage, atMs: number): AutoconsentLogEntry {
     const entry: AutoconsentLogEntry = { atMs, type: message.type };
 
     if ('cmp' in message) {
@@ -273,16 +241,9 @@ export class AutoconsentSession {
     return entry;
   }
 
-  protected withTimeout<T>(
-    promise: Promise<T>,
-    timeoutMs: number,
-    fallback: T,
-  ): Promise<T> {
+  protected withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> {
     return new Promise<T>((resolve: (value: T) => void): void => {
-      const timer: NodeJS.Timeout = setTimeout(
-        (): void => resolve(fallback),
-        timeoutMs,
-      );
+      const timer: NodeJS.Timeout = setTimeout((): void => resolve(fallback), timeoutMs);
       void promise.then((value: T): void => {
         clearTimeout(timer);
         resolve(value);

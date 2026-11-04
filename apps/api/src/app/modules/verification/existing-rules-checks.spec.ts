@@ -1,8 +1,4 @@
-import type {
-  Config,
-  ContentScriptMessage,
-  RuleBundle,
-} from '@duckduckgo/autoconsent';
+import type { Config, ContentScriptMessage, RuleBundle } from '@duckduckgo/autoconsent';
 import { AutoconsentSession, ContentScriptFrame } from './autoconsent-session';
 import { checkExistingRules } from './existing-rules-checks';
 import type { StockCheckResult } from './stock-check';
@@ -49,16 +45,8 @@ describe('checkExistingRules', () => {
     const verdict: Promise<StockCheckResult> = checkExistingRules(session);
 
     await receiveAt(0, { type: 'init', url: URL_CMP }, CMP_FRAME);
-    await receiveAt(
-      800,
-      { type: 'cmpDetected', cmp: 'Sourcepoint-frame', url: URL_CMP },
-      CMP_FRAME,
-    );
-    await receiveAt(
-      1500,
-      { type: 'popupFound', cmp: 'Sourcepoint-frame', url: URL_CMP },
-      CMP_FRAME,
-    );
+    await receiveAt(800, { type: 'cmpDetected', cmp: 'Sourcepoint-frame', url: URL_CMP }, CMP_FRAME);
+    await receiveAt(1500, { type: 'popupFound', cmp: 'Sourcepoint-frame', url: URL_CMP }, CMP_FRAME);
     await receiveAt(
       2600,
       {
@@ -94,8 +82,7 @@ describe('checkExistingRules', () => {
           },
           declined: {
             status: 'passed',
-            reason:
-              'Sourcepoint-frame opted out and finished without hiding the banner',
+            reason: 'Sourcepoint-frame opted out and finished without hiding the banner',
           },
         },
         timings: { totalMs: 3900, detectedMs: 1500, declinedMs: 3900 },

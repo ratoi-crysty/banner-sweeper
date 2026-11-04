@@ -32,9 +32,7 @@ export class CreateDetectionJobs1761696000000 implements MigrationInterface {
         "trace" text
       )
     `);
-    await queryRunner.query(
-      `CREATE INDEX "IDX_detection_jobs_createdAt" ON "detection_jobs" ("createdAt")`,
-    );
+    await queryRunner.query(`CREATE INDEX "IDX_detection_jobs_createdAt" ON "detection_jobs" ("createdAt")`);
   }
 
   async down(queryRunner: QueryRunner): Promise<void> {

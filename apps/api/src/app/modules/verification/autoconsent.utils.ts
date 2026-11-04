@@ -10,9 +10,7 @@ let bundle: Promise<string> | undefined;
  */
 export function getAutoconsentBundle(): Promise<string> {
   if (bundle === undefined) {
-    const distDir: string = dirname(
-      createRequire(__filename).resolve('@duckduckgo/autoconsent'),
-    );
+    const distDir: string = dirname(createRequire(__filename).resolve('@duckduckgo/autoconsent'));
     bundle = readFile(join(distDir, 'autoconsent.playwright.js'), 'utf8');
   }
 

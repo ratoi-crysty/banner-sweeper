@@ -1,9 +1,5 @@
 import { join } from 'node:path';
-import {
-  ConfigFactory,
-  ConfigFactoryKeyHost,
-  registerAs,
-} from '@nestjs/config';
+import { ConfigFactory, ConfigFactoryKeyHost, registerAs } from '@nestjs/config';
 
 export interface ApiConfig {
   // WebSocket endpoint of the Playwright browser server
@@ -25,8 +21,7 @@ const DEFAULT_BROWSER_LOCALE = 'en-GB';
 const DEFAULT_BROWSER_TIMEZONE = 'Europe/Bucharest';
 
 // Inject with `@Inject(apiConfig.KEY)`; ConfigModule.forRoot loads `.env` into process.env first
-export const apiConfig: ConfigFactory<ApiConfig> &
-  ConfigFactoryKeyHost<ApiConfig> = registerAs(
+export const apiConfig: ConfigFactory<ApiConfig> & ConfigFactoryKeyHost<ApiConfig> = registerAs(
   'api',
   (): ApiConfig => apiConfigFromEnv(process.env),
 );
@@ -40,24 +35,12 @@ export function apiConfigFromEnv(env: NodeJS.ProcessEnv): ApiConfig {
       env['DETECTION_CONCURRENCY'],
       DEFAULT_DETECTION_CONCURRENCY,
     ),
-    browserLocale: languageTag(
-      'BROWSER_LOCALE',
-      env['BROWSER_LOCALE'],
-      DEFAULT_BROWSER_LOCALE,
-    ),
-    browserTimezone: timeZone(
-      'BROWSER_TIMEZONE',
-      env['BROWSER_TIMEZONE'],
-      DEFAULT_BROWSER_TIMEZONE,
-    ),
+    browserLocale: languageTag('BROWSER_LOCALE', env['BROWSER_LOCALE'], DEFAULT_BROWSER_LOCALE),
+    browserTimezone: timeZone('BROWSER_TIMEZONE', env['BROWSER_TIMEZONE'], DEFAULT_BROWSER_TIMEZONE),
   };
 }
 
-function positiveInteger(
-  name: string,
-  value: string | undefined,
-  fallback: number,
-): number {
+function positiveInteger(name: string, value: string | undefined, fallback: number): number {
   if (!value) {
     return fallback;
   }
@@ -71,11 +54,7 @@ function positiveInteger(
   return parsed;
 }
 
-function languageTag(
-  name: string,
-  value: string | undefined,
-  fallback: string,
-): string {
+function languageTag(name: string, value: string | undefined, fallback: string): string {
   if (!value) {
     return fallback;
   }
@@ -90,30 +69,21 @@ function languageTag(
   }
 
   if (supported.length === 0) {
-    throw new Error(
-      `${name} must be a supported locale such as "en-GB", got "${value}"`,
-    );
+    throw new Error(`${name} must be a supported locale such as "en-GB", got "${value}"`);
   }
 
   return value;
 }
 
 // Returns the canonical IANA name, so a differently cased value still reaches the browser correctly
-function timeZone(
-  name: string,
-  value: string | undefined,
-  fallback: string,
-): string {
+function timeZone(name: string, value: string | undefined, fallback: string): string {
   if (!value) {
     return fallback;
   }
 
   try {
-    return new Intl.DateTimeFormat('en', { timeZone: value }).resolvedOptions()
-      .timeZone;
+    return new Intl.DateTimeFormat('en', { timeZone: value }).resolvedOptions().timeZone;
   } catch {
-    throw new Error(
-      `${name} must be an IANA time zone such as "Europe/Bucharest", got "${value}"`,
-    );
+    throw new Error(`${name} must be an IANA time zone such as "Europe/Bucharest", got "${value}"`);
   }
 }

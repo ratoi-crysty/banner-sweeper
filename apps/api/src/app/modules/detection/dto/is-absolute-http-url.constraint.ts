@@ -1,15 +1,10 @@
-import {
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
+import { ValidatorConstraint, ValidatorConstraintInterface } from 'class-validator';
 
 const HTTP_PROTOCOLS: string[] = ['http:', 'https:'];
 
 /** Accepts only absolute http(s) URLs. Apply with `@Validate(IsAbsoluteHttpUrlConstraint)`. */
 @ValidatorConstraint({ name: 'isAbsoluteHttpUrl' })
-export class IsAbsoluteHttpUrlConstraint
-  implements ValidatorConstraintInterface
-{
+export class IsAbsoluteHttpUrlConstraint implements ValidatorConstraintInterface {
   validate(value: unknown): boolean {
     if (typeof value !== 'string' || !URL.canParse(value)) {
       return false;

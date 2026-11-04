@@ -54,10 +54,7 @@ describe('AutoconsentSession, playing the extension background', () => {
     });
     const iframe: FakeFrame = new FakeFrame('iw-2', false);
 
-    await session.receive(
-      { type: 'init', url: 'https://cmp.example/frame' },
-      iframe,
-    );
+    await session.receive({ type: 'init', url: 'https://cmp.example/frame' }, iframe);
 
     expect(iframe.sent).toEqual([
       {
@@ -96,10 +93,7 @@ describe('AutoconsentSession, playing the extension background', () => {
     });
     const frame: FakeFrame = new FakeFrame('iw-1', true);
 
-    await session.receive(
-      { type: 'eval', id: 'e2', code: 'document.cookie = "x"' },
-      frame,
-    );
+    await session.receive({ type: 'eval', id: 'e2', code: 'document.cookie = "x"' }, frame);
 
     expect(frame.evaluated).toEqual([]);
     expect(frame.sent).toEqual([{ type: 'evalResp', id: 'e2', result: false }]);
@@ -114,10 +108,7 @@ describe('AutoconsentSession, playing the extension background', () => {
     const frame: FakeFrame = new FakeFrame('iw-1', true);
     frame.evalResult = new Promise<unknown>((): void => undefined);
 
-    const answered: Promise<void> = session.receive(
-      { type: 'eval', id: 'e3', code: '', snippetId: 'EVAL_0' },
-      frame,
-    );
+    const answered: Promise<void> = session.receive({ type: 'eval', id: 'e3', code: '', snippetId: 'EVAL_0' }, frame);
     await vi.advanceTimersByTimeAsync(999);
     expect(frame.sent).toEqual([]);
     await vi.advanceTimersByTimeAsync(1);
@@ -134,15 +125,9 @@ describe('AutoconsentSession, playing the extension background', () => {
     });
     const top: FakeFrame = new FakeFrame('iw-1', true);
 
-    await session.receive(
-      { type: 'init', url: 'https://www.example.org/' },
-      top,
-    );
+    await session.receive({ type: 'init', url: 'https://www.example.org/' }, top);
     await vi.advanceTimersByTimeAsync(1200);
-    await session.receive(
-      { type: 'cmpDetected', cmp: 'Onetrust', url: 'https://www.example.org/' },
-      top,
-    );
+    await session.receive({ type: 'cmpDetected', cmp: 'Onetrust', url: 'https://www.example.org/' }, top);
 
     expect(session.messageLog()).toEqual([
       {
@@ -162,17 +147,13 @@ describe('AutoconsentSession, playing the extension background', () => {
       config: CONFIG,
       rulesForFrame: rulesFor,
     });
-    const isPopupFound = (
-      message: ContentScriptMessage,
-    ): message is FoundMessage => message.type === 'popupFound';
+    const isPopupFound = (message: ContentScriptMessage): message is FoundMessage => message.type === 'popupFound';
 
     const waiting: Promise<unknown> = session.waitFor(isPopupFound, 25_000);
     session.cancel();
 
     await expect(waiting).resolves.toBeUndefined();
-    await expect(
-      session.waitFor(isPopupFound, 25_000),
-    ).resolves.toBeUndefined();
+    await expect(session.waitFor(isPopupFound, 25_000)).resolves.toBeUndefined();
     expect(vi.getTimerCount()).toBe(0);
   });
 });

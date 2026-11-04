@@ -5,10 +5,6 @@ import { DatabaseModule } from './modules/database/database.module';
 import { DetectionModule } from './modules/detection/detection.module';
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [apiConfig] }),
-    DatabaseModule,
-    DetectionModule,
-  ],
+  imports: [ConfigModule.forRoot({ isGlobal: true, load: [apiConfig] }), DatabaseModule, DetectionModule],
 })
 export class AppModule {}

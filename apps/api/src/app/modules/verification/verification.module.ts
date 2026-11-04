@@ -6,10 +6,7 @@ import { StockCheck } from './stock-check';
 
 @Module({
   imports: [BrowserModule],
-  providers: [
-    PublishedRuleSource,
-    { provide: StockCheck, useClass: PlaywrightStockCheck },
-  ],
+  providers: [PublishedRuleSource, { provide: StockCheck, useClass: PlaywrightStockCheck }],
   exports: [StockCheck],
 })
 export class VerificationModule {}

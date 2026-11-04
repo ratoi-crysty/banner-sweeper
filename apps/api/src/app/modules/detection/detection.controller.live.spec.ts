@@ -50,17 +50,12 @@ describe.skipIf(!PLAYWRIGHT_HOST)('Stock check on live Sites', () => {
   });
 
   async function detect(url: string): Promise<DetectionJob> {
-    const created: Response = await request(app.getHttpServer())
-      .post('/api/detections')
-      .send({ url })
-      .expect(202);
+    const created: Response = await request(app.getHttpServer()).post('/api/detections').send({ url }).expect(202);
     const { id }: DetectionSummary = created.body;
 
     return vi.waitFor(
       async (): Promise<DetectionJob> => {
-        const response: Response = await request(app.getHttpServer())
-          .get(`/api/detections/${id}`)
-          .expect(200);
+        const response: Response = await request(app.getHttpServer()).get(`/api/detections/${id}`).expect(200);
         const job: DetectionJob = response.body;
         expect(job.status).toBe('finished');
 
