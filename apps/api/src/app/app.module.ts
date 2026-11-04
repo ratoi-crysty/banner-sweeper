@@ -4,7 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { apiConfig } from '../config/api.config';
 import { DatabaseModule } from './modules/database/database.module';
 import { DetectionModule } from './modules/detection/detection.module';
-import { LlmBackendModule } from '../llm-backend/llm-backend.module';
+import { LlmBackendModule } from './modules/llm-backend/llm-backend.module';
 
 @Module({
   imports: [
