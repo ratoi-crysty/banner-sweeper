@@ -10,12 +10,12 @@ export interface JsonSchema {
 }
 
 /** The JSON Schema of an autoconsent rule, generated from autoconsent's shipped types. */
-export const ruleSchema: JsonSchema = generatedRuleSchema;
+const ruleSchema: JsonSchema = generatedRuleSchema;
 
 /**
  * The Rule schema offered to the LLM, as a non-strict tool `input_schema`. It leaves out the
- * fields our code owns or Validation rejects, and fixes `optIn` to `[]`. `validateRule` stays
- * the authority.
+ * fields our code owns or Validation rejects, and fixes `optIn` to `[]`. `validateCandidate`
+ * stays the authority.
  */
 export const llmRuleSchema: JsonSchema = generatedLlmRuleSchema;
 

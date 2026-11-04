@@ -2,10 +2,10 @@
 
 **Validation**: the hard gate every candidate Rule passes before it runs. An invalid Rule is never run or returned, and code never repairs one.
 
-- `validateRule(rule, { url })`: every problem with the Rule, as `{ path, message }[]` (`path` is a JSON path such as `$.optOut[0].click`), or `[]` for a valid Rule. It checks the schema first; only a Rule that matches the schema goes on to the checks on the fields our code owns, the features our Rules may not use, Step shape and the caps.
-- `ownedRuleFields(rule, { url })`: the `name` (`bs_<hostname>`) and `minimumRuleStepVersion` (computed from the Steps used) a Rule must carry. Callers fill these in; the LLM never writes them.
-- `ruleSchema`: the JSON Schema of an autoconsent rule, generated from the pinned autoconsent's `dist/types/rules.d.ts`.
-- `llmRuleSchema`: the variant offered to the LLM as a non-strict tool `input_schema`. It has no `eval`, `name`, `minimumRuleStepVersion`, `_metadata`, `vendorUrl`, `frame`, `intermediate`, `openCmp` or `cosmetic`, and `optIn` is fixed to `[]`. Its `$ref`s point into its own root `definitions`, so a tool that nests it under a property must move `definitions` to its own root. `validateRule` stays the authority.
+- `validateCandidate(candidate, { url })`: Validation of a Rule as the LLM writes it, for `try_rule` and `submit_rule`. Our code sets `name` (`bs_<hostname>`) and `minimumRuleStepVersion` (computed from the Steps used), overwriting any the candidate brings, then validates. It returns `{ valid: true, rule }`, the Rule typed and ready to run, or `{ valid: false, problems }`.
+- `validateRule(rule, { url })`: Validation of a complete Rule: every problem, as `{ path, message }[]` (`path` is a JSON path such as `$.optOut[0].click`), or `[]` for a valid Rule.
+  Both check the schema first; only a Rule that matches the schema goes on to the checks on the fields our code owns, the features our Rules may not use, Step shape and the caps.
+- `llmRuleSchema`: the Rule schema offered to the LLM as a non-strict tool `input_schema`. It has no `eval`, `name`, `minimumRuleStepVersion`, `_metadata`, `vendorUrl`, `frame`, `intermediate`, `openCmp` or `cosmetic`, and `optIn` is fixed to `[]`. Its `$ref`s point into its own root `definitions`. The full schema it is derived from is generated from the pinned autoconsent's `dist/types/rules.d.ts`, and stays internal.
 - `HARD_CODED_CMP_NAMES`: the 11 CMPs autoconsent implements in code. A unit test checks the list against autoconsent's source.
 
 ## Upgrading autoconsent

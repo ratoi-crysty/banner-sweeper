@@ -1,5 +1,6 @@
 import { AutoConsentCMPRule, AutoConsentRuleStep } from '@duckduckgo/autoconsent';
-import { RuleProblem, validateRule } from './validate-rule.js';
+import { RuleProblem } from './rule-problem.js';
+import { validateRule } from './validate-rule.js';
 
 const URL = 'https://www.example.com/en/';
 

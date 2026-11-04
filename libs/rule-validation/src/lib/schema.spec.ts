@@ -1,8 +1,6 @@
-import { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { Ajv, ValidateFunction } from 'ajv';
-import { ownedRuleFields } from './owned-fields.js';
-import { JsonSchema, llmRuleSchema, ruleSchema } from './schema.js';
-import { validateRule } from './validate-rule.js';
+import { JsonSchema, llmRuleSchema } from './schema.js';
+import { validateCandidate } from './validate-candidate.js';
 
 const URL = 'https://www.example.com/';
 
@@ -32,20 +30,6 @@ function definition(schema: JsonSchema, name: string): JsonSchema {
 function propertyNames(schema: JsonSchema): string[] {
   return Object.keys(schema['properties'] ?? {});
 }
-
-describe('ruleSchema', () => {
-  it('describes an autoconsent rule', () => {
-    const rule: AutoConsentCMPRule = {
-      name: 'x',
-      detectCmp: [{ exists: '#a' }],
-      detectPopup: [{ visible: '#a' }],
-      optIn: [{ click: '#accept' }],
-      optOut: [{ eval: 'EVAL_ONETRUST_1' }],
-      cosmetic: true,
-    };
-    expect(compile(ruleSchema)(rule)).toBe(true);
-  });
-});
 
 describe('llmRuleSchema', () => {
   it('is an object schema at the root, as a tool input_schema must be', () => {
@@ -89,11 +73,7 @@ describe('llmRuleSchema', () => {
     expect(compile(llmRuleSchema)({ ...LLM_RULE, optIn: [{ click: '#accept' }] })).toBe(false);
   });
 
-  it('gives a valid Rule once our code fills in the fields it owns', () => {
-    const rule: Record<string, unknown> = {
-      ...LLM_RULE,
-      ...ownedRuleFields(LLM_RULE, { url: URL }),
-    };
-    expect(validateRule(rule, { url: URL })).toEqual([]);
+  it('describes a candidate that passes validateCandidate', () => {
+    expect(validateCandidate(LLM_RULE, { url: URL })).toMatchObject({ valid: true });
   });
 });

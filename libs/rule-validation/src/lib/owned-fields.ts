@@ -21,8 +21,8 @@ export function minimumRuleStepVersion(rule: unknown): number {
 }
 
 /**
- * The `name` and `minimumRuleStepVersion` a Rule written for this job must carry, for callers
- * to fill in before Validation. Safe on input that hasn't passed Validation.
+ * The `name` and `minimumRuleStepVersion` a Rule written for this job must carry. Safe on input
+ * that hasn't passed Validation.
  */
 export function ownedRuleFields(rule: unknown, context: RuleContext): OwnedRuleFields {
   return {
