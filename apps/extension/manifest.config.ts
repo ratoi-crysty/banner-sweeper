@@ -29,11 +29,16 @@ export default defineManifest({
   },
   permissions: ['sidePanel', 'contentSettings', 'scripting'],
   // needed by `chrome.scripting.executeScript` to run autoconsent snippets in the page
-  host_permissions: ['https://*/*'],
+  host_permissions: ['http://*/*', 'https://*/*'],
+  // Matches how the API's stock check runs autoconsent: every frame, from the start of each document,
+  // because many banners live in an iframe and some show before the page is idle
   content_scripts: [
     {
       js: ['src/content/main.tsx'],
-      matches: ['https://*/*'],
+      matches: ['http://*/*', 'https://*/*'],
+      all_frames: true,
+      match_about_blank: true,
+      run_at: 'document_start',
     },
   ],
   side_panel: {
