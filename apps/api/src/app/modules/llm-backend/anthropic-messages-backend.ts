@@ -1,9 +1,6 @@
 import Anthropic, { ClientOptions } from '@anthropic-ai/sdk';
 import type { BetaRunnableTool } from '@anthropic-ai/sdk/lib/tools/BetaRunnableTool';
-import type {
-  BetaToolRunner,
-  BetaToolRunnerParams,
-} from '@anthropic-ai/sdk/lib/tools/BetaToolRunner';
+import type { BetaToolRunner, BetaToolRunnerParams } from '@anthropic-ai/sdk/lib/tools/BetaToolRunner';
 import {
   BackendDescription,
   ContentBlock,
@@ -24,8 +21,7 @@ type BetaContentBlock = Anthropic.Beta.Messages.BetaContentBlock;
 type BetaContentBlockParam = Anthropic.Beta.Messages.BetaContentBlockParam;
 type BetaMessage = Anthropic.Beta.Messages.BetaMessage;
 type BetaMessageParam = Anthropic.Beta.Messages.BetaMessageParam;
-type BetaToolResultBlockParam =
-  Anthropic.Beta.Messages.BetaToolResultBlockParam;
+type BetaToolResultBlockParam = Anthropic.Beta.Messages.BetaToolResultBlockParam;
 type BetaToolUseBlock = Anthropic.Beta.Messages.BetaToolUseBlock;
 type BetaUserMessageParam = Anthropic.Beta.Messages.BetaUserMessageParam;
 
@@ -69,9 +65,7 @@ export abstract class AnthropicMessagesBackend implements DetectionBackend {
   /** The request params of every turn: `request` plus the fields this backend's server understands. */
   protected abstract requestParams(request: BaseRequest): BetaToolRunnerParams;
 
-  async *run(
-    session: RunSession,
-  ): AsyncGenerator<TurnEvent, RunOutcome, undefined> {
+  async *run(session: RunSession): AsyncGenerator<TurnEvent, RunOutcome, undefined> {
     const tools: SequentialTools = new SequentialTools(session.signal);
     const runner: BetaToolRunner<false> = this.client.beta.messages.toolRunner(
       {
@@ -80,9 +74,7 @@ export abstract class AnthropicMessagesBackend implements DetectionBackend {
           max_tokens: this.entry.maxTokens,
           system: session.system,
           tools: session.tools.map(tools.wrap.bind(tools)),
-          messages: [
-            { role: 'user', content: session.firstMessage.map(toBetaContent) },
-          ],
+          messages: [{ role: 'user', content: session.firstMessage.map(toBetaContent) }],
         }),
         thread: false,
         max_iterations: session.maxTurns,
@@ -97,18 +89,11 @@ export abstract class AnthropicMessagesBackend implements DetectionBackend {
         // Run the turn's tools now rather than when the runner sends the next turn, so a terminal tool can end the run
         // before that request goes out. The runner reuses these results.
         const toolResults: BetaUserMessageParam | null =
-          message.stop_reason === 'tool_use'
-            ? await runner.generateToolResponse()
-            : null;
+          message.stop_reason === 'tool_use' ? await runner.generateToolResponse() : null;
 
         yield turnEvent(turn, message, toolResults);
 
-        const outcome: RunOutcome | null = outcomeAfterTurn(
-          message,
-          turn,
-          session,
-          tools,
-        );
+        const outcome: RunOutcome | null = outcomeAfterTurn(message, turn, session, tools);
         if (outcome) {
           return outcome;
         }
@@ -162,37 +147,26 @@ function outcomeAfterTurn(
   }
 }
 
-function turnEvent(
-  turn: number,
-  message: BetaMessage,
-  toolResults: BetaUserMessageParam | null,
-): TurnEvent {
-  const results: BetaToolResultBlockParam[] = Array.isArray(
-    toolResults?.content,
-  )
+function turnEvent(turn: number, message: BetaMessage, toolResults: BetaUserMessageParam | null): TurnEvent {
+  const results: BetaToolResultBlockParam[] = Array.isArray(toolResults?.content)
     ? toolResults.content.filter(isToolResult)
     : [];
 
   return {
     turn,
     assistantText: message.content
-      .flatMap((block: BetaContentBlock): string[] =>
-        block.type === 'text' ? [block.text] : [],
-      )
+      .flatMap((block: BetaContentBlock): string[] => (block.type === 'text' ? [block.text] : []))
       .join('\n'),
-    toolCalls: message.content
-      .filter(isToolUse)
-      .map((toolUse: BetaToolUseBlock): ToolCall => {
-        const result: BetaToolResultBlockParam | undefined = results.find(
-          (candidate: BetaToolResultBlockParam): boolean =>
-            candidate.tool_use_id === toolUse.id,
-        );
-        return {
-          name: toolUse.name,
-          input: toolUse.input,
-          result: toolResult(result),
-        };
-      }),
+    toolCalls: message.content.filter(isToolUse).map((toolUse: BetaToolUseBlock): ToolCall => {
+      const result: BetaToolResultBlockParam | undefined = results.find(
+        (candidate: BetaToolResultBlockParam): boolean => candidate.tool_use_id === toolUse.id,
+      );
+      return {
+        name: toolUse.name,
+        input: toolUse.input,
+        result: toolResult(result),
+      };
+    }),
     usage: tokenUsage(message),
   };
 }
@@ -214,9 +188,7 @@ function tokenUsage(message: BetaMessage): TokenUsage {
   };
 }
 
-function isToolResult(
-  block: BetaContentBlockParam,
-): block is BetaToolResultBlockParam {
+function isToolResult(block: BetaContentBlockParam): block is BetaToolResultBlockParam {
   return block.type === 'tool_result';
 }
 

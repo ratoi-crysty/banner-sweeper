@@ -1,9 +1,6 @@
 import type { BetaRunnableTool } from '@anthropic-ai/sdk/lib/tools/BetaRunnableTool';
 import type { BetaToolRunnerParams } from '@anthropic-ai/sdk/lib/tools/BetaToolRunner';
-import {
-  AnthropicMessagesBackend,
-  BaseRequest,
-} from './anthropic-messages-backend';
+import { AnthropicMessagesBackend, BaseRequest } from './anthropic-messages-backend';
 
 const SERVER_SIDE_FALLBACK_BETA = 'server-side-fallback-2026-07-01';
 
@@ -19,14 +16,9 @@ export class ClaudeBackend extends AnthropicMessagesBackend {
 
     return {
       ...request,
-      system: [
-        { type: 'text', text: request.system, cache_control: EPHEMERAL },
-      ],
+      system: [{ type: 'text', text: request.system, cache_control: EPHEMERAL }],
       tools: request.tools.map(
-        (
-          tool: BetaRunnableTool<unknown>,
-          index: number,
-        ): BetaRunnableTool<unknown> =>
+        (tool: BetaRunnableTool<unknown>, index: number): BetaRunnableTool<unknown> =>
           index === lastTool ? { ...tool, cache_control: EPHEMERAL } : tool,
       ),
       // Automatic caching: a breakpoint on the end of the history, so each turn reads the turns before it from cache.

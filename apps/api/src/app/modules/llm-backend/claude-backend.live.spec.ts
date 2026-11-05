@@ -15,12 +15,7 @@ describe.skipIf(!process.env['LIVE_LLM_TEST'])('ClaudeBackend, live', () => {
   it('counts to 3 and finishes', { timeout: 300_000 }, async () => {
     const backend: DetectionBackend = createDetectionBackend(
       selectBackendEntry(
-        JSON.parse(
-          readFileSync(
-            join(__dirname, '../../../../config/llm-backends.json'),
-            'utf8',
-          ),
-        ),
+        JSON.parse(readFileSync(join(__dirname, '../../../../config/llm-backends.json'), 'utf8')),
         process.env['DETECTION_BACKEND'],
       ),
       process.env,
@@ -28,8 +23,7 @@ describe.skipIf(!process.env['LIVE_LLM_TEST'])('ClaudeBackend, live', () => {
 
     const { events, outcome }: RunResult = await drain(
       backend.run({
-        system:
-          'You operate a counter through tools. Use `count` to change it and `finish` to report its final value.',
+        system: 'You operate a counter through tools. Use `count` to change it and `finish` to report its final value.',
         firstMessage: [
           {
             type: 'text',
@@ -47,8 +41,6 @@ describe.skipIf(!process.env['LIVE_LLM_TEST'])('ClaudeBackend, live', () => {
       name: 'finish',
       input: { total: 3 },
     });
-    expect(
-      events.every((event: TurnEvent): boolean => event.usage.outputTokens > 0),
-    ).toBe(true);
+    expect(events.every((event: TurnEvent): boolean => event.usage.outputTokens > 0)).toBe(true);
   });
 });

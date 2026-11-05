@@ -36,16 +36,11 @@ export interface FakeMessagesApi {
  * Stands in for `POST /v1/messages`: answers each request with the next canned reply, and records what was sent.
  * A request beyond the script fails the test.
  */
-export function fakeMessagesApi(
-  replies: (FakeReply | FakeErrorReply)[],
-): FakeMessagesApi {
+export function fakeMessagesApi(replies: (FakeReply | FakeErrorReply)[]): FakeMessagesApi {
   const requests: RecordedRequest[] = [];
   const remaining: (FakeReply | FakeErrorReply)[] = [...replies];
 
-  const fakeFetch = async (
-    input: string | URL | Request,
-    init?: RequestInit,
-  ): Promise<Response> => {
+  const fakeFetch = async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     init?.signal?.throwIfAborted();
     requests.push({
       url: String(input),
@@ -99,10 +94,6 @@ export function thinkingBlock(thinking: string): BetaContentBlock {
   return { type: 'thinking', thinking, signature: 'sig' };
 }
 
-export function toolUseBlock(
-  id: string,
-  name: string,
-  input: Record<string, unknown>,
-): BetaContentBlock {
+export function toolUseBlock(id: string, name: string, input: Record<string, unknown>): BetaContentBlock {
   return { type: 'tool_use', id, name, input };
 }

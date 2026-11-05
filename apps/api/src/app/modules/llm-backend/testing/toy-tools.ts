@@ -1,10 +1,4 @@
-import {
-  RunOutcome,
-  ToolDefinition,
-  ToolResult,
-  toolFailure,
-  TurnEvent,
-} from '@banner-sweeper/llm-backend';
+import { RunOutcome, ToolDefinition, ToolResult, toolFailure, TurnEvent } from '@banner-sweeper/llm-backend';
 import { z } from 'zod';
 
 export interface CounterInput {
@@ -49,9 +43,7 @@ export function toyTools(): ToolDefinition[] {
 }
 
 /** Runs a backend's loop to the end, collecting its turn events. */
-export async function drain(
-  run: AsyncGenerator<TurnEvent, RunOutcome, undefined>,
-): Promise<RunResult> {
+export async function drain(run: AsyncGenerator<TurnEvent, RunOutcome, undefined>): Promise<RunResult> {
   const events: TurnEvent[] = [];
   for (;;) {
     const step: IteratorResult<TurnEvent, RunOutcome> = await run.next();

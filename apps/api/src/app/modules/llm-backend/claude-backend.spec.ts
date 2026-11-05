@@ -1,10 +1,4 @@
-import {
-  RunSession,
-  ToolCall,
-  ToolDefinition,
-  ToolResult,
-  TurnEvent,
-} from '@banner-sweeper/llm-backend';
+import { RunSession, ToolCall, ToolDefinition, ToolResult, TurnEvent } from '@banner-sweeper/llm-backend';
 import { z } from 'zod';
 import { BackendEntry } from './backend-config';
 import { ClaudeBackend } from './claude-backend';
@@ -43,9 +37,7 @@ function session(overrides: Partial<RunSession> = {}): RunSession {
 }
 
 /** A `count` tool that does whatever `run` does. */
-function countTool(
-  run: () => Promise<ToolResult>,
-): ToolDefinition<CounterInput> {
+function countTool(run: () => Promise<ToolResult>): ToolDefinition<CounterInput> {
   return {
     name: 'count',
     description: 'Add a number to the counter.',
@@ -131,10 +123,7 @@ describe('ClaudeBackend', () => {
   it("ends with endTurn and the reply's text, keeping thinking out of the event", async () => {
     const { events, outcome }: FakeRunResult = await runAgainst([
       {
-        content: [
-          thinkingBlock('secret reasoning'),
-          textBlock('No banner here.'),
-        ],
+        content: [thinkingBlock('secret reasoning'), textBlock('No banner here.')],
         stopReason: 'end_turn',
       },
     ]);
@@ -146,9 +135,7 @@ describe('ClaudeBackend', () => {
   });
 
   it('ends with refused when the model refuses', async () => {
-    const { outcome }: FakeRunResult = await runAgainst([
-      { content: [], stopReason: 'refusal' },
-    ]);
+    const { outcome }: FakeRunResult = await runAgainst([{ content: [], stopReason: 'refusal' }]);
 
     expect(outcome).toEqual({ kind: 'refused' });
   });
@@ -217,12 +204,10 @@ describe('ClaudeBackend', () => {
 
   it('stops as aborted when the signal fires during a tool call', async () => {
     const controller: AbortController = new AbortController();
-    const aborting: ToolDefinition = countTool(
-      async (): Promise<ToolResult> => {
-        controller.abort();
-        return [{ type: 'text', text: 'aborted mid-call' }];
-      },
-    );
+    const aborting: ToolDefinition = countTool(async (): Promise<ToolResult> => {
+      controller.abort();
+      return [{ type: 'text', text: 'aborted mid-call' }];
+    });
 
     const { outcome, api }: FakeRunResult = await runAgainst(
       [
@@ -254,14 +239,10 @@ describe('ClaudeBackend', () => {
   });
 
   it('fails with the error when the API rejects a request', async () => {
-    const { outcome }: FakeRunResult = await runAgainst([
-      { status: 400, message: 'tools.0.name: invalid' },
-    ]);
+    const { outcome }: FakeRunResult = await runAgainst([{ status: 400, message: 'tools.0.name: invalid' }]);
 
     expect(outcome).toMatchObject({ kind: 'failed' });
-    expect(outcome.kind === 'failed' && outcome.message).toContain(
-      'tools.0.name: invalid',
-    );
+    expect(outcome.kind === 'failed' && outcome.message).toContain('tools.0.name: invalid');
   });
 
   it('runs several calls of one turn one at a time, in order', async () => {
@@ -285,10 +266,7 @@ describe('ClaudeBackend', () => {
     const { events }: FakeRunResult = await runAgainst(
       [
         {
-          content: [
-            toolUseBlock('t1', 'slow', {}),
-            toolUseBlock('t2', 'fast', {}),
-          ],
+          content: [toolUseBlock('t1', 'slow', {}), toolUseBlock('t2', 'fast', {})],
           stopReason: 'tool_use',
         },
         { content: [textBlock('ok')], stopReason: 'end_turn' },
@@ -297,18 +275,13 @@ describe('ClaudeBackend', () => {
     );
 
     expect(log).toEqual(['start slow', 'end slow', 'start fast', 'end fast']);
-    expect(
-      events[0]?.toolCalls.map((call: ToolCall): string => call.name),
-    ).toEqual(['slow', 'fast']);
+    expect(events[0]?.toolCalls.map((call: ToolCall): string => call.name)).toEqual(['slow', 'fast']);
   });
 
   it("doesn't run the calls after a terminal call that succeeded", async () => {
     const { events, outcome, api }: FakeRunResult = await runAgainst([
       {
-        content: [
-          toolUseBlock('t1', 'finish', { total: 0 }),
-          toolUseBlock('t2', 'count', { by: 1 }),
-        ],
+        content: [toolUseBlock('t1', 'finish', { total: 0 }), toolUseBlock('t2', 'count', { by: 1 })],
         stopReason: 'tool_use',
       },
     ]);
@@ -317,9 +290,7 @@ describe('ClaudeBackend', () => {
     expect(api.requests).toHaveLength(1);
     expect(events[0]?.toolCalls[1]?.result).toEqual({
       type: 'toolFailure',
-      content: [
-        { type: 'text', text: 'Not run: finish already ended the run.' },
-      ],
+      content: [{ type: 'text', text: 'Not run: finish already ended the run.' }],
     });
   });
 
@@ -330,9 +301,7 @@ describe('ClaudeBackend', () => {
       inputSchema: z.object({}),
       readOnly: true,
       terminal: false,
-      run: async (): Promise<ToolResult> => [
-        { type: 'image', mediaType: 'image/jpeg', data: 'AAAA' },
-      ],
+      run: async (): Promise<ToolResult> => [{ type: 'image', mediaType: 'image/jpeg', data: 'AAAA' }],
     };
 
     const { events, api }: FakeRunResult = await runAgainst(
@@ -352,9 +321,7 @@ describe('ClaudeBackend', () => {
       }),
     );
 
-    expect(events[0]?.toolCalls[0]?.result).toEqual([
-      { type: 'image', mediaType: 'image/jpeg', data: 'AAAA' },
-    ]);
+    expect(events[0]?.toolCalls[0]?.result).toEqual([{ type: 'image', mediaType: 'image/jpeg', data: 'AAAA' }]);
     const messages: unknown = api.requests[1]?.body['messages'];
     expect(messages).toEqual([
       {
@@ -441,9 +408,7 @@ describe('ClaudeBackend', () => {
 
   describe('requests', () => {
     it('asks for effort, adaptive thinking and server-side fallbacks, non-streaming', async () => {
-      const { api }: FakeRunResult = await runAgainst([
-        { content: [textBlock('ok')], stopReason: 'end_turn' },
-      ]);
+      const { api }: FakeRunResult = await runAgainst([{ content: [textBlock('ok')], stopReason: 'end_turn' }]);
 
       expect(api.requests[0]?.body).toMatchObject({
         model: 'claude-opus-5-5',
@@ -453,15 +418,11 @@ describe('ClaudeBackend', () => {
         fallbacks: 'default',
       });
       expect(api.requests[0]?.body['stream']).toBeFalsy();
-      expect(api.requests[0]?.headers.get('anthropic-beta')).toContain(
-        'server-side-fallback-2026-07-01',
-      );
+      expect(api.requests[0]?.headers.get('anthropic-beta')).toContain('server-side-fallback-2026-07-01');
     });
 
     it('caches the growing history with automatic caching', async () => {
-      const { api }: FakeRunResult = await runAgainst([
-        { content: [textBlock('ok')], stopReason: 'end_turn' },
-      ]);
+      const { api }: FakeRunResult = await runAgainst([{ content: [textBlock('ok')], stopReason: 'end_turn' }]);
 
       expect(api.requests[0]?.body['cache_control']).toEqual({
         type: 'ephemeral',
@@ -469,9 +430,7 @@ describe('ClaudeBackend', () => {
     });
 
     it('puts cache breakpoints on the system prompt and the last tool', async () => {
-      const { api }: FakeRunResult = await runAgainst([
-        { content: [textBlock('ok')], stopReason: 'end_turn' },
-      ]);
+      const { api }: FakeRunResult = await runAgainst([{ content: [textBlock('ok')], stopReason: 'end_turn' }]);
 
       expect(api.requests[0]?.body['system']).toEqual([
         {
@@ -492,10 +451,7 @@ describe('ClaudeBackend', () => {
     it('sends the whole history, unchanged, every turn', async () => {
       const { api }: FakeRunResult = await runAgainst([
         {
-          content: [
-            thinkingBlock('hmm'),
-            toolUseBlock('t1', 'count', { by: 3 }),
-          ],
+          content: [thinkingBlock('hmm'), toolUseBlock('t1', 'count', { by: 3 })],
           stopReason: 'tool_use',
         },
         {

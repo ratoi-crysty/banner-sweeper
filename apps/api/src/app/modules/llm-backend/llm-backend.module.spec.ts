@@ -6,16 +6,10 @@ import { join } from 'node:path';
 import { ClaudeBackend } from './claude-backend';
 import { DETECTION_BACKEND, LlmBackendModule } from './llm-backend.module';
 
-const CHECKED_IN_CONFIG: string = join(
-  __dirname,
-  '../../../../config/llm-backends.json',
-);
+const CHECKED_IN_CONFIG: string = join(__dirname, '../../../../config/llm-backends.json');
 
 function configFile(backends: Record<string, unknown>[]): string {
-  const path: string = join(
-    mkdtempSync(join(tmpdir(), 'llm-backends-')),
-    'llm-backends.json',
-  );
+  const path: string = join(mkdtempSync(join(tmpdir(), 'llm-backends-')), 'llm-backends.json');
   writeFileSync(path, JSON.stringify({ backends }));
   return path;
 }

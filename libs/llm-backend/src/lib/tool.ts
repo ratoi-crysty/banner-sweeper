@@ -34,8 +34,7 @@ export interface ToolDefinition<Input = unknown> {
 export function toolFailure(content: string | ContentBlock[]): ToolFailure {
   return {
     type: 'toolFailure',
-    content:
-      typeof content === 'string' ? [{ type: 'text', text: content }] : content,
+    content: typeof content === 'string' ? [{ type: 'text', text: content }] : content,
   };
 }
 

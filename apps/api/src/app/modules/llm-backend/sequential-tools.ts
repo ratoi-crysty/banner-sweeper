@@ -2,15 +2,10 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { betaZodTool } from '@anthropic-ai/sdk/helpers/beta/zod';
 import type { BetaRunnableTool } from '@anthropic-ai/sdk/lib/tools/BetaRunnableTool';
 import { ToolError } from '@anthropic-ai/sdk/lib/tools/ToolError';
-import {
-  isToolFailure,
-  ToolDefinition,
-  ToolResult,
-} from '@banner-sweeper/llm-backend';
+import { isToolFailure, ToolDefinition, ToolResult } from '@banner-sweeper/llm-backend';
 import { toBetaContent } from './content-blocks';
 
-type BetaToolResultContentBlockParam =
-  Anthropic.Beta.Messages.BetaToolResultContentBlockParam;
+type BetaToolResultContentBlockParam = Anthropic.Beta.Messages.BetaToolResultContentBlockParam;
 
 /**
  * Wraps the registry's tools for the Tool Runner, for one run.
@@ -35,32 +30,22 @@ export class SequentialTools {
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema,
-      run: (input: unknown): Promise<BetaToolResultContentBlockParam[]> =>
-        this.enqueue(tool, input),
+      run: (input: unknown): Promise<BetaToolResultContentBlockParam[]> => this.enqueue(tool, input),
     });
   }
 
-  private enqueue(
-    tool: ToolDefinition,
-    input: unknown,
-  ): Promise<BetaToolResultContentBlockParam[]> {
+  private enqueue(tool: ToolDefinition, input: unknown): Promise<BetaToolResultContentBlockParam[]> {
     const call: Promise<BetaToolResultContentBlockParam[]> = this.tail.then(
-      (): Promise<BetaToolResultContentBlockParam[]> =>
-        this.runOne(tool, input),
+      (): Promise<BetaToolResultContentBlockParam[]> => this.runOne(tool, input),
     );
     this.tail = call.catch((): void => undefined);
     return call;
   }
 
   /** A `ToolFailure` becomes a `ToolError`, which the runner sends back with `is_error: true`. */
-  private async runOne(
-    tool: ToolDefinition,
-    input: unknown,
-  ): Promise<BetaToolResultContentBlockParam[]> {
+  private async runOne(tool: ToolDefinition, input: unknown): Promise<BetaToolResultContentBlockParam[]> {
     if (this.terminalTool) {
-      throw new ToolError(
-        `Not run: ${this.terminalTool} already ended the run.`,
-      );
+      throw new ToolError(`Not run: ${this.terminalTool} already ended the run.`);
     }
     if (this.signal.aborted) {
       throw new ToolError('Not run: the run was aborted.');

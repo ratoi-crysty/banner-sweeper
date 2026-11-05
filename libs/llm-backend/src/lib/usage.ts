@@ -17,10 +17,7 @@ export interface Pricing {
 const TOKENS_PER_MTOK = 1_000_000;
 
 /** The cost of `usage` at `pricing`, or `null` for a backend without pricing (a local one). */
-export function costUsd(
-  usage: TokenUsage,
-  pricing: Pricing | null,
-): number | null {
+export function costUsd(usage: TokenUsage, pricing: Pricing | null): number | null {
   if (!pricing) {
     return null;
   }
