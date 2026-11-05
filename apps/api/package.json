@@ -4,7 +4,8 @@
   "private": true,
   "dependencies": {
     "@banner-sweeper/api-interfaces": "workspace:*",
-    "@banner-sweeper/autoconsent-config": "workspace:*"
+    "@banner-sweeper/autoconsent-config": "workspace:*",
+    "@banner-sweeper/llm-backend": "workspace:*"
   },
   "nx": {
     "targets": {

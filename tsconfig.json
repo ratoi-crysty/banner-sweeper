@@ -19,6 +19,9 @@
       "path": "./libs/autoconsent-config"
     },
     {
+      "path": "./libs/llm-backend"
+    },
+    {
       "path": "./libs/rule-validation"
     }
   ]

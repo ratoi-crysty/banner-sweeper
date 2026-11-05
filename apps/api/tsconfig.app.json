@@ -33,6 +33,9 @@
     },
     {
       "path": "../../libs/api-interfaces/tsconfig.lib.json"
+    },
+    {
+      "path": "../../libs/llm-backend/tsconfig.lib.json"
     }
   ]
 }

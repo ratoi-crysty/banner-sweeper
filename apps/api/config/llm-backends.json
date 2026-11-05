@@ -1,0 +1,17 @@
+{
+  "backends": [
+    {
+      "id": "claude-opus",
+      "kind": "claude",
+      "model": "claude-opus-5-5",
+      "effort": "medium",
+      "maxTokens": 16000,
+      "pricing": {
+        "inputPerMTok": 4,
+        "outputPerMTok": 20,
+        "cacheReadPerMTok": 0.2,
+        "cacheWritePerMTok": 5
+      }
+    }
+  ]
+}
