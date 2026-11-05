@@ -1,7 +1,7 @@
 import { DetectionBackend } from '@banner-sweeper/llm-backend';
 import { DynamicModule, Module } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
-import { selectBackendEntry } from './backend-config';
+import { selectBackendEntry } from './select-backend-entry';
 import { createDetectionBackend } from './create-detection-backend';
 
 /** Injection token of the active `DetectionBackend`. */

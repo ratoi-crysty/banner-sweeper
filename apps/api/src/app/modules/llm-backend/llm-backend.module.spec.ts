@@ -8,7 +8,7 @@ import { DETECTION_BACKEND, LlmBackendModule } from './llm-backend.module';
 
 const CHECKED_IN_CONFIG: string = join(
   __dirname,
-  '../../config/llm-backends.json',
+  '../../../../config/llm-backends.json',
 );
 
 function configFile(backends: Record<string, unknown>[]): string {

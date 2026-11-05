@@ -1,9 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BackendEntry, selectBackendEntry } from './backend-config';
+import { BackendEntry } from './backend-config';
+import { selectBackendEntry } from './select-backend-entry';
 
 const CHECKED_IN_CONFIG: unknown = JSON.parse(
-  readFileSync(join(__dirname, '../../config/llm-backends.json'), 'utf8'),
+  readFileSync(join(__dirname, '../../../../config/llm-backends.json'), 'utf8'),
 );
 
 const CLAUDE_SONNET: Record<string, unknown> = {
@@ -25,10 +26,7 @@ const LOCAL_QWEN: Record<string, unknown> = {
 
 describe('selectBackendEntry', () => {
   it('defaults to claude-opus on Opus 5.5 at medium effort in the checked-in config', () => {
-    const entry: BackendEntry = selectBackendEntry(
-      CHECKED_IN_CONFIG,
-      undefined,
-    );
+    const entry: BackendEntry = selectBackendEntry(CHECKED_IN_CONFIG, undefined);
 
     expect(entry).toMatchObject({
       id: 'claude-opus',
@@ -41,44 +39,36 @@ describe('selectBackendEntry', () => {
   });
 
   it('picks the entry named by its id', () => {
-    const entry: BackendEntry = selectBackendEntry(
-      { backends: [CLAUDE_SONNET, LOCAL_QWEN] },
-      'local-qwen',
-    );
+    const entry: BackendEntry = selectBackendEntry({ backends: [CLAUDE_SONNET, LOCAL_QWEN] }, 'local-qwen');
 
     expect(entry).toEqual(LOCAL_QWEN);
   });
 
   it('rejects an id with no entry, naming the ones there are', () => {
-    expect(() =>
-      selectBackendEntry({ backends: [CLAUDE_SONNET, LOCAL_QWEN] }, 'gpt'),
-    ).toThrow(/"gpt".*claude-sonnet, local-qwen/);
+    expect(() => selectBackendEntry({ backends: [CLAUDE_SONNET, LOCAL_QWEN] }, 'gpt')).toThrow(
+      /"gpt".*claude-sonnet, local-qwen/,
+    );
   });
 
   it('rejects a config whose entries share an id', () => {
     expect(() =>
-      selectBackendEntry(
-        { backends: [CLAUDE_SONNET, { ...CLAUDE_SONNET, model: 'other' }] },
-        'claude-sonnet',
-      ),
+      selectBackendEntry({ backends: [CLAUDE_SONNET, { ...CLAUDE_SONNET, model: 'other' }] }, 'claude-sonnet'),
     ).toThrow(/claude-sonnet/);
   });
 
   it('rejects a malformed entry, saying where', () => {
-    expect(() =>
-      selectBackendEntry(
-        { backends: [{ ...CLAUDE_SONNET, kind: 'openai' }] },
-        'claude-sonnet',
-      ),
-    ).toThrow(/backends\.0\.kind/);
+    expect(() => selectBackendEntry({ backends: [{ ...CLAUDE_SONNET, kind: 'openai' }] }, 'claude-sonnet')).toThrow(
+      /backends\.0\.kind/,
+    );
   });
 
   it('rejects an entry with a field it does not know', () => {
     expect(() =>
-      selectBackendEntry(
-        { backends: [{ ...CLAUDE_SONNET, apiKey: 'sk-ant-secret' }] },
-        'claude-sonnet',
-      ),
+      selectBackendEntry({ backends: [{ ...CLAUDE_SONNET, apiKey: 'sk-ant-secret' }] }, 'claude-sonnet'),
     ).toThrow(/apiKey/);
+  });
+
+  it('rejects a config that is not an object', () => {
+    expect(() => selectBackendEntry([CLAUDE_SONNET], 'claude-sonnet')).toThrow(/must be an object/);
   });
 });

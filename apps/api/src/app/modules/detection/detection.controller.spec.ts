@@ -10,6 +10,7 @@ import { apiConfig } from '../../../config/api.config';
 import type { ApiConfig } from '../../../config/api.config';
 import { AppModule } from '../../app.module';
 import { configureApp } from '../../configure-app';
+import { DETECTION_BACKEND } from '../llm-backend/llm-backend.module';
 import { SiteUnreachableError } from '../verification/site-unreachable.error';
 import { StockCheck, StockCheckResult } from '../verification/stock-check';
 
@@ -92,6 +93,10 @@ describe('Detection jobs over HTTP', () => {
       .useValue(config)
       .overrideProvider(StockCheck)
       .useValue(stockCheck)
+      // AppModule finds the backend config from the workspace root, and tests run from apps/api.
+      // Nothing here runs the agent yet.
+      .overrideProvider(DETECTION_BACKEND)
+      .useValue({})
       .compile();
     app = moduleRef.createNestApplication({ logger: false });
     configureApp(app);

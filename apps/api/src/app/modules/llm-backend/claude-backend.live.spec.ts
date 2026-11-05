@@ -1,7 +1,7 @@
 import { DetectionBackend, TurnEvent } from '@banner-sweeper/llm-backend';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { selectBackendEntry } from './backend-config';
+import { selectBackendEntry } from './select-backend-entry';
 import { createDetectionBackend } from './create-detection-backend';
 import { drain, RunResult, toyTools } from './testing/toy-tools';
 
@@ -17,7 +17,7 @@ describe.skipIf(!process.env['LIVE_LLM_TEST'])('ClaudeBackend, live', () => {
       selectBackendEntry(
         JSON.parse(
           readFileSync(
-            join(__dirname, '../../config/llm-backends.json'),
+            join(__dirname, '../../../../config/llm-backends.json'),
             'utf8',
           ),
         ),

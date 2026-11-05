@@ -1,81 +1,101 @@
-import { z } from 'zod';
+// class-transformer's `@Type` reads design-time metadata; Nest loads this too, but the config is also used without Nest
+import 'reflect-metadata';
+import type { Pricing } from '@banner-sweeper/llm-backend';
+import { Type } from 'class-transformer';
+import {
+  ArrayMinSize,
+  IsArray,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsString,
+  IsUrl,
+  Min,
+  Validate,
+  ValidateNested,
+} from 'class-validator';
+import { UniqueBackendIdsConstraint } from './unique-backend-ids.constraint';
 
-export const DEFAULT_BACKEND_ID = 'claude-opus';
+export const BACKEND_KINDS = ['claude', 'anthropicCompatible'] as const;
+export type BackendKind = (typeof BACKEND_KINDS)[number];
 
-const pricingSchema = z.strictObject({
-  inputPerMTok: z.number().nonnegative(),
-  outputPerMTok: z.number().nonnegative(),
-  cacheReadPerMTok: z.number().nonnegative(),
-  cacheWritePerMTok: z.number().nonnegative(),
-});
+export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
+export type Effort = (typeof EFFORTS)[number];
 
-const backendEntrySchema = z.strictObject({
-  id: z.string().min(1),
-  kind: z.enum(['claude', 'anthropicCompatible']),
-  baseURL: z.url().optional(),
-  /** The env var holding the API key. Without it, the SDK resolves credentials itself. */
-  apiKeyEnv: z.string().min(1).optional(),
-  model: z.string().min(1),
-  effort: z.enum(['low', 'medium', 'high', 'xhigh', 'max']).optional(),
-  maxTokens: z.int().positive(),
-  pricing: pricingSchema.optional(),
-  contextPolicy: z
-    .strictObject({ keepScreenshots: z.int().nonnegative() })
-    .optional(),
-});
+export class PricingConfig implements Pricing {
+  @IsNumber()
+  @Min(0)
+  inputPerMTok!: number;
 
-const backendConfigSchema = z
-  .strictObject({ backends: z.array(backendEntrySchema).min(1) })
-  .superRefine((config: BackendConfig, context: z.RefinementCtx): void => {
-    const seen: Set<string> = new Set();
-    config.backends.forEach((entry: BackendEntry, index: number): void => {
-      if (seen.has(entry.id)) {
-        context.addIssue({
-          code: 'custom',
-          path: ['backends', index, 'id'],
-          message: `duplicate id "${entry.id}"`,
-        });
-      }
-      seen.add(entry.id);
-    });
-  });
+  @IsNumber()
+  @Min(0)
+  outputPerMTok!: number;
+
+  @IsNumber()
+  @Min(0)
+  cacheReadPerMTok!: number;
+
+  @IsNumber()
+  @Min(0)
+  cacheWritePerMTok!: number;
+}
+
+export class ContextPolicyConfig {
+  @IsInt()
+  @Min(0)
+  keepScreenshots!: number;
+}
 
 /** One entry of `apps/api/config/llm-backends.json`. It holds no secrets: `apiKeyEnv` names an env var. */
-export type BackendEntry = z.infer<typeof backendEntrySchema>;
+export class BackendEntry {
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
 
-export type BackendConfig = z.infer<typeof backendConfigSchema>;
+  @IsIn(BACKEND_KINDS)
+  kind!: BackendKind;
 
-/**
- * Validates the backend config and returns the entry `requestedId` names (`DETECTION_BACKEND`),
- * or `claude-opus` without one. Throws on any problem, so a bad config stops the API at boot.
- */
-export function selectBackendEntry(
-  rawConfig: unknown,
-  requestedId: string | undefined,
-): BackendEntry {
-  const parsed: z.ZodSafeParseResult<BackendConfig> =
-    backendConfigSchema.safeParse(rawConfig);
-  if (!parsed.success) {
-    const problems: string = parsed.error.issues
-      .map(
-        (issue: z.core.$ZodIssue): string =>
-          `${issue.path.join('.') || '(root)'}: ${issue.message}`,
-      )
-      .join('; ');
-    throw new Error(`Invalid LLM backend config: ${problems}`);
-  }
+  @IsOptional()
+  @IsUrl({ require_tld: false, require_protocol: true, protocols: ['http', 'https'] })
+  baseURL?: string;
 
-  const id: string = requestedId || DEFAULT_BACKEND_ID;
-  const entry: BackendEntry | undefined = parsed.data.backends.find(
-    (candidate: BackendEntry): boolean => candidate.id === id,
-  );
-  if (!entry) {
-    const known: string = parsed.data.backends
-      .map((candidate: BackendEntry): string => candidate.id)
-      .join(', ');
-    throw new Error(
-      `No LLM backend "${id}" in the config. Configured: ${known}`,
-    );
-  }
-  return entry;
+  /** The env var holding the API key. Without it, the SDK resolves credentials itself. */
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  apiKeyEnv?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  model!: string;
+
+  @IsOptional()
+  @IsIn(EFFORTS)
+  effort?: Effort;
+
+  @IsInt()
+  @IsPositive()
+  maxTokens!: number;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PricingConfig)
+  pricing?: PricingConfig;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ContextPolicyConfig)
+  contextPolicy?: ContextPolicyConfig;
+}
+
+export class BackendConfig {
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => BackendEntry)
+  @Validate(UniqueBackendIdsConstraint)
+  backends!: BackendEntry[];
 }
