@@ -1,0 +1,1 @@
+export const PLAYWRIGHT_OPTIONS = Symbol('PLAYWRIGHT_OPTIONS');
