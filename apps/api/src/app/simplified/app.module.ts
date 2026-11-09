@@ -1,9 +1,9 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
-import { VALIDATION_PIPE_OPTIONS } from './common/validation';
-import { AgentModule, type ProviderType } from './modules/agent';
-import { GenerateModule } from './modules/generate';
-import { PlaywrightModule } from './modules/playwright';
+import { VALIDATION_PIPE_OPTIONS } from '../common/validation';
+import { AgentModule, type ProviderType } from '../modules/agent';
+import { GenerateModule } from '../modules/generate';
+import { PlaywrightModule } from '../modules/playwright';
 
 const env = process.env;
 

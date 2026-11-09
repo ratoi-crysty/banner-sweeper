@@ -5,7 +5,9 @@
   "scripts": {},
   "private": true,
   "dependencies": {
-    "@duckduckgo/autoconsent": "16.60.0",
+    "@anthropic-ai/claude-agent-sdk": "^0.3.321",
+    "@anthropic-ai/sdk": "^1.7.0",
+    "@duckduckgo/autoconsent": "^18.1.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.0",
@@ -25,7 +27,8 @@
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.0",
     "tslib": "^2.3.0",
-    "typeorm": "^1.1.2"
+    "typeorm": "^1.1.2",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.4.0",

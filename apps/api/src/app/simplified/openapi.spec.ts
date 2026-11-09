@@ -1,10 +1,10 @@
 import type { INestApplication } from '@nestjs/common';
 import type { OpenAPIObject } from '@nestjs/swagger';
 import { Test, type TestingModule } from '@nestjs/testing';
-import { GenerateController } from './modules/generate/generate.controller';
-import { GenerationJobsService } from './modules/generate/generation-jobs.service';
-import { ValidatorController } from './modules/validator/validator.controller';
-import { ValidatorService } from './modules/validator/validator.service';
+import { GenerateController } from '../modules/generate/generate.controller';
+import { GenerationJobsService } from '../modules/generate/generation-jobs.service';
+import { ValidatorController } from '../modules/validator/validator.controller';
+import { ValidatorService } from '../modules/validator/validator.service';
 import { createOpenApiDocument } from './openapi';
 
 interface Operation {
