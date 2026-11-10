@@ -1,6 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { buildMessage, IsInt, IsOptional, Max, Min, ValidateBy, ValidateNested, type ValidationOptions } from 'class-validator';
+import {
+  buildMessage,
+  IsInt,
+  IsOptional,
+  Max,
+  Min,
+  ValidateBy,
+  ValidateNested,
+  type ValidationOptions,
+} from 'class-validator';
 import { IsHttpUrl } from '../../../shared/validation';
 import { ContextSettingsDto } from '../../playwright/dto/context-settings.dto';
 import { AUTOCONSENT_RULE_SCHEMA } from '../../runner/dto/autoconsent-run-report.dto';
@@ -43,7 +52,13 @@ export class ValidateRuleRequestDto implements ValidateRuleRequest {
   @IsAutoconsentRule()
   rule!: AutoConsentCMPRule;
 
-  @ApiPropertyOptional({ type: 'integer', minimum: 1000, maximum: 300000, default: 25000, description: 'Total time budget, ms.' })
+  @ApiPropertyOptional({
+    type: 'integer',
+    minimum: 1000,
+    maximum: 300000,
+    default: 25000,
+    description: 'Total time budget, ms.',
+  })
   @IsOptional()
   @IsInt()
   @Min(1000)

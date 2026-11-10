@@ -20,11 +20,22 @@ export class AgentProviderFactory {
   create(config: ProviderConfig = this.options.defaultProvider): AgentProvider {
     switch (config.type) {
       case 'claude-agent-sdk':
-        return new ClaudeAgentSdkProvider({ model: config.model, useSubscription: this.options.agentSdkUseSubscription ?? true });
+        return new ClaudeAgentSdkProvider({
+          model: config.model,
+          useSubscription: this.options.agentSdkUseSubscription ?? true,
+        });
       case 'claude-api':
-        return new ClaudeApiProvider({ apiKey: this.options.anthropicApiKey, model: config.model, maxTokens: config.maxTokens });
+        return new ClaudeApiProvider({
+          apiKey: this.options.anthropicApiKey,
+          model: config.model,
+          maxTokens: config.maxTokens,
+        });
       case 'ollama':
-        return new OllamaProvider({ host: config.host ?? this.options.ollamaHost, model: config.model, vision: config.vision });
+        return new OllamaProvider({
+          host: config.host ?? this.options.ollamaHost,
+          model: config.model,
+          vision: config.vision,
+        });
       default:
         return assertNever(config);
     }

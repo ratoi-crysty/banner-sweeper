@@ -52,7 +52,11 @@ export class BrowserAgentSession implements AgentSession {
     this.steps.push(step);
     this.init.onStep?.(step);
     if (call.name === 'done') {
-      this.done = { success: Boolean(call.args['success']), summary: String(call.args['summary'] ?? ''), steps: this.steps };
+      this.done = {
+        success: Boolean(call.args['success']),
+        summary: String(call.args['summary'] ?? ''),
+        steps: this.steps,
+      };
     }
     return result;
   }

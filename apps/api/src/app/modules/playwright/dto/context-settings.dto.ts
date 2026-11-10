@@ -19,7 +19,11 @@ export class ViewportDto {
 
 /** Browser context to load the page in, e.g. to see what visitors from a given country see. */
 export class ContextSettingsDto implements ContextSettings {
-  @ApiPropertyOptional({ minLength: 1, description: 'Browser locale (Accept-Language, navigator.language).', example: 'ro-RO' })
+  @ApiPropertyOptional({
+    minLength: 1,
+    description: 'Browser locale (Accept-Language, navigator.language).',
+    example: 'ro-RO',
+  })
   @IsOptional()
   @IsString()
   @IsNotEmpty()

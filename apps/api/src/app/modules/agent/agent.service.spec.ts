@@ -46,7 +46,9 @@ describe('AgentService', () => {
   });
 
   it("uses the provider's stop reason when the agent never called done", async () => {
-    const result: AgentResult = await run(provider(async (): Promise<AgentLoopOutcome> => ({ stopReason: 'Out of turns' })));
+    const result: AgentResult = await run(
+      provider(async (): Promise<AgentLoopOutcome> => ({ stopReason: 'Out of turns' })),
+    );
     expect(result).toEqual({ success: false, summary: 'Out of turns', steps: [] });
   });
 
@@ -63,7 +65,9 @@ describe('AgentService', () => {
   });
 
   it('rethrows provider errors that are not cancellations', async () => {
-    await expect(run(provider(async (): Promise<AgentLoopOutcome> => Promise.reject(new Error('quota'))))).rejects.toThrow('quota');
+    await expect(
+      run(provider(async (): Promise<AgentLoopOutcome> => Promise.reject(new Error('quota')))),
+    ).rejects.toThrow('quota');
   });
 });
 
@@ -82,11 +86,13 @@ describe('AgentProviderFactory', () => {
   });
 
   it('reports vision per provider', () => {
-    expect([factory.create({ type: 'claude-agent-sdk' }), factory.create({ type: 'claude-api' }), factory.create({ type: 'ollama' })].map((p) => p.vision)).toEqual([
-      true,
-      true,
-      false,
-    ]);
+    expect(
+      [
+        factory.create({ type: 'claude-agent-sdk' }),
+        factory.create({ type: 'claude-api' }),
+        factory.create({ type: 'ollama' }),
+      ].map((p) => p.vision),
+    ).toEqual([true, true, false]);
   });
 
   it('passes a ready provider through', () => {

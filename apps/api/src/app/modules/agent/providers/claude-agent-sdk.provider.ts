@@ -44,20 +44,32 @@ export class ClaudeAgentSdkProvider implements AgentProvider {
       name: SERVER,
       tools: tools.map((def) =>
         tool(def.name, def.description, toZodShape(def.parameters), async (args) => {
-          const result: ToolResult = await session.execute({ id: `sdk_${++callId}`, name: def.name, args: args as Record<string, unknown> });
+          const result: ToolResult = await session.execute({
+            id: `sdk_${++callId}`,
+            name: def.name,
+            args: args as Record<string, unknown>,
+          });
 
           return {
             isError: result.isError,
             content: [
-              { type: 'text' as const, text: session.finished ? `${result.text}\nTask finished. Stop now.` : result.text },
-              ...(result.imageBase64 ? [{ type: 'image' as const, data: result.imageBase64, mimeType: 'image/png' }] : []),
+              {
+                type: 'text' as const,
+                text: session.finished ? `${result.text}\nTask finished. Stop now.` : result.text,
+              },
+              ...(result.imageBase64
+                ? [{ type: 'image' as const, data: result.imageBase64, mimeType: 'image/png' }]
+                : []),
             ],
           };
         }),
       ),
     });
 
-    const env: Record<string, string | undefined> = { ...process.env, CLAUDE_AGENT_SDK_CLIENT_APP: 'llm-consent-nest/0.1' };
+    const env: Record<string, string | undefined> = {
+      ...process.env,
+      CLAUDE_AGENT_SDK_CLIENT_APP: 'llm-consent-nest/0.1',
+    };
     if (this.opts.useSubscription !== false) delete env.ANTHROPIC_API_KEY;
 
     const abort = new AbortController();

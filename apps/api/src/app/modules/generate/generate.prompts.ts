@@ -23,11 +23,21 @@ export const RULE_SPEC_SCHEMA: JsonSchema = {
   type: 'object',
   properties: {
     containerSelector: { type: 'string', description: 'css of the banner container (from inspect_page).' },
-    detectSelector: { type: 'string', description: 'Optional: more specific selector proving this CMP exists (e.g. the reject button). Defaults to the container.' },
+    detectSelector: {
+      type: 'string',
+      description:
+        'Optional: more specific selector proving this CMP exists (e.g. the reject button). Defaults to the container.',
+    },
     optOutClicks: { type: 'array', items: { type: 'string' }, description: 'Selectors to click in order to reject.' },
     optInClick: { type: 'string', description: 'Accept button selector (optional).' },
-    frameUrl: { type: 'string', description: 'Only if the banner is inside an iframe: the iframe url from inspect_page.' },
-    cosmetic: { type: 'boolean', description: 'true only if there is no way to reject: the rule just hides the banner.' },
+    frameUrl: {
+      type: 'string',
+      description: 'Only if the banner is inside an iframe: the iframe url from inspect_page.',
+    },
+    cosmetic: {
+      type: 'boolean',
+      description: 'true only if there is no way to reject: the rule just hides the banner.',
+    },
   },
   required: ['containerSelector', 'optOutClicks'],
 };

@@ -48,12 +48,18 @@ function session(maxSteps: number, signal?: AbortSignal): BrowserAgentSession {
   });
 }
 
-const call = (name: string, args: Record<string, unknown> = {}): LLMResponse => ({ text: '', toolCalls: [{ id: name, name, args }] });
+const call = (name: string, args: Record<string, unknown> = {}): LLMResponse => ({
+  text: '',
+  toolCalls: [{ id: name, name, args }],
+});
 const prose = (text: string): LLMResponse => ({ text, toolCalls: [] });
 
 describe('ChatAgentProvider', () => {
   it('runs tool calls until the agent calls done', async () => {
-    const provider: ScriptedProvider = new ScriptedProvider(true, [call('look'), call('done', { success: true, summary: 'Rule works' })]);
+    const provider: ScriptedProvider = new ScriptedProvider(true, [
+      call('look'),
+      call('done', { success: true, summary: 'Rule works' }),
+    ]);
     const s: BrowserAgentSession = session(10);
 
     const outcome: AgentLoopOutcome = await provider.run(s);

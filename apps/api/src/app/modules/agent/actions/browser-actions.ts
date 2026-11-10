@@ -192,7 +192,9 @@ export const browserActions: Record<string, Action> = {
       try {
         // Hidden/detached must hold in the main frame; visible/attached in any frame.
         const frame =
-          state === 'hidden' || state === 'detached' ? await tryFrame(page.mainFrame()) : await Promise.any(page.frames().map(tryFrame));
+          state === 'hidden' || state === 'detached'
+            ? await tryFrame(page.mainFrame())
+            : await Promise.any(page.frames().map(tryFrame));
         return { text: `"${selector}" is ${state}${frame !== page.mainFrame() ? ' (in iframe)' : ''}.` };
       } catch {
         return { text: `Timed out waiting for "${selector}" to be ${state}.`, isError: true };
@@ -226,7 +228,10 @@ export const browserActions: Record<string, Action> = {
     async run({ page, timeout }, { text }) {
       const re = new RegExp(text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
       for (const frame of page.frames()) {
-        const loc = frame.getByRole('button', { name: re }).or(frame.getByRole('link', { name: re })).first();
+        const loc = frame
+          .getByRole('button', { name: re })
+          .or(frame.getByRole('link', { name: re }))
+          .first();
         if (await loc.isVisible().catch(() => false)) {
           await loc.click({ timeout });
           await page.waitForTimeout(500);

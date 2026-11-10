@@ -31,7 +31,10 @@ export class GenerateRuleRequestDto implements GenerateRuleRequest {
   @Matches(/^(?!auto_)/, { message: 'name must not start with "auto_" (reserved by autoconsent)' })
   name?: string;
 
-  @ApiPropertyOptional({ default: true, description: "First check whether autoconsent's bundled rules already handle the site." })
+  @ApiPropertyOptional({
+    default: true,
+    description: "First check whether autoconsent's bundled rules already handle the site.",
+  })
   @IsOptional()
   @IsBoolean()
   checkBundledRules?: boolean;

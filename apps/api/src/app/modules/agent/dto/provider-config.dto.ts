@@ -21,7 +21,11 @@ export class ProviderConfigDto {
   @IsIn(PROVIDER_TYPES)
   type!: ProviderType;
 
-  @ApiPropertyOptional({ minLength: 1, description: "Model name. Default: the provider's default.", example: 'qwen3:8b' })
+  @ApiPropertyOptional({
+    minLength: 1,
+    description: "Model name. Default: the provider's default.",
+    example: 'qwen3:8b',
+  })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
@@ -33,7 +37,11 @@ export class ProviderConfigDto {
   @Min(1)
   maxTokens?: number;
 
-  @ApiPropertyOptional({ format: 'uri', description: '`ollama` only. Default: the server\'s OLLAMA_HOST.', example: 'http://localhost:11434' })
+  @ApiPropertyOptional({
+    format: 'uri',
+    description: "`ollama` only. Default: the server's OLLAMA_HOST.",
+    example: 'http://localhost:11434',
+  })
   @IsOptional()
   @IsHttpUrl()
   host?: string;

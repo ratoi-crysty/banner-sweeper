@@ -29,7 +29,10 @@ describe('ValidateRuleRequestDto', () => {
       optOut: [{ waitForThenClick: '#reject' }],
       optIn: [{ waitForThenClick: '#accept' }],
     };
-    const dto: ValidateRuleRequestDto = await pipe.transform({ url: 'https://example.com', rule, timeoutMs: 20000 }, metadata);
+    const dto: ValidateRuleRequestDto = await pipe.transform(
+      { url: 'https://example.com', rule, timeoutMs: 20000 },
+      metadata,
+    );
     expect(dto.rule).toEqual(rule);
   });
 

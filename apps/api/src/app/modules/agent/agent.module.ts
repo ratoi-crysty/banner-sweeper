@@ -26,7 +26,11 @@ export class AgentModule {
       module: AgentModule,
       global: true,
       imports: options.imports ?? [],
-      providers: [{ provide: AGENT_OPTIONS, useFactory: options.useFactory, inject: options.inject ?? [] }, AgentProviderFactory, AgentService],
+      providers: [
+        { provide: AGENT_OPTIONS, useFactory: options.useFactory, inject: options.inject ?? [] },
+        AgentProviderFactory,
+        AgentService,
+      ],
       exports: [AgentService, AgentProviderFactory],
     };
   }

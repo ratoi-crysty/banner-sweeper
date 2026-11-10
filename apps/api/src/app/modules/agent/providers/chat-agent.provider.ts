@@ -1,4 +1,12 @@
-import type { AgentLoopOutcome, AgentProvider, AgentSession, LLMResponse, Message, ToolDefinition, ToolResult } from '../types/agent.types';
+import type {
+  AgentLoopOutcome,
+  AgentProvider,
+  AgentSession,
+  LLMResponse,
+  Message,
+  ToolDefinition,
+  ToolResult,
+} from '../types/agent.types';
 
 /** One model turn: the conversation so far in, the reply (text and/or tool calls) out. */
 export interface ChatRequest {
@@ -41,7 +49,12 @@ export abstract class ChatAgentProvider implements AgentProvider {
 
       for (const call of reply.toolCalls) {
         const result: ToolResult = await session.execute(call);
-        messages.push({ role: 'tool', toolCallId: call.id, name: call.name, result: this.vision ? result : withoutImage(result) });
+        messages.push({
+          role: 'tool',
+          toolCallId: call.id,
+          name: call.name,
+          result: this.vision ? result : withoutImage(result),
+        });
         if (session.finished) return { stopReason: session.finished.summary };
       }
     }

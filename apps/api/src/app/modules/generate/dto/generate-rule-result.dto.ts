@@ -1,4 +1,10 @@
-import { ApiProperty, ApiPropertyOptional, getSchemaPath, type DiscriminatorObject, type ReferenceObject } from '@nestjs/swagger';
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  getSchemaPath,
+  type DiscriminatorObject,
+  type ReferenceObject,
+} from '@nestjs/swagger';
 import { AgentStepDto } from '../../agent/dto/agent-step.dto';
 import { AUTOCONSENT_RULE_SCHEMA } from '../../runner/dto/autoconsent-run-report.dto';
 import type { AutoConsentCMPRule } from '../../runner/types';
@@ -77,7 +83,11 @@ export class UnresolvedRuleResultDto implements UnresolvedResult {
   validation?: ValidationResultDto;
 }
 
-export const GENERATE_RULE_RESULT_MODELS = [GeneratedRuleResultDto, CoveredByBundledRuleResultDto, UnresolvedRuleResultDto];
+export const GENERATE_RULE_RESULT_MODELS = [
+  GeneratedRuleResultDto,
+  CoveredByBundledRuleResultDto,
+  UnresolvedRuleResultDto,
+];
 
 /** `GenerateRuleResult` as a discriminated union on `status`. Register the models with `@ApiExtraModels(...GENERATE_RULE_RESULT_MODELS)`. */
 export const GENERATE_RULE_RESULT_SCHEMA: DiscriminatedUnionSchema = {
@@ -87,7 +97,9 @@ export const GENERATE_RULE_RESULT_SCHEMA: DiscriminatedUnionSchema = {
     mapping: {
       generated: getSchemaPath(GeneratedRuleResultDto),
       'covered-by-bundled-rule': getSchemaPath(CoveredByBundledRuleResultDto),
-      ...Object.fromEntries(UNRESOLVED_STATUSES.map((status): [string, string] => [status, getSchemaPath(UnresolvedRuleResultDto)])),
+      ...Object.fromEntries(
+        UNRESOLVED_STATUSES.map((status): [string, string] => [status, getSchemaPath(UnresolvedRuleResultDto)]),
+      ),
     },
   },
 };

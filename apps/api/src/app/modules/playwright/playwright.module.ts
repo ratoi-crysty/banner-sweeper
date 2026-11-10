@@ -27,7 +27,10 @@ export class PlaywrightModule {
       module: PlaywrightModule,
       global: true,
       imports: options.imports ?? [],
-      providers: [{ provide: PLAYWRIGHT_OPTIONS, useFactory: options.useFactory, inject: options.inject }, PlaywrightService],
+      providers: [
+        { provide: PLAYWRIGHT_OPTIONS, useFactory: options.useFactory, inject: options.inject },
+        PlaywrightService,
+      ],
       exports: [PlaywrightService],
     };
   }

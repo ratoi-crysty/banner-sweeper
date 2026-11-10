@@ -38,12 +38,24 @@ export interface GenerateRuleRequest {
   context?: ContextSettings;
 }
 
-export type GenerateRuleStatus = 'generated' | 'covered-by-bundled-rule' | 'blocked' | 'no-banner' | 'failed' | 'cancelled';
+export type GenerateRuleStatus =
+  | 'generated'
+  | 'covered-by-bundled-rule'
+  | 'blocked'
+  | 'no-banner'
+  | 'failed'
+  | 'cancelled';
 
 export type GenerateRuleResult =
   | { status: 'generated'; rule: AutoConsentCMPRule; validation: ValidationResult; summary: string; steps: AgentStep[] }
   | { status: 'covered-by-bundled-rule'; cmp: string; summary: string; steps: AgentStep[] }
-  | { status: 'blocked' | 'no-banner' | 'failed' | 'cancelled'; summary: string; steps: AgentStep[]; rule?: AutoConsentCMPRule; validation?: ValidationResult };
+  | {
+      status: 'blocked' | 'no-banner' | 'failed' | 'cancelled';
+      summary: string;
+      steps: AgentStep[];
+      rule?: AutoConsentCMPRule;
+      validation?: ValidationResult;
+    };
 
 export type GenerationJobState = 'queued' | 'running' | 'finished' | 'error';
 

@@ -41,6 +41,8 @@ export class AutoconsentRunReportDto implements AutoconsentRunReport {
   @ApiProperty({ type: [String], description: 'autoconsent message types in the order received.' })
   timeline!: string[];
 
-  @ApiPropertyOptional({ description: 'Set when the site served an error or bot-challenge page instead of the real one.' })
+  @ApiPropertyOptional({
+    description: 'Set when the site served an error or bot-challenge page instead of the real one.',
+  })
   blocked?: string;
 }

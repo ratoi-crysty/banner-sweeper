@@ -47,10 +47,16 @@ describe('OpenAPI document', () => {
   });
 
   it('documents every route with a summary, a tag and a success response', () => {
-    const paths: Record<string, Record<string, Operation>> = document.paths as Record<string, Record<string, Operation>>;
+    const paths: Record<string, Record<string, Operation>> = document.paths as Record<
+      string,
+      Record<string, Operation>
+    >;
     const operations: [string, Operation][] = Object.entries(paths).flatMap(
       ([path, item]: [string, Record<string, Operation>]): [string, Operation][] =>
-        Object.entries(item).map(([method, op]: [string, Operation]): [string, Operation] => [`${method.toUpperCase()} ${path}`, op]),
+        Object.entries(item).map(([method, op]: [string, Operation]): [string, Operation] => [
+          `${method.toUpperCase()} ${path}`,
+          op,
+        ]),
     );
     expect(operations.map(([name]: [string, Operation]): string => name).sort()).toEqual([
       'DELETE /api/rules/generate/{id}',
@@ -61,14 +67,19 @@ describe('OpenAPI document', () => {
       'POST /api/rules/validate',
     ]);
     for (const [name, op] of operations) {
-      expect({ name, summary: Boolean(op.summary), tagged: Boolean(op.tags?.length) }).toEqual({ name, summary: true, tagged: true });
+      expect({ name, summary: Boolean(op.summary), tagged: Boolean(op.tags?.length) }).toEqual({
+        name,
+        summary: true,
+        tagged: true,
+      });
       expect(Object.keys(op.responses).some((code: string): boolean => code.startsWith('2'))).toBe(true);
     }
   });
 
   it('describes the generation result as a union on status', () => {
-    const job: { properties: Record<string, { discriminator?: { propertyName: string; mapping: Record<string, string> } }> } =
-      document.components?.schemas?.['GenerationJobDto'] as never;
+    const job: {
+      properties: Record<string, { discriminator?: { propertyName: string; mapping: Record<string, string> } }>;
+    } = document.components?.schemas?.['GenerationJobDto'] as never;
     expect(job.properties['result'].discriminator?.propertyName).toBe('status');
     expect(Object.keys(job.properties['result'].discriminator?.mapping ?? {}).sort()).toEqual([
       'blocked',

@@ -35,7 +35,14 @@ export class GenerationJobsService implements OnModuleDestroy {
 
   create(request: GenerateRuleRequest): GenerationJob {
     this.evictOld();
-    const job: GenerationJob = { id: randomUUID(), state: 'queued', request, createdAt: new Date().toISOString(), steps: [], logs: [] };
+    const job: GenerationJob = {
+      id: randomUUID(),
+      state: 'queued',
+      request,
+      createdAt: new Date().toISOString(),
+      steps: [],
+      logs: [],
+    };
     const entry: JobEntry = {
       job,
       events: new ReplaySubject<GenerationEvent>(),
@@ -44,10 +51,12 @@ export class GenerationJobsService implements OnModuleDestroy {
     };
     this.jobs.set(job.id, entry);
     entry.events.next({ type: 'state', state: 'queued' });
-    this.queue.add(() => this.run(entry), { signal: entry.dequeue.signal }).catch(() => {
-      // Only rejects when the job was dequeued before it started; `run` handles its own errors.
-      this.finish(entry, { status: 'cancelled', summary: 'Cancelled before start.', steps: [] });
-    });
+    this.queue
+      .add(() => this.run(entry), { signal: entry.dequeue.signal })
+      .catch(() => {
+        // Only rejects when the job was dequeued before it started; `run` handles its own errors.
+        this.finish(entry, { status: 'cancelled', summary: 'Cancelled before start.', steps: [] });
+      });
     return job;
   }
 
@@ -133,6 +142,7 @@ export class GenerationJobsService implements OnModuleDestroy {
 /** Screenshots are big and only useful to the model; keep them out of API payloads. */
 function withoutImage(step: AgentStep): AgentStep {
   if (!step.result.imageBase64) return step;
-  const { imageBase64, ...result } = step.result;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { imageBase64: _, ...result } = step.result;
   return { call: step.call, result: { ...result, text: `${result.text} [screenshot omitted]` } };
 }

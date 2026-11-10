@@ -21,7 +21,10 @@ interface OllamaMessage {
 }
 
 interface OllamaChatResponse {
-  message: { content?: string; tool_calls?: { function: { name: string; arguments: Record<string, unknown> | string } }[] };
+  message: {
+    content?: string;
+    tool_calls?: { function: { name: string; arguments: Record<string, unknown> | string } }[];
+  };
 }
 
 /** Ollama's native /api/chat with `tools`. No SDK dependency. */

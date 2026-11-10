@@ -31,7 +31,11 @@ export class ClaudeApiProvider extends ChatAgentProvider {
         max_tokens: this.maxTokens,
         system,
         tools: tools.map(
-          (t): Anthropic.Tool => ({ name: t.name, description: t.description, input_schema: t.parameters as Anthropic.Tool.InputSchema }),
+          (t): Anthropic.Tool => ({
+            name: t.name,
+            description: t.description,
+            input_schema: t.parameters as Anthropic.Tool.InputSchema,
+          }),
         ),
         messages: toAnthropic(messages),
       },
@@ -42,7 +46,8 @@ export class ClaudeApiProvider extends ChatAgentProvider {
     const toolCalls: ToolCall[] = [];
     for (const block of res.content) {
       if (block.type === 'text') text += block.text;
-      if (block.type === 'tool_use') toolCalls.push({ id: block.id, name: block.name, args: block.input as Record<string, unknown> });
+      if (block.type === 'tool_use')
+        toolCalls.push({ id: block.id, name: block.name, args: block.input as Record<string, unknown> });
     }
 
     return { text, toolCalls };
@@ -67,7 +72,12 @@ function toAnthropic(messages: Message[]): Anthropic.MessageParam[] {
         content: [
           { type: 'text', text: m.result.text },
           ...(m.result.imageBase64
-            ? [{ type: 'image' as const, source: { type: 'base64' as const, media_type: 'image/png' as const, data: m.result.imageBase64 } }]
+            ? [
+                {
+                  type: 'image' as const,
+                  source: { type: 'base64' as const, media_type: 'image/png' as const, data: m.result.imageBase64 },
+                },
+              ]
             : []),
         ],
       };

@@ -16,7 +16,7 @@ import { AgentModule } from './modules/agent';
       useFactory: (config: ConfigService<ApiConfig>) => ({
         mode: config.get('playwrightHost') ? 'connect' : 'launch',
         wsEndpoint: config.get('playwrightHost'),
-      })
+      }),
     }),
     AgentModule.forRoot({
       defaultProvider: {

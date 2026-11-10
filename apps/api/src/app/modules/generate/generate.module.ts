@@ -17,7 +17,11 @@ export class GenerateModule {
       module: GenerateModule,
       imports: [RunnerModule, ValidatorModule],
       controllers: [GenerateController],
-      providers: [{ provide: GENERATE_OPTIONS, useValue: withDefaults(options) }, GenerateService, GenerationJobsService],
+      providers: [
+        { provide: GENERATE_OPTIONS, useValue: withDefaults(options) },
+        GenerateService,
+        GenerationJobsService,
+      ],
       exports: [GenerateService, GenerationJobsService],
     };
   }

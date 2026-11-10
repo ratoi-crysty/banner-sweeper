@@ -38,9 +38,12 @@ describe('GenerateRuleRequestDto', () => {
     expect(await errorsFor({ url: 'https://example.com' })).toEqual([]);
   });
 
-  it.each([undefined, '', 'example.com', 'ftp://example.com', 'javascript:alert(1)', 42])('rejects url %p', async (url: unknown) => {
-    expect(await errorsFor({ url })).toEqual(['url must be an absolute http(s) URL']);
-  });
+  it.each([undefined, '', 'example.com', 'ftp://example.com', 'javascript:alert(1)', 42])(
+    'rejects url %p',
+    async (url: unknown) => {
+      expect(await errorsFor({ url })).toEqual(['url must be an absolute http(s) URL']);
+    },
+  );
 
   it('rejects names reserved by autoconsent', async () => {
     expect(await errorsFor({ url: 'https://example.com', name: 'auto_x' })).toEqual([
