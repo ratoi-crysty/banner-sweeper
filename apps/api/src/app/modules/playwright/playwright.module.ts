@@ -1,14 +1,10 @@
-import { DynamicModule, InjectionToken, Module, OptionalFactoryDependency } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { PLAYWRIGHT_OPTIONS } from './playwright.constants';
 import { PlaywrightService } from './playwright.service';
 import type { PlaywrightModuleOptions } from './types';
-import { ModuleMetadata } from '@nestjs/common/interfaces/modules/module-metadata.interface';
+import { AsyncModuleOptions } from '../../shared/modules/async-modules.types';
 
-export interface PlaywrightModuleAsyncOptions extends Pick<ModuleMetadata, 'imports'> {
-  inject?: Array<InjectionToken | OptionalFactoryDependency>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  useFactory: (...args: any[]) => PlaywrightModuleOptions | Promise<PlaywrightModuleOptions>;
-}
+export type PlaywrightModuleAsyncOptions = AsyncModuleOptions<PlaywrightModuleOptions>;
 
 /** Global: register once in the root module, inject PlaywrightService anywhere. */
 @Module({})

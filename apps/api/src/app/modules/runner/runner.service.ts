@@ -58,10 +58,7 @@ export class RunnerService implements OnModuleInit {
   /** autoconsent's bundled rule set (hundreds of known CMPs). */
   async getRuleBundle(): Promise<RuleBundle> {
     if (!this.bundled) {
-      console.log('Before read file', require, nodeRequire.resolve('@duckduckgo/autoconsent/rules/rules.json'));
       const rulesBody = await readFile(nodeRequire.resolve('@duckduckgo/autoconsent/rules/rules.json'));
-
-      console.log('Rules bundle body', rulesBody);
 
       this.bundled = JSON.parse(rulesBody.toString()) as RuleBundle;
     }

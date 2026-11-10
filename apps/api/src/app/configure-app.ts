@@ -1,5 +1,6 @@
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { version } from '../../package.json';
 
 export const GLOBAL_PREFIX = 'api';
 // SwaggerModule ignores the global prefix, so the path includes it
@@ -13,7 +14,7 @@ export function configureApp(app: INestApplication): void {
 
   const config: Omit<OpenAPIObject, 'paths'> = new DocumentBuilder()
     .setTitle('Banner Sweeper API')
-    .setVersion('1.0')
+    .setVersion(version)
     .build();
   SwaggerModule.setup(DOCS_PATH, app, () => SwaggerModule.createDocument(app, config));
 }

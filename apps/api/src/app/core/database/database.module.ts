@@ -2,8 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { apiConfig } from '../../../config/api.config';
-import type { ApiConfig } from '../../../config/api.config';
+import { apiConfig, ApiConfig } from '../config/api-config';
 
 @Module({
   imports: [

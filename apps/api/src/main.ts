@@ -8,8 +8,8 @@ async function bootstrap(): Promise<void> {
   configureApp(app);
   const port: string | number = process.env['PORT'] || 3000;
   await app.listen(port);
-  Logger.log(`🚀 Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`);
-  Logger.log(`📖 API docs: http://localhost:${port}/${DOCS_PATH}`);
+  Logger.log(`Application is running on: http://localhost:${port}/${GLOBAL_PREFIX}`);
+  Logger.log(`API docs: http://localhost:${port}/${DOCS_PATH}`);
 }
 
 bootstrap();

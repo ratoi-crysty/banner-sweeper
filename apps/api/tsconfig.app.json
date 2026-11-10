@@ -27,5 +27,9 @@
     "src/**/*.test.jsx",
     "src/**/*.spec.jsx"
   ],
-  "references": []
+  "references": [
+    {
+      "path": "../../libs/autoconsent-config/tsconfig.lib.json"
+    }
+  ]
 }
