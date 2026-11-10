@@ -10,16 +10,10 @@
       "path": "./apps/web"
     },
     {
-      "path": "./libs/api-interfaces"
-    },
-    {
       "path": "./apps/extension"
     },
     {
       "path": "./libs/autoconsent-config"
-    },
-    {
-      "path": "./libs/rule-validation"
     }
   ]
 }
