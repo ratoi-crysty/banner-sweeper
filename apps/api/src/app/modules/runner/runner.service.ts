@@ -166,7 +166,10 @@ export class RunnerService implements OnModuleInit {
     return report;
   }
 
-  private async inject(page: Page, onMessage: (msg: ContentScriptMessage, target: Target) => Promise<void>): Promise<void> {
+  private async inject(
+    page: Page,
+    onMessage: (msg: ContentScriptMessage, target: Target) => Promise<void>,
+  ): Promise<void> {
     const browserName: string = await this.playwright.browserName();
     const inject = browserName === 'chromium' ? await this.isolatedInjector : undefined;
 
