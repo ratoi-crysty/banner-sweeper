@@ -27,6 +27,7 @@ export const autoconsentConfig: Config = {
     waits: false,
   },
   performanceLoggingEnabled: false,
+  enableHeuristicHitTest: false,
   heuristicPopupSearchTimeout: 100,
   heuristicMode: 'off',
 };
