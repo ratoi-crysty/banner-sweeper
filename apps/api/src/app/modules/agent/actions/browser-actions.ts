@@ -18,6 +18,7 @@ export interface ActionContext {
 
 export interface Action {
   definition: ToolDefinition;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   run(ctx: ActionContext, args: any): Promise<ToolResult>;
 }
 
