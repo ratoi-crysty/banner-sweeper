@@ -50,7 +50,6 @@ export class GenerateService {
     if (request.checkBundledRules !== false) {
       log('Checking autoconsent bundled rules…');
       const bundledRules: RuleBundle = await this.runner.getRuleBundle();
-      console.log('Get rule bundle', bundledRules);
       const report: AutoconsentRunReport = await this.runner.run(
         { url, timeoutMs: 20000, context: contextSettings },
         bundledRules,

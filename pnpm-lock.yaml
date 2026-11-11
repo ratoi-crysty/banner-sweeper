@@ -228,9 +228,6 @@ importers:
 
   apps/api:
     dependencies:
-      '@banner-sweeper/api-interfaces':
-        specifier: workspace:*
-        version: link:../../libs/api-interfaces
       '@banner-sweeper/autoconsent-config':
         specifier: workspace:*
         version: link:../../libs/autoconsent-config
@@ -243,11 +240,7 @@ importers:
 
   apps/web: {}
 
-  libs/api-interfaces: {}
-
   libs/autoconsent-config: {}
-
-  libs/rule-validation: {}
 
 packages:
 
