@@ -1,2 +1,2 @@
-pnpm run nx format:check
-pnpm run nx affected:test
+pnpm exec nx format:check --base="$NX_BASE" --head="$NX_HEAD"
+pnpm exec nx affected -t lint typecheck test --base="$NX_BASE" --head="$NX_HEAD"
