@@ -8,7 +8,12 @@ import {
   type Response,
 } from 'playwright-core';
 import { PLAYWRIGHT_OPTIONS } from './playwright.constants';
-import { DEFAULT_LAUNCH_ARGS, type BlockInfo, type ContextSettings, type PlaywrightModuleOptions } from './types/playwright.types';
+import {
+  DEFAULT_LAUNCH_ARGS,
+  type BlockInfo,
+  type ContextSettings,
+  type PlaywrightModuleOptions,
+} from './types/playwright.types';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 const CHALLENGE_RE =
