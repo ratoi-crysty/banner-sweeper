@@ -6,7 +6,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import type { Config, RuleBundle, ContentScriptMessage } from '@duckduckgo/autoconsent';
 import { Frame, Page, Response } from 'playwright-core';
 import { BlockInfo, PlaywrightService } from '../playwright';
-import type { AutoconsentRunReport, RunRequest } from './types';
+import type { AutoconsentRunReport, RunRequest } from './types/runner.types';
 
 /** BE-only hooks (they receive a live Playwright Page). */
 export interface RunHooks {

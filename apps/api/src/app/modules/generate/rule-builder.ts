@@ -1,5 +1,5 @@
 import type { AutoConsentCMPRule, AutoConsentRuleStep } from '../runner';
-import type { RuleSpec } from './types';
+import type { RuleSpec } from './types/generate.types';
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 const isCss = (sel: string) => !sel.startsWith('xpath/');
 

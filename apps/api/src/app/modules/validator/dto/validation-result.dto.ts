@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AutoconsentRunReportDto } from '../../runner/dto/autoconsent-run-report.dto';
-import type { SelectorCheck, ValidationResult } from '../types';
+import type { SelectorCheck, ValidationResult } from '../types/validator.types';
 
 export class SelectorCheckDto implements SelectorCheck {
   @ApiProperty({ example: '#cookie-banner .reject-all' })

@@ -5,7 +5,7 @@ import { ReplaySubject, type Observable } from 'rxjs';
 import type { AgentStep } from '../agent';
 import { GENERATE_OPTIONS, type GenerateModuleOptions } from './generate.constants';
 import { GenerateService } from './generate.service';
-import type { GenerateRuleRequest, GenerateRuleResult, GenerationEvent, GenerationJob } from './types';
+import type { GenerateRuleRequest, GenerateRuleResult, GenerationEvent, GenerationJob } from './types/generate.types';
 
 interface JobEntry {
   job: GenerationJob;

@@ -1,8 +1,5 @@
-/**
- * Validator module types. FE-safe: plain TypeScript.
- */
-import type { ContextSettings } from '../../playwright/types';
-import type { AutoConsentCMPRule, AutoconsentRunReport } from '../../runner/types';
+import type { ContextSettings } from '../../playwright';
+import type { AutoConsentCMPRule, AutoconsentRunReport } from '../../runner';
 
 export interface ValidateRuleRequest {
   url: string;

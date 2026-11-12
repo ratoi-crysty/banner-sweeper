@@ -5,11 +5,11 @@ import {
   type DiscriminatorObject,
   type ReferenceObject,
 } from '@nestjs/swagger';
+import type { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
 import { AgentStepDto } from '../../agent/dto/agent-step.dto';
 import { AUTOCONSENT_RULE_SCHEMA } from '../../runner/dto/autoconsent-run-report.dto';
-import type { AutoConsentCMPRule } from '../../runner/types';
 import { ValidationResultDto } from '../../validator/dto/validation-result.dto';
-import type { GenerateRuleResult } from '../types';
+import type { GenerateRuleResult } from '../types/generate.types';
 
 type GeneratedResult = Extract<GenerateRuleResult, { status: 'generated' }>;
 type CoveredResult = Extract<GenerateRuleResult, { status: 'covered-by-bundled-rule' }>;

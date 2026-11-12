@@ -2,9 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, Matches, Max, Min, ValidateNested } from 'class-validator';
 import { IsHttpUrl } from '../../../shared/validation';
-import { ProviderConfigDto } from '../../agent/dto/provider-config.dto';
-import { ContextSettingsDto } from '../../playwright/dto/context-settings.dto';
-import type { GenerateRuleRequest } from '../types';
+import { ProviderConfigDto } from '../../agent';
+import { ContextSettingsDto } from '../../playwright';
+import type { GenerateRuleRequest } from '../types/generate.types';
 
 export class GenerateRuleRequestDto implements GenerateRuleRequest {
   @ApiProperty({ format: 'uri', description: 'Page with the consent banner.', example: 'https://example.com' })

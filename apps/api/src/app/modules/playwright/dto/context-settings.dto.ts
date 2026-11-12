@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
-import type { ContextSettings } from '../types';
+import type { ContextSettings } from '../types/playwright.types';
 
 export class ViewportDto {
   @ApiProperty({ type: 'integer', minimum: 1, maximum: 10000, example: 1280 })

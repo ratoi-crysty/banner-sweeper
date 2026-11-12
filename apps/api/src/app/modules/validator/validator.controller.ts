@@ -3,7 +3,7 @@ import { ApiBadRequestResponse, ApiOkResponse, ApiOperation, ApiTags } from '@ne
 import { ErrorResponseDto } from '../../shared/dto';
 import { ValidateRuleRequestDto } from './dto/validate-rule-request.dto';
 import { ValidationResultDto } from './dto/validation-result.dto';
-import type { ValidationResult } from './types';
+import type { ValidationResult } from './types/validator.types';
 import { ValidatorService } from './validator.service';
 
 @ApiTags('validate')

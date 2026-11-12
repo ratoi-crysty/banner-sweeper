@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import type { AutoconsentRunReport } from '../types';
+import type { AutoconsentRunReport } from '../types/runner.types';
 
 /** OpenAPI schema for an autoconsent rule. Too polymorphic to model field by field; autoconsent validates it when it runs. */
 export const AUTOCONSENT_RULE_SCHEMA = {

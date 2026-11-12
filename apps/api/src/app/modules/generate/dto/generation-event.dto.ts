@@ -1,6 +1,6 @@
 import { ApiProperty, getSchemaPath, type ReferenceObject } from '@nestjs/swagger';
 import { AgentStepDto } from '../../agent/dto/agent-step.dto';
-import type { GenerateRuleResult, GenerationEvent, GenerationJobState } from '../types';
+import type { GenerateRuleResult, GenerationEvent, GenerationJobState } from '../types/generate.types';
 import { GENERATE_RULE_RESULT_SCHEMA, type DiscriminatedUnionSchema } from './generate-rule-result.dto';
 import { GENERATION_JOB_STATES } from './generation-job.dto';
 
