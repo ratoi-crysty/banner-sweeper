@@ -13,7 +13,7 @@ import { RunnerService, type AutoConsentCMPRule, AutoconsentRunReport } from '..
 import { ValidatorService, type ValidationResult } from '../validator';
 import { GENERATE_SYSTEM_PROMPT, RULE_SPEC_SCHEMA, blockedHint } from './generate.prompts';
 import { buildRule, ruleNameFor } from './rule-builder';
-import type { GenerateRuleRequest, GenerateRuleResult, RuleSpec } from './types';
+import type { GenerateRuleRequest, GenerateRuleResult, RuleSpec } from './types/generate.types';
 import { RuleBundle } from '@duckduckgo/autoconsent';
 
 export interface GenerateCallbacks {

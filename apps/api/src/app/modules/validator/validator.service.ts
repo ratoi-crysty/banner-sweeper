@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Frame, Page } from 'playwright-core';
 import { RunnerService, type AutoConsentCMPRule, type AutoConsentRuleStep } from '../runner';
-import type { SelectorCheck, ValidateRuleRequest, ValidationResult } from './types';
+import type { SelectorCheck, ValidateRuleRequest, ValidationResult } from './types/validator.types';
 
 /** Runs one rule through the real autoconsent engine on a fresh page load and judges the outcome. */
 @Injectable()

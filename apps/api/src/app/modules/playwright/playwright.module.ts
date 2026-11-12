@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { PLAYWRIGHT_OPTIONS } from './playwright.constants';
 import { PlaywrightService } from './playwright.service';
-import type { PlaywrightModuleOptions } from './types';
+import type { PlaywrightModuleOptions } from './types/playwright.types';
 import { AsyncModuleOptions } from '../../shared/modules/async-modules.types';
 
 export type PlaywrightModuleAsyncOptions = AsyncModuleOptions<PlaywrightModuleOptions>;

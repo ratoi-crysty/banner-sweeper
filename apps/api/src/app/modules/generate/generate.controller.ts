@@ -17,7 +17,7 @@ import { GENERATE_RULE_RESULT_MODELS } from './dto/generate-rule-result.dto';
 import { GENERATION_EVENT_MODELS, GENERATION_EVENT_SCHEMA } from './dto/generation-event.dto';
 import { CreateGenerationJobResponseDto, GenerationJobDto } from './dto/generation-job.dto';
 import { GenerationJobsService } from './generation-jobs.service';
-import type { CreateGenerationJobResponse, GenerationJob } from './types';
+import type { CreateGenerationJobResponse, GenerationJob } from './types/generate.types';
 
 const JOB_ID_PARAM = { name: 'id', format: 'uuid', description: 'Job id from `POST /rules/generate`.' } as const;
 

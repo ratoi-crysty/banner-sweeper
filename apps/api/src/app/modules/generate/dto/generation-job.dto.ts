@@ -1,6 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { AgentStepDto } from '../../agent/dto/agent-step.dto';
-import type { CreateGenerationJobResponse, GenerateRuleResult, GenerationJob, GenerationJobState } from '../types';
+import type { CreateGenerationJobResponse, GenerateRuleResult, GenerationJob, GenerationJobState } from '../types/generate.types';
 import { GenerateRuleRequestDto } from './generate-rule-request.dto';
 import { GENERATE_RULE_RESULT_SCHEMA } from './generate-rule-result.dto';
 

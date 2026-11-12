@@ -11,10 +11,10 @@ import {
   type ValidationOptions,
 } from 'class-validator';
 import { IsHttpUrl } from '../../../shared/validation';
-import { ContextSettingsDto } from '../../playwright/dto/context-settings.dto';
+import { ContextSettingsDto } from '../../playwright';
 import { AUTOCONSENT_RULE_SCHEMA } from '../../runner/dto/autoconsent-run-report.dto';
-import type { AutoConsentCMPRule } from '../../runner/types';
-import type { ValidateRuleRequest } from '../types';
+import type { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
+import type { ValidateRuleRequest } from '../types/validator.types';
 
 /**
  * Shallow shape check only. The rule stays a plain object (no `@ValidateNested`), so the

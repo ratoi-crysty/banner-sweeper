@@ -1,8 +1,4 @@
-/**
- * Runner module types. FE-safe: plain TypeScript. The autoconsent rule types are re-exported
- * type-only (erased at build), so the FE needs @duckduckgo/autoconsent only as a devDependency.
- */
-import type { ContextSettings } from '../../playwright/types';
+import type { ContextSettings } from '../../playwright';
 
 export type { AutoConsentCMPRule, AutoConsentRuleStep, RuleBundle } from '@duckduckgo/autoconsent';
 

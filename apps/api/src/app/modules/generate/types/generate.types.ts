@@ -1,10 +1,7 @@
-/**
- * Generate module types. FE-safe: plain TypeScript.
- */
-import type { AgentStep, ProviderConfig } from '../../agent/types/agent.types';
-import type { ContextSettings } from '../../playwright/types';
-import type { AutoConsentCMPRule } from '../../runner/types';
-import type { ValidationResult } from '../../validator/types';
+import type { AutoConsentCMPRule } from '@duckduckgo/autoconsent';
+import type { AgentStep, ProviderConfig } from '../../agent';
+import type { ContextSettings } from '../../playwright';
+import type { ValidationResult } from '../../validator';
 
 /** What the agent proposes; the BE turns it into an autoconsent rule. */
 export interface RuleSpec {
