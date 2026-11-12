@@ -1,2 +1,2 @@
 pnpm run nx format:check
-pnpm test
+pnpm run nx affected:test
