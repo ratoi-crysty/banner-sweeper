@@ -5,6 +5,8 @@ import { DEFAULT_GENERATE_OPTIONS, GENERATE_OPTIONS, type GenerateModuleOptions 
 import { GenerateController } from './generate.controller';
 import { GenerateService } from './generate.service';
 import { GenerationJobsService } from './generation-jobs.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { GenerationJobEntity } from './generation-job.entity';
 
 /**
  * Glue module. Requires the global PlaywrightModule.forRoot(...) and AgentModule.forRoot(...)
@@ -12,10 +14,10 @@ import { GenerationJobsService } from './generation-jobs.service';
  */
 @Module({})
 export class GenerateModule {
-  static register(options: Partial<GenerateModuleOptions> = {}): DynamicModule {
+  static forRoot(options: Partial<GenerateModuleOptions> = {}): DynamicModule {
     return {
       module: GenerateModule,
-      imports: [RunnerModule, ValidatorModule],
+      imports: [RunnerModule, ValidatorModule, TypeOrmModule.forFeature([GenerationJobEntity])],
       controllers: [GenerateController],
       providers: [
         { provide: GENERATE_OPTIONS, useValue: withDefaults(options) },

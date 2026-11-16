@@ -16,6 +16,7 @@ import { AgentModule } from './modules/agent';
         return {
           mode: config.playwrightHost ? 'connect' : 'launch',
           wsEndpoint: config.playwrightHost,
+          headless: !!config.playwrightHost,
         };
       },
     }),
@@ -24,7 +25,7 @@ import { AgentModule } from './modules/agent';
         type: 'claude-agent-sdk',
       },
     }),
-    GenerateModule.register({ maxConcurrentJobs: 1 }),
+    GenerateModule.forRoot({ maxConcurrentJobs: 1 }),
   ],
 })
 export class AppModule {}

@@ -1,14 +1,22 @@
-import { Inject, Injectable, Logger, NotFoundException, OnModuleDestroy } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { Inject, Injectable, Logger, NotFoundException, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import PQueue from 'p-queue';
 import { ReplaySubject, type Observable } from 'rxjs';
 import type { AgentStep } from '../agent';
 import { GENERATE_OPTIONS, type GenerateModuleOptions } from './generate.constants';
 import { GenerateService } from './generate.service';
-import type { GenerateRuleRequest, GenerateRuleResult, GenerationEvent, GenerationJob } from './types/generate.types';
+import type {
+  GenerateRuleRequest,
+  GenerateRuleResult,
+  GenerationEvent,
+  GenerationJob,
+  GenerationJobState,
+} from './types/generate.types';
+import { InjectRepository } from '@nestjs/typeorm';
+import { In, Repository } from 'typeorm';
+import { GenerationJobEntity } from './generation-job.entity';
 
 interface JobEntry {
-  job: GenerationJob;
+  jobId: string;
   events: ReplaySubject<GenerationEvent>;
   /** Stops the generator once the job is running. */
   abort: AbortController;
@@ -21,30 +29,83 @@ interface JobEntry {
  * Swap for a persistent queue (BullMQ etc.) if you need jobs to survive restarts.
  */
 @Injectable()
-export class GenerationJobsService implements OnModuleDestroy {
-  private readonly logger = new Logger(GenerationJobsService.name);
-  private readonly jobs = new Map<string, JobEntry>();
-  private readonly queue: PQueue;
+export class GenerationJobsService implements OnModuleInit, OnModuleDestroy {
+  protected readonly logger = new Logger(GenerationJobsService.name);
+  protected readonly jobs = new Map<string, JobEntry>();
+  protected readonly queue: PQueue;
 
   constructor(
-    private readonly generator: GenerateService,
-    @Inject(GENERATE_OPTIONS) private readonly options: GenerateModuleOptions,
+    protected readonly generator: GenerateService,
+    @Inject(GENERATE_OPTIONS) protected readonly options: GenerateModuleOptions,
+    @InjectRepository(GenerationJobEntity) protected readonly repo: Repository<GenerationJobEntity>,
   ) {
     this.queue = new PQueue({ concurrency: options.maxConcurrentJobs });
   }
 
-  create(request: GenerateRuleRequest): GenerationJob {
-    this.evictOld();
-    const job: GenerationJob = {
-      id: randomUUID(),
+  async create(request: GenerateRuleRequest): Promise<GenerationJob> {
+    const job = this.repo.create({
       state: 'queued',
       request,
       createdAt: new Date().toISOString(),
       steps: [],
       logs: [],
-    };
+    });
+
+    await this.repo.save(job);
+
+    this.createEntry(job);
+
+    return job;
+  }
+
+  async get(id: string): Promise<GenerationJob> {
+    const entity: GenerationJobEntity | null = await this.repo.findOneBy({ id });
+
+    if (!entity) {
+      throw new NotFoundException();
+    }
+
+    return entity;
+  }
+
+  list(): Promise<GenerationJobEntity[]> {
+    return this.repo.find();
+  }
+
+  /** Replays everything so far, then streams live; completes when the job ends. */
+  events(id: string): Observable<GenerationEvent> {
+    return this.entry(id).events.asObservable();
+  }
+
+  async cancel(id: string): Promise<GenerationJob> {
+    const entry = this.entry(id);
+    entry.abort.abort();
+
+    const job: GenerationJob = await this.get(id);
+
+    if (job.state === 'queued') {
+      entry.dequeue.abort();
+    }
+
+    this.jobs.delete(id);
+
+    return job;
+  }
+
+  async onModuleInit(): Promise<void> {
+    const jobs = await this.repo.findBy({ state: In<GenerationJobState>(['queued', 'error']) });
+
+    jobs.forEach((job: GenerationJobEntity) => this.createEntry(job));
+  }
+
+  onModuleDestroy(): void {
+    this.queue.clear();
+    for (const e of this.jobs.values()) e.abort.abort();
+  }
+
+  protected createEntry(job: GenerationJobEntity) {
     const entry: JobEntry = {
-      job,
+      jobId: job.id,
       events: new ReplaySubject<GenerationEvent>(),
       abort: new AbortController(),
       dequeue: new AbortController(),
@@ -53,89 +114,84 @@ export class GenerationJobsService implements OnModuleDestroy {
     entry.events.next({ type: 'state', state: 'queued' });
     this.queue
       .add(() => this.run(entry), { signal: entry.dequeue.signal })
-      .catch(() => {
+      .catch((err) => {
+        this.logger.error(`Error while executing queue for: ${job.id}`, err);
+
         // Only rejects when the job was dequeued before it started; `run` handles its own errors.
-        this.finish(entry, { status: 'cancelled', summary: 'Cancelled before start.', steps: [] });
+        this.finish(entry, { status: 'cancelled', summary: 'Cancelled before start.', steps: [] }).catch((err) =>
+          this.logger.error(`Error while trying to finish entry: ${entry.jobId}`, err),
+        );
       });
-    return job;
   }
 
-  get(id: string): GenerationJob {
-    return this.entry(id).job;
-  }
+  protected async run(entry: JobEntry): Promise<void> {
+    const job = await this.get(entry.jobId);
 
-  list(): GenerationJob[] {
-    return [...this.jobs.values()].map((e) => e.job).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }
-
-  /** Replays everything so far, then streams live; completes when the job ends. */
-  events(id: string): Observable<GenerationEvent> {
-    return this.entry(id).events.asObservable();
-  }
-
-  cancel(id: string): GenerationJob {
-    const entry = this.entry(id);
-    entry.abort.abort();
-    if (entry.job.state === 'queued') entry.dequeue.abort();
-    return entry.job;
-  }
-
-  onModuleDestroy(): void {
-    this.queue.clear();
-    for (const e of this.jobs.values()) e.abort.abort();
-  }
-
-  private async run(entry: JobEntry): Promise<void> {
-    const { job, events } = entry;
     job.state = 'running';
     job.startedAt = new Date().toISOString();
-    events.next({ type: 'state', state: 'running' });
+
+    await this.repo.save(job);
+
+    entry.events.next({ type: 'state', state: 'running' });
+
     try {
       const result = await this.generator.generate(job.request, {
         signal: entry.abort.signal,
         onLog: (message) => {
           job.logs.push(message);
-          events.next({ type: 'log', message });
+          this.repo.save(job).catch((err) => this.logger.error('Could not update job logs', err));
+          entry.events.next({ type: 'log', message });
         },
         onStep: (raw) => {
           const step = withoutImage(raw);
           job.steps.push(step);
-          events.next({ type: 'step', step });
+          this.repo.save(job).catch((err) => this.logger.error('Could not update job steps', err));
+          entry.events.next({ type: 'step', step });
         },
       });
-      this.finish(entry, result);
+
+      await this.finish(entry, result);
     } catch (err) {
       const error = (err as Error).message;
       this.logger.error(`Job ${job.id} failed: ${error}`);
       job.state = 'error';
       job.error = error;
       job.finishedAt = new Date().toISOString();
-      events.next({ type: 'error', error });
-      events.next({ type: 'state', state: 'error' });
-      events.complete();
+
+      await this.repo.save(job);
+
+      entry.events.next({ type: 'error', error });
+      entry.events.next({ type: 'state', state: 'error' });
+      entry.events.complete();
+
+      this.jobs.delete(entry.jobId);
     }
   }
 
-  private finish(entry: JobEntry, result: GenerateRuleResult): void {
-    const { job, events } = entry;
+  protected async finish(entry: JobEntry, result: GenerateRuleResult): Promise<void> {
+    const job = await this.get(entry.jobId);
+
     job.result = { ...result, steps: result.steps.map(withoutImage) };
     job.state = 'finished';
     job.finishedAt = new Date().toISOString();
-    events.next({ type: 'result', result: job.result });
-    events.next({ type: 'state', state: 'finished' });
-    events.complete();
+
+    await this.repo.save(job);
+
+    entry.events.next({ type: 'result', result: job.result });
+    entry.events.next({ type: 'state', state: 'finished' });
+    entry.events.complete();
+
+    this.jobs.delete(entry.jobId);
   }
 
-  private entry(id: string): JobEntry {
+  protected entry(id: string): JobEntry {
     const entry = this.jobs.get(id);
-    if (!entry) throw new NotFoundException(`No generation job ${id}`);
-    return entry;
-  }
 
-  /** Keep memory bounded: drop the oldest finished jobs beyond the limit. */
-  private evictOld(): void {
-    const done = [...this.jobs.values()].filter((e) => e.job.state === 'finished' || e.job.state === 'error');
-    for (const e of done.slice(0, Math.max(0, done.length - this.options.keepFinishedJobs))) this.jobs.delete(e.job.id);
+    if (!entry) {
+      throw new NotFoundException(`No generation job ${id}`);
+    }
+
+    return entry;
   }
 }
 

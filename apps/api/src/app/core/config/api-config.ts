@@ -23,8 +23,8 @@ const DEFAULT_BROWSER_TIMEZONE = 'Europe/Bucharest';
 export const apiConfig = registerAs(
   'api',
   (): ApiConfig => ({
-    playwrightHost: process.env['PLAYWRIGHT_HOST'] || DEFAULT_PLAYWRIGHT_HOST,
-    databasePath: process.env['DATABASE_PATH'] || DEFAULT_DATABASE_PATH,
+    playwrightHost: process.env['PLAYWRIGHT_HOST'] ?? DEFAULT_PLAYWRIGHT_HOST,
+    databasePath: process.env['DATABASE_PATH'] ?? DEFAULT_DATABASE_PATH,
     detectionConcurrency: positiveInteger(
       'DETECTION_CONCURRENCY',
       process.env['DETECTION_CONCURRENCY'],

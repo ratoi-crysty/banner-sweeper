@@ -41,8 +41,8 @@ export class GenerateController {
   })
   @ApiAcceptedResponse({ type: CreateGenerationJobResponseDto, description: 'Job created.' })
   @ApiBadRequestResponse({ type: ErrorResponseDto, description: 'Invalid request body.' })
-  create(@Body() body: GenerateRuleRequestDto): CreateGenerationJobResponse {
-    const job = this.jobs.create(body);
+  async create(@Body() body: GenerateRuleRequestDto): Promise<CreateGenerationJobResponse> {
+    const job = await this.jobs.create(body);
     return { id: job.id, state: job.state };
   }
 
@@ -52,7 +52,7 @@ export class GenerateController {
     description: 'Newest first. Only the most recent finished jobs are kept in memory, and none survive a restart.',
   })
   @ApiOkResponse({ type: GenerationJobDto, isArray: true })
-  list(): GenerationJob[] {
+  list(): Promise<GenerationJob[]> {
     return this.jobs.list();
   }
 
@@ -62,7 +62,7 @@ export class GenerateController {
   @ApiBadRequestResponse(INVALID_JOB_ID)
   @ApiOkResponse({ type: GenerationJobDto })
   @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'No such job (or it was evicted).' })
-  get(@Param('id', ParseUUIDPipe) id: string): GenerationJob {
+  get(@Param('id', ParseUUIDPipe) id: string): Promise<GenerationJob> {
     return this.jobs.get(id);
   }
 
@@ -96,7 +96,7 @@ export class GenerateController {
   @ApiBadRequestResponse(INVALID_JOB_ID)
   @ApiOkResponse({ type: GenerationJobDto, description: 'The job as it is right after the cancel request.' })
   @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'No such job (or it was evicted).' })
-  cancel(@Param('id', ParseUUIDPipe) id: string): GenerationJob {
+  cancel(@Param('id', ParseUUIDPipe) id: string): Promise<GenerationJob> {
     return this.jobs.cancel(id);
   }
 }
